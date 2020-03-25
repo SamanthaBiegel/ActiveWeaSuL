@@ -4,24 +4,23 @@
 
 ### Understanding the paper [Training Complex Models[...]](ratner2019training)
 
-Let the multi-task problem:
-
-> A developer wants to train a fine-grained Named Entity Recognition (NER) model to classify mentions of entities in the news. She has a multitude of available weak supervision sources which she believes have relevant signal for her problem---for example, pattern matchers, dictionaries, and pre-trained generic NER taggers. However, it is unclear how to properly use and combine them: some of them label phrases coarsely as **PERSON** versus **ORGANIZATION**, while others classify specific fine-grained types of people or organizations, with a range of unknown accuracies. In our framework, she can represent them as labeling tasks of different granularities:
-- $Y_1 = \{\mathit{Person}, \mathit{Org}\}$
-- $Y_2 = \{\mathit{Doctor}, \mathit{Lawyer}, \mathit{NA}\}$
-- $Y_3 = \{\mathit{Hospital}, \mathit{Office}, \mathit{NA}\}$
-> where the label NA applies, for example, when the type-of-person task is applied to an organization.
-
 Each data point is represented by the tuple $(X, \mathbf{Y})$, with input vector $X\in \mathcal{X}$ and the task label vector $\mathbf{Y}=[Y_1, Y_2, \ldots, Y_t]^T$, corresponding to $t$ tasks. We assume the data points are asampled i.i.d. from distribution $\mathcal{D}$.
 
 The tasks are related by a task graph $G_\mathit{task}$. The feasible sets of label vectors $\mathcal{Y}$, such $\mathbf{Y}\in\mathcal{Y}$. The number of feasible task vectors is defined by $r = |Y|$.
 
 The multi-task weak supervision sources $s_i \in S$ (the label function $\mathit{lf}_i$), represent noisy and potentially incomplete sources of labels (with **unknown accuracies and correlations**). Each source $s_i$ outputs label vectors $\mathbf{\lambda}_i$, which contain non-zero labels for some of the tasks, such that $\mathbf{\lambda}_i$ is in the feasible set $\mathcal{Y}$ but potentially with some elements set to zero, denoting a null vote or abstention for that task. Let $\mathcal{Y_0}$ denote this extended set which includes certain task labels set to zero.
 
-We also assume that each source $s$ has a fixed task coverage set $\tau_i$, such that $(\mathbf{\lambda}_i)_s\neq 0$ for $s\in\tau_i$, and $(\mathbf{\lambda}_i)_s=0$ for $s\notin\tau_i$
+We also assume that each source has a fixed task coverage set $\tau_i$, such that $(\mathbf{\lambda}_i)_s\neq 0$ for $s\in\tau_i$, and $(\mathbf{\lambda}_i)_s=0$ for $s\notin\tau_i$
 
-Let $\mathcal{Y}_{\tau_i}\subseteq\mathcal{Y_0}$  be the range of $\mathbf{\lambda}_i$ given coverage set $\tau_i$. For convenience, we let $\tau_i=\{1,\ldots,t\}$ so that $\mathcal{Y}_{\tau_i}=\mathcal{Y_0}$
+Let $\mathcal{Y}_{\tau_i}\subseteq\mathcal{Y_0}$  be the range of $\mathbf{\lambda}_i$ given coverage set $\tau_i$. For convenience, we let $\tau_i=\{1,\ldots,t\}$ so that $\mathcal{Y}_{\tau_i}=\mathcal{Y_0}$.
 
+Example:
+
+> Let $Y_1$ classify a data point $X$ as either a *PERSON* ($Y_1 = 1$) or *BUILDING* ($Y_1 = 2$). If $Y_1 = 1$, indicating that $X$ represents a *PERSON*, then $Y_2$ can further label $X$ as a *DOCTOR* or *NON-DOCTOR*. $Y_3$ is used to distinguish between *HOSPITAL* and *NON-HOSPITAL* in the case that $Y_1=2$. The corresponding graph $G_\mathit{task}$ is given by:
+
+![](img/example_snorkel.svg)
+
+> If $Y_1=2$, then task $Y_2$ is not applicable, since $Y_2$ is only suitable for persons; in this case, $Y_2$ takes the value *NA*. In this way the task hierarchy defines a feasible set of task vector values: $Y = [1, 1, \mathit{NA}]^T, [1, 2, \mathit{NA}]^T, [2, \mathit{NA}, 1]^T , [2, N/A, 2]^T$ are valid, while e.g. $Y = [1, 1, 2]^T$ is not.
 
 ### Alex Ratner discussion on Github
 
