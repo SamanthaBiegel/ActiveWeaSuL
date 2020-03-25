@@ -1,6 +1,5 @@
 # Understanding Snorkel
 
-<<<<<<< HEAD
 ## Snorkel under the hood
 
 ### Understanding the paper [Training Complex Models[...]](ratner2019training)
@@ -30,20 +29,8 @@ Snippet of a disussion from GitHub about the Snorkel implementation (**version 0
 > In this approach, given a set of dependencies between the labeling functions (LFs), we compute the statistics of how different cliques of labeling functions agree and disagree with each other, and then use a matrix completion-style approach to recover the LabelModel parameters from this observed matrix (more precisely: we compute the inverse generalized covariance matrix of the junction tree of the LF dependency graph, and perform a matrix completion-style approach wrt this).
 
 > Regarding the model being learned: currently we learn a model in which we assume the LFs are conditionally independent given the unobserved true label Y, a common assumption in weak supervision / crowd modeling approaches. And, going beyond the data programming paper we published in NeurIPS'16 (referenced above), we actually estimate different LF accuracies for each label class, i.e. we estimate $P(\mathit{lf} | Y)$ for all $\mathit{lf}, Y$. In future releases coming soon, we will also add support for (a) modeling LF dependencies and (b) estimating the LF dependency structure, as we have supported in previous versions of the code and published on (e.g. see our ICML'17 and ICML'19 papers). Hope this helps!
-=======
-##
-
-Snippet of a disussion from GitHub about the Snorkel implementation (**version 0.9**). See [here for the full discussion.
-
-> In this approach, given a set of dependencies between the labeling functions (LFs), we compute the statistics of how different cliques of labeling functions agree and disagree with each other, and then use a matrix completion-style approach to recover the LabelModel parameters from this observed matrix (more precisely: we compute the inverse generalized covariance matrix of the junction tree of the LF dependency graph, and perform a matrix completion-style approach wrt this).
-
-> Regarding the model being learned: currently we learn a model in which we assume the LFs are conditionally independent given the unobserved true label Y, a common assumption in weak supervision / crowd modeling approaches. And, going beyond the data programming paper we published in NeurIPS'16 (referenced above), we actually estimate different LF accuracies for each label class, i.e. we estimate $P(lf | Y)$ for all $lf, Y$. In future releases coming soon, we will also add support for (a) modeling LF dependencies and (b) estimating the LF dependency structure, as we have supported in previous versions of the code and published on (e.g. see our ICML'17 and ICML'19 papers). Hope this helps!
->>>>>>> 9cab9af4c65c2e1916f407d8a7e6570dc511455c
 
 ## Learning the dependency of weak labellers
-
-
-
 
 ## References
 
