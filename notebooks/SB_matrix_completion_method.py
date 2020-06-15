@@ -215,22 +215,28 @@ print(reg.coef_)
 
 # Create weak labels by randomly flipping from the ground truth targets.
 
-def random_LF(y, fp, fn):
+def random_LF(y, fp, fn, abstain):
+    ab = np.random.uniform()
+    
+    if ab < abstain:
+        return -1
+    
     threshold = np.random.uniform()
     
     if y == 1 and threshold < fn:
-        y = 0
+        return 0
         
     elif y == 0 and threshold < fp:
-        y = 1
+        return 1
+        
+    
     
     return y
 
-
 # +
-df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2) for y in df["y"]]
-df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4) for y in df["y"]]
-df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3) for y in df["y"]]
+df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
+df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
+df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
 
 # df.loc[:, "wl1"] = [random_LF(y, fp=0.15, fn=0.15) for y in df["y"]]
 # df.loc[:, "wl2"] = [random_LF(y, fp=0.25, fn=0.25) for y in df["y"]]
@@ -660,14 +666,52 @@ wl_al = np.full_like(df["y"], -1)
 # wl_al = np.array(df["y"]).reshape(-1,1)
 L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
 
+y_set = np.unique(L) # array of classes
+if y_set[0] == -1:
+    y_set = y_set[1:]
+y_dim = len(y_set) # number of classes
+nr_wl = L.shape[1] # number of weak labels
+
+
+def calculate_mu(z, cov_S, cov_O, exp_Y, exp_O):
+    """Compute mu from optimal z"""
+    
+    c = 1/cov_S * (1 + torch.mm(torch.mm(z.T, cov_O), z))
+    cov_OS = torch.mm(cov_O, z/torch.sqrt(c))
+    if cov_OS[0] < 0:
+        joint_cov_OS = torch.cat((-1*cov_OS, cov_OS), axis=1)
+    else:
+        joint_cov_OS = torch.cat((cov_OS, -1*cov_OS), axis=1)
+#     if joint_cov_OS[0,1] > joint_cov_OS[0,0]:
+#         joint_cov_OS = joint_cov_OS.T[::-1].T
+#     print(joint_cov_OS)
+    return (joint_cov_OS + torch.Tensor(exp_O.reshape(-1,1) @ exp_Y.reshape(1,-1))) / torch.Tensor(np.tile(exp_Y, (joint_cov_OS.shape[0], 1)))
+
+
+def calculate_cov(z, cov_S, cov_O):
+    c = 1/cov_S * (1 + torch.mm(torch.mm(z.T, cov_O), z))
+    cov_OS = torch.mm(cov_O, z/torch.sqrt(c))
+    if cov_OS[0] < 0:
+        joint_cov_OS = torch.cat((-1*cov_OS, cov_OS), axis=1)
+    else:
+        joint_cov_OS = torch.cat((cov_OS, -1*cov_OS), axis=1)
+    return joint_cov_OS
+
+
+def loss_probs(mu, t: float = 10000) -> torch.Tensor:
+    m_zeros = torch.zeros(mu.shape)
+    m_ones = torch.ones(mu.shape)
+#     print((m_zeros - mu)[mu < 0])
+    return t * (torch.norm((m_zeros - mu)[mu < 0]) ** 2 + torch.norm((mu - m_ones)[mu > 1]) ** 2)
+
 
 # +
-def loss_pk_mu(mu, s: float = 1000000) -> torch.Tensor:
+def loss_pk_mu(mu, s: float = 1e1) -> torch.Tensor:
     r"""Loss from prior knowledge"""
-    O_dim = mu.shape[0]
+    O_dim, y_dim = mu.shape
 
-    m = torch.ones([O_dim, y_dim])
-    m[:-mu.shape[1]] = 0
+    m = torch.zeros([O_dim, y_dim])
+    m[:-mu.shape[1]] = 1
 #     m[6,0] = 0
 #     m[7,1] = 0
     
@@ -678,34 +722,42 @@ def loss_pk_mu(mu, s: float = 1000000) -> torch.Tensor:
 #     mu_known[6,0] = 0.0014
 #     mu_known[7,1] = 0.0028
         
-    return s * torch.norm(m * (mu - mu_known)) ** 2
+    return s * torch.norm((mu - mu_known)[m.type(torch.BoolTensor)]) ** 2
 
 
 # -
 
-def loss_func(z, cov_S, cov_O, exp_Y, exp_O, mask):
-    loss_1 = torch.norm((torch.Tensor(np.linalg.pinv(cov_O)) + z@z.T)[torch.BoolTensor(mask)]) ** 2
-    int_mu = calculate_mu(z.detach().numpy(), cov_S, cov_O, exp_Y, exp_O)
-#     print(loss_1)
-#     print(loss_pk_mu(torch.Tensor(int_mu)))
-    return loss_1 + loss_pk_mu(torch.Tensor(int_mu))
-
-
-def calculate_mu(z, cov_S, cov_O, exp_Y, exp_O):
-    """Compute mu from optimal z"""
+def loss_pk_cov(cov_OS, cov_AL, s: float = 0.5):
+    O_dim, y_dim = cov_OS.shape
     
-    c = 1/cov_S * (1 + z.T@cov_O@z)
-    cov_OS = cov_O @ z/np.sqrt(c)
-    joint_cov_OS = np.concatenate((-1*cov_OS, cov_OS), axis=1)
-    if joint_cov_OS[0,1] > joint_cov_OS[0,0]:
-        joint_cov_OS = joint_cov_OS.T[::-1].T
-    return (joint_cov_OS + (exp_O.reshape(-1,1) @ exp_Y.reshape(1,-1))) / np.tile(exp_Y, (joint_cov_OS.shape[0], 1))
+    cov_OS_known = torch.zeros(cov_OS.shape)
+    cov_OS_known[-y_dim:,:] = cov_AL
+    
+    m = torch.ones([O_dim, y_dim])
+    m[:-y_dim] = 0
+#     print(cov_OS)
+    
+    return s * torch.norm((cov_OS - cov_OS_known)[m.type(torch.BoolTensor)]) ** 2
+
+
+def loss_func(z, cov_S, cov_O, exp_Y, exp_O, mask, cov_AL):
+    loss_1 = torch.norm((torch.Tensor(np.linalg.pinv(cov_O)) + z@z.T)[torch.BoolTensor(mask)]) ** 2
+    int_mu = calculate_mu(z, cov_S, cov_O, exp_Y, exp_O)
+    int_cov = calculate_cov(z, cov_S, cov_O)
+#     print("1:", loss_1)
+#     print("2:", loss_pk_mu(torch.Tensor(int_mu)))
+#     print("3:", loss_probs(torch.Tensor(int_mu)))
+#     print("4:", loss_pk_cov(int_cov, cov_AL))
+    return loss_1 + loss_pk_cov(int_cov, cov_AL) #+ loss_probs(torch.Tensor(int_mu))
 
 
 # +
-def fit_predict(label_matrix, class_balance, y_set):
+def fit_predict_AL(label_matrix, class_balance):
     """Fit label model and predict training labels"""
     
+    y_set = np.unique(label_matrix) # array of classes
+    if y_set[0] == -1:
+        y_set = y_set[1:]
     y_dim = len(y_set) # number of classes
     nr_wl = label_matrix.shape[1] # number of weak labels
     
@@ -720,30 +772,45 @@ def fit_predict(label_matrix, class_balance, y_set):
     exp_Y = (y_set*class_balance).sum()
     cov_S = sq_exp - exp_Y*exp_Y
     
+    N_total = label_matrix.shape[0]
+    cov_AL = np.diag(label_matrix_onehot[:,-y_dim:].sum(axis=0)/(np.array(class_balance)*N_total)*cov_S)
+    cov_AL[0,1] = -cov_AL[0,0]
+    cov_AL[1,0] = -cov_AL[1,1]
+    
     mask = np.ones(cov_O.shape)
     for i in range(int(cov_O.shape[0]/y_dim)):
         mask[i*y_dim:(i+1)*y_dim,i*y_dim:(i+1)*y_dim] = 0
+        for j in range(int(cov_O.shape[0]/y_dim)):
+            if (i == 1 and j == 2):
+                mask[i*y_dim:(i+1)*y_dim,j*y_dim:(j+1)*y_dim] = 0
+                mask[j*y_dim:(j+1)*y_dim,i*y_dim:(i+1)*y_dim] = 0
+                
+    mask[:,-y_dim:] = 0
+    mask[-y_dim:,:] = 0
     
     z = np.random.normal(0, 1, (y_dim*nr_wl, 1)) # random initialization
     z = nn.Parameter(torch.Tensor(z), requires_grad=True)
-    n_epochs = 300
-    lr = 1e-1
+    n_epochs = 200
+    lr = 1e-2
     optimizer = torch.optim.Adam({z}, lr=lr)
     for epoch in range(n_epochs):
        
         optimizer.zero_grad()
-        loss = loss_func(z, cov_S, cov_O, exp_Y, exp_O, mask)
+        loss = loss_func(z, cov_S, torch.Tensor(cov_O), exp_Y, exp_O, mask, torch.Tensor(cov_AL))
         loss.backward()
         optimizer.step()
         
-    z = z.detach().numpy()
     
-    mu = calculate_mu(z, cov_S, cov_O, exp_Y, exp_O)
-    
-#     c_probs = np.zeros((nr_wl*(y_dim+1), y_dim))
-#     for wl in range(nr_wl):
-#         c_probs[(wl*y_dim)+wl+1:y_dim+(wl*y_dim)+wl+1,:] = mu[(wl*y_dim):y_dim+(wl*y_dim),:]
-#         c_probs[(wl*y_dim)+wl,:] = 1 - mu[(wl*y_dim):y_dim+(wl*y_dim),:].sum(axis=0)
+    mu = calculate_mu(z, cov_S, torch.Tensor(cov_O), exp_Y, exp_O)
+
+    mu_eps = min(0.01, 1 / 10 ** np.ceil(np.log10(N_total)))
+    mu = mu.clamp(mu_eps, 1 - mu_eps)
+
+#     mu[-y_dim:,:] = mu_eps
+#     for i, k in enumerate(range(mu.shape[0] - y_dim, mu.shape[0])):
+#         mu[k, i] = 1-mu_eps
+
+    mu = mu.detach().numpy()
     
     X_Z = np.zeros((lm_sh[0], y_dim))
     for i in range(y_dim):
@@ -753,7 +820,7 @@ def fit_predict(label_matrix, class_balance, y_set):
     Z = X_Z.sum(axis=1)
     probs = X_Z/np.tile(Z, (y_dim, 1)).T
     
-    return np.argmax(np.around(probs),axis=-1), probs
+    return mu, np.argmax(np.around(probs),axis=-1), probs
 # -
 
 _, Y_probs = fit_predict(L, [0.5, 0.5], np.array([0, 1]))

@@ -1,0 +1,7 @@
+*.ipynb
+*__pycache__
+**/data/
+**/checkpoint/
+*.ipynb_checkpoints/
+connect-s3.sh
+.idea/*
