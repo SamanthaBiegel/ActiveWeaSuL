@@ -19,15 +19,21 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import pandas as pd
+import random
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+sys.path.append(os.path.abspath("../snorkel/snorkel"))
+from labeling.model.label_model import LabelModel
 
 
 # +
@@ -41,6 +47,11 @@ x2 = np.random.normal(loc=0, scale=1, size=N)
 
 def sigmoid(z):
     return 1/(1 + np.exp(-z))
+
+
+def softmax(z):
+    z_x = np.exp(z - np.max(z))
+    return z_x / np.sum(z_x, axis=1, keepdims=True)
 
 
 # +
@@ -74,11 +85,12 @@ print(reg.intercept_)
 print(reg.coef_)
 # -
 
-# # **Create clusters**
+# # Create clusters
 
 # +
 N_1 = 5000
 N_2 = 5000
+N_total = N_1 + N_2
 centroid_1 = np.array([0.1, 1.3])
 centroid_2 = np.array([-0.8, -0.5])
 centroids = np.concatenate([centroid_1.reshape(1,-1), centroid_2.reshape(1,-1)], axis=0)
@@ -199,6 +211,8 @@ print(reg.coef_)
 # sns.heatmap(pd.DataFrame(label_matrix[df["y"] == 0]).corr(), annot=True)
 # -
 
+# # Create weak labels
+
 # Create weak labels by randomly flipping from the ground truth targets.
 
 def random_LF(y, fp, fn):
@@ -213,9 +227,15 @@ def random_LF(y, fp, fn):
     return y
 
 
+# +
 df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2) for y in df["y"]]
 df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4) for y in df["y"]]
 df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3) for y in df["y"]]
+
+# df.loc[:, "wl1"] = [random_LF(y, fp=0.15, fn=0.15) for y in df["y"]]
+# df.loc[:, "wl2"] = [random_LF(y, fp=0.25, fn=0.25) for y in df["y"]]
+# df.loc[:, "wl3"] = [random_LF(y, fp=0.3, fn=0.3) for y in df["y"]]
+# -
 
 print("Accuracy wl1:", (df["y"] == df["wl1"]).sum()/len(y))
 
@@ -226,14 +246,6 @@ print("Accuracy wl3:", (df["y"] == df["wl3"]).sum()/len(y))
 df
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
-
-# +
-# shift labels by one
-# label_matrix += 1
-# y += 1
-# -
-
-label_matrix
 
 # +
 # label_matrix = label_matrix[y == 2,:]
@@ -251,9 +263,11 @@ nr_wl = label_matrix.shape[1] # number of weak labels
 
 nr_wl
 
+# # Compute covariances and expectations
+
 # Convert label matrix to onehot format. The dimensions will be (nr of data points, nr of weak labels * nr of classes).
 
-label_matrix_onehot = (np.unique(label_matrix) == label_matrix[...,None])*1
+label_matrix_onehot = (np.array([0,1]) == label_matrix[...,None])*1
 lm_sh = label_matrix_onehot.shape
 label_matrix_onehot = label_matrix_onehot.reshape(lm_sh[0],lm_sh[1]*lm_sh[2])
 
@@ -266,17 +280,26 @@ label_matrix_onehot = label_matrix_onehot.reshape(lm_sh[0],lm_sh[1]*lm_sh[2])
 
 covariance_matrix = np.cov(label_matrix_onehot.T)
 
+
+def _color_zeros(val):
+    color = 'red' if np.abs(val) < 0.1 else 'green'
+    return 'color: %s' % color
+
+
 pd.DataFrame(covariance_matrix)
 
-pd.DataFrame(np.linalg.pinv(covariance_matrix))
+pd.DataFrame(np.linalg.pinv(covariance_matrix)).style.applymap(_color_zeros)
 
-# Create overlap matrix, that counts the number of cases for each combination of class votes for each weak label pair. Dividing by the total amount of cases we get the estimated joint and marginal labeling probabilities.
+# <!-- Create overlap matrix, that counts the number of cases for each combination of class votes for each weak label pair. Dividing by the total amount of cases we get the estimated joint and marginal labeling probabilities. -->
 
-overlap_matrix = (label_matrix_onehot.T @ label_matrix_onehot)/label_matrix_onehot.shape[0]
+# +
+# overlap_matrix = (label_matrix_onehot.T @ label_matrix_onehot)/label_matrix_onehot.shape[0]
 
-overlap_matrix
+# +
+# overlap_matrix
+# -
 
-# Each element of mult_matrix is the product of the two classes that are represented by its row and column. Multiplying that by the probabilities and taking the sum per weak label pair we get their joint expectations.
+# <!-- Each element of mult_matrix is the product of the two classes that are represented by its row and column. Multiplying that by the probabilities and taking the sum per weak label pair we get their joint expectations. -->
 
 # +
 # mult_matrix = (np.tile(np.unique(label_matrix), nr_wl)).reshape(1,-1).T @ (np.tile(np.unique(label_matrix), nr_wl)).reshape(1,-1)
@@ -286,31 +309,18 @@ overlap_matrix
 # H,W = nr_wl, nr_wl
 # m,n = pre_sum.shape
 # expectations = np.einsum('ijkl->ik',pre_sum.reshape(H,m//H,W,n//W))
-# -
-
-# $\text{expectations} = E\left[\lambda_{i} \lambda_{j}\right]=\sum_{k, l} k l P\left(\lambda_{i}=k, \lambda_{j}=l\right)$
 
 # +
 # expectations
-# -
-
-# The marginal expectation of each weak label is just the sum product of each class label and the probability for the weak label to vote for that class.
 
 # +
 # marginal_exp = (np.tile(np.unique(label_matrix), nr_wl)*np.diag(overlap_matrix)).reshape(nr_wl, y_dim).sum(axis=1)
-# -
-
-# $\text{marginal expectation} = E\left[\lambda_{i}\right] =\sum_{k} k \cdot P\left(\lambda_{i}=k\right)$
-#
 
 # +
 # marginal_exp
 
 # +
 # covariance_matrix = expectations.copy()
-# -
-
-# The covariance matrix is then computed by taking the joint expectations subtracted by the product of the two marginal expectations of the weak label pair.
 
 # +
 # mask = np.zeros(covariance_matrix.shape)
@@ -320,19 +330,12 @@ overlap_matrix
 #         covariance_matrix[i,j] = expectations[i,j]-marginal_exp[i]*marginal_exp[j]
 #         if i != j:
 #             mask[i,j] = 1
-# -
-
-# $\begin{aligned}
-# \operatorname{Cov}\left(\lambda_{i}, \lambda_{j}\right) &=E\left[\left(\lambda_{i}-\mu_{\lambda_{i}}\right)\left(\lambda_{j}-\mu_{\lambda_{j}}\right)\right] \\
-# &=\sum_{k, l}\left(k-\mu_{\lambda_{i}}\right)\left(l-\mu_{\lambda_{j}}\right) P_{\lambda_{i}, \lambda_{j}}(k, l) \\
-# &=E\left[\lambda_{i} \lambda_{j}\right]-\mu_{\lambda_{i}} \mu_{\lambda_{j}}
-# \end{aligned}$
 
 # +
 # covariance_matrix
 # -
 
-# Should figure out: is this really what they mean in the Snorkel paper, and how does it work when there are >2 classes?
+# <!-- Should figure out: is this really what they mean in the Snorkel paper, and how does it work when there are >2 classes? -->
 
 # +
 # pd.DataFrame(np.linalg.pinv(overlap_matrix))
@@ -343,6 +346,21 @@ overlap_matrix
 # We can also compute the covariance of Y since we have uniform class balance.
 
 # exp_Y and cov_S should come from prior knowledge, can't use the information from y because it is a latent variable
+
+# The marginal expectation of each weak label is just the sum product of each class label and the probability for the weak label to vote for that class.
+
+# $\text{marginal expectation} = E\left[\lambda_{i}\right] =\sum_{k} k \cdot P\left(\lambda_{i}=k\right)$
+#
+
+# $\text{expectations} = E\left[\lambda_{i} \lambda_{j}\right]=\sum_{k, l} k l P\left(\lambda_{i}=k, \lambda_{j}=l\right)$
+
+# The covariance matrix is then computed by taking the joint expectations subtracted by the product of the two marginal expectations of the weak label pair.
+
+# $\begin{aligned}
+# \operatorname{Cov}\left(\lambda_{i}, \lambda_{j}\right) &=E\left[\left(\lambda_{i}-\mu_{\lambda_{i}}\right)\left(\lambda_{j}-\mu_{\lambda_{j}}\right)\right] \\
+# &=\sum_{k, l}\left(k-\mu_{\lambda_{i}}\right)\left(l-\mu_{\lambda_{j}}\right) P_{\lambda_{i}, \lambda_{j}}(k, l) \\
+# &=E\left[\lambda_{i} \lambda_{j}\right]-\mu_{\lambda_{i}} \mu_{\lambda_{j}}
+# \end{aligned}$
 
 marginal_Y = [0.5, 0.5]
 sq_exp = (np.unique(label_matrix)**2*marginal_Y).sum()
@@ -359,6 +377,7 @@ exp_O
 
 cov_O = covariance_matrix[:-y_dim, :-y_dim]
 
+# Create graph structure mask:
 # Put ones wherever the weak labels are conditionally independent, this indicates where we know the inverse covariance should be zero so use this to solve for $z$
 
 # +
@@ -370,7 +389,9 @@ for i in range(int(cov_O.shape[0]/y_dim)):
 
 mask
 
-pd.DataFrame(cov_O)
+pd.DataFrame(cov_O).style.applymap(_color_zeros)
+
+# # Find optimal z and mu
 
 # We want to find z such that: $\hat{z}=\operatorname{argmin}_{z}\left\|\Sigma_{O}^{-1}+z z^{T}\right\|_{\Omega}$
 
@@ -411,30 +432,40 @@ def calculate_mu(z, cov_S, cov_O, exp_Y, exp_O):
     c = 1/cov_S * (1 + z.T@cov_O@z)
     cov_OS = cov_O @ z/np.sqrt(c)
     joint_cov_OS = np.concatenate((-1*cov_OS, cov_OS), axis=1)
+    if joint_cov_OS[0,1] > joint_cov_OS[0,0]:
+        joint_cov_OS = joint_cov_OS.T[::-1].T
     print("cov_OS:", joint_cov_OS)
     return (joint_cov_OS + (exp_O.reshape(-1,1) @ exp_Y.reshape(1,-1))) / np.tile(exp_Y, (y_dim*(nr_wl-1), 1))
 
 
 pd.DataFrame(covariance_matrix)
 
-# The covariances of the observed and separator sets agree with the know covariances in the matrix above
+# The covariances of the observed and separator sets agree with the known covariances in the matrix above
 
 mu = calculate_mu(z, cov_S, cov_O, exp_Y, exp_O)
 
+# |   |fp|fn|
+# |---|---|---|
+# |wl1|0.1|0.2|
+# |wl2|0.05|0.4|
+# |wl3|0.2|0.3|
+
 # Because we know the fp/fn rates of each of the weak labels, we can compute their probabilities of labeling each value given Y:
 #
-# |P_0|P_1|
-# |---|---|
-# |0.9|0.2|
-# |0.1|0.8|
-# |0.95|0.4|
-# |0.05|0.6|
-# |0.8|0.3|
-# |0.2|0.7|
+# |   |P_0|P_1|
+# |---|---|---|
+# |wl1|0.9|0.2|
+# |   |0.1|0.8|
+# |wl2|0.95|0.4|
+# |   |0.05|0.6|
+# |wl3|0.8|0.3|
+# |   |0.2|0.7|
 
 # Computed mu agrees with expected values above
 
-mu
+# Conditional probability $P(\lambda|Y)$
+
+pd.DataFrame(mu)
 
 # +
 # exp_mu = np.zeros((mu.shape[0], 2))
@@ -454,9 +485,14 @@ P_Ylam = mu * np.tile(exp_Y, (y_dim*(nr_wl-1), 1))
 
 P_Ylam
 
-P_Y_lam = P_Ylam / np.tile(exp_O, (y_dim, 1)).T
+# +
+# P_Y_lam = P_Ylam / np.tile(exp_O, (y_dim, 1)).T
 
-P_Y_lam
+# +
+# P_Y_lam
+# -
+
+# # Compute weak label accuracies
 
 weights = np.zeros((nr_wl-1, 1))
 for i in range(nr_wl-1):
@@ -468,31 +504,19 @@ label_matrix_onehot[:,:-2]
 true_accuracies = np.zeros((nr_wl-1, 1))
 for i in range(nr_wl-1):
     true_accuracies[i] = (label_matrix_onehot[:,i*y_dim:i*y_dim+y_dim] == label_matrix_onehot[:,-y_dim:]).mean()
-#     true_accuracies
-    
+
 
 # This looks pretty good, similar to what we found above!
 
 true_accuracies
 
+pd.DataFrame(np.concatenate([true_accuracies, weights], axis=1), columns=["True accuracies", "Learned weights"])
+
+# # Compare to Snorkel
+
 # Let's see what Snorkel does with our synthetic data
 
-# +
-import random
-
-import sys
-import os
-sys.path.append(os.path.abspath("../snorkel/snorkel"))
-from labeling.model.label_model import LabelModel
-# -
-
 metrics = ["accuracy","f1"]
-
-# +
-# shift back because Snorkel also shifts by one
-# label_matrix -= 1
-# y -= 1
-# -
 
 label_model = LabelModel(cardinality=y_dim)
 label_model.fit(label_matrix[:,:-1], class_balance=[0.5,0.5])
@@ -508,11 +532,25 @@ label_model.get_weights()
 
 label_model.score(label_matrix[:,:-1], df["y"], metrics=metrics)
 
-# For the next step, we want to train a discriminative model on the probabilistic label output from Snorkel. Sklearn logistic regression works only with the hard labels:
+# # Compute probabilistic labels from label model
+
+label_matrix_onehot = label_matrix_onehot[:,:-y_dim]
+
+X_Z = np.zeros((N_total, y_dim))
+for i in range(y_dim):
+    X_Z[:,i] = np.prod(np.tile(mu[:,i], (N_total, 1)), axis=1, where=(label_matrix_onehot == 1.0))
+
+Z = X_Z.sum(axis=1)
+
+Y_probs = X_Z/np.tile(Z, (y_dim, 1)).T
+
+# # Train final model on probabilistic labels
+
+# For the next step, we want to train a discriminative model on the probabilistic label output. Sklearn logistic regression works only with the hard labels:
 
 # +
 reg = LogisticRegression(solver="lbfgs")
-reg.fit(np.concatenate([X[:,0].reshape(-1, 1), X[:,1].reshape(-1, 1)], axis=1), Y_hat)
+reg.fit(np.concatenate([X[:,0].reshape(-1, 1), X[:,1].reshape(-1, 1)], axis=1), np.argmax(np.around(Y_probs),axis=-1))
 
 print(reg.intercept_)
 print(reg.coef_)
@@ -528,22 +566,23 @@ def cross_entropy_soft_labels(predictions, targets):
     y_dim = targets.shape[1]
     loss = torch.zeros(predictions.shape[0])
     for y in range(y_dim):
-        loss_y = F.cross_entropy(predictions, targets.new_full((predictions.shape[0],), y, dtype=torch.long))
+        loss_y = F.cross_entropy(predictions, predictions.new_full((predictions.shape[0],), y, dtype=torch.long), reduction="none")
         loss += targets[:,y] * loss_y
         
     return loss.mean()
 
 
-batch_size = 64
+batch_size = 32
 input_dim = 2 # number of features
 output_dim = 2 # number of classes
 lr = 1e-3
-n_epochs = 10
+n_epochs = 200
 
 # Convert our data to tensor format and create dataloader to allow for dealing with batches
 
 train = torch.Tensor(df[["x1", "x2"]].values)
-target = torch.Tensor(preds)
+# target = torch.LongTensor(np.argmax(np.around(Y_probs),axis=-1))
+target = torch.Tensor(Y_probs)
 train_tensor = torch.utils.data.TensorDataset(train, target) 
 train_loader = torch.utils.data.DataLoader(dataset = train_tensor, batch_size = batch_size, shuffle = True)
 
@@ -560,78 +599,239 @@ class LogisticRegression(torch.nn.Module):
 
 model = LogisticRegression(input_dim, output_dim)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
 # Train model for a couple of epochs, using the soft label cross entropy loss implementation.
+
+# +
+model.train()
 
 for epoch in range(n_epochs):
     for i, (features, soft_labels) in enumerate(train_loader):
         optimizer.zero_grad()
         logits = model(features)
-#         print(F.softmax(logits, dim=1))
         loss = cross_entropy_soft_labels(logits, soft_labels)
+#         loss = F.cross_entropy(logits, soft_labels)
         loss.backward()
         optimizer.step()
+# -
 
-# See what the model does on our train set. We should actually use a test set here of course
+loss
 
+# See what the model does on our train set. We should actually use a test set here
+
+model.eval()
 logits = model(train)
 
 probs = F.softmax(logits, dim=1)
 
-probs
+# Overall accuracy probabilistic labels
 
-# Plot the estimated probabilities. Should still figure out why the probabilities are so close to the decision boundary.
+(np.argmax(np.around(Y_probs),axis=-1) == np.array(df["y"])).sum()/N_total
 
-x_dec = np.linspace(centroid_2[0]-2, centroid_1[0]+2, 1000)
-y_dec = (- reg.intercept_ - reg.coef_[0][0]*x_dec)/reg.coef_[0][1]
+# Overall accuracy final model output
 
-fig = px.scatter(x=X[:,0], y=X[:,1], color=probs[:,1].detach().numpy())
-fig.add_trace(go.Scatter(x=x_dec, y=y_dec, mode="lines", name="decision boundary"))
+(np.argmax(np.around(probs.detach().numpy()),axis=-1) == np.array(df["y"])).sum()/N_total
+
+# +
+# coefs = [list(model.parameters())[1][1].tolist()] + list(model.parameters())[0][1,:].tolist()
+
+# +
+# x_dec = np.linspace(centroid_2[0]-2, centroid_1[0]+2, 1000)
+
+# y_dec = (coefs[0] + coefs[1]*x_dec)/-coefs[2]
+# -
+
+# Plot the estimated probabilities
+
+fig = px.scatter(x=X[:,0], y=X[:,1], color=Y_probs[:,1])
 fig.update_layout(xaxis=dict(range=[centroid_2[0]-2,centroid_1[0]+2]), yaxis=dict(range=[centroid_2[1]-2,centroid_1[1]+2],scaleanchor="x", scaleratio=1), width=700, height=700, xaxis_title="x1", yaxis_title="x2")
 fig.show()
 
-wl_al = np.full_like(df["y"], -1)
-L = np.concatenate([label_matrix, wl_al.reshape(len(wl_al),1)], axis=1)
+fig = px.scatter(x=X[:,0], y=X[:,1], color=probs[:,1].detach().numpy())
+fig.update_layout(xaxis=dict(range=[centroid_2[0]-2,centroid_1[0]+2]), yaxis=dict(range=[centroid_2[1]-2,centroid_1[1]+2],scaleanchor="x", scaleratio=1), width=700, height=700, xaxis_title="x1", yaxis_title="x2")
+fig.show()
 
-LM = LabelModel(cardinality=y_dim)
-LM.fit(L, s=0.2)
+# # Add active learning
+
+# Add active learning weak label as additional column of abstains to start with
+
+wl_al = np.full_like(df["y"], -1)
+# wl_al = np.array(df["y"]).reshape(-1,1)
+L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
+
+
+# +
+def loss_pk_mu(mu, s: float = 1000000) -> torch.Tensor:
+    r"""Loss from prior knowledge"""
+    O_dim = mu.shape[0]
+
+    m = torch.ones([O_dim, y_dim])
+    m[:-mu.shape[1]] = 0
+#     m[6,0] = 0
+#     m[7,1] = 0
+    
+    mu_known = torch.zeros(mu.shape)
+    for i, k in enumerate(range(O_dim - y_dim, O_dim)):
+        mu_known[k, i] = 1
+
+#     mu_known[6,0] = 0.0014
+#     mu_known[7,1] = 0.0028
+        
+    return s * torch.norm(m * (mu - mu_known)) ** 2
+
+
+# -
+
+def loss_func(z, cov_S, cov_O, exp_Y, exp_O, mask):
+    loss_1 = torch.norm((torch.Tensor(np.linalg.pinv(cov_O)) + z@z.T)[torch.BoolTensor(mask)]) ** 2
+    int_mu = calculate_mu(z.detach().numpy(), cov_S, cov_O, exp_Y, exp_O)
+#     print(loss_1)
+#     print(loss_pk_mu(torch.Tensor(int_mu)))
+    return loss_1 + loss_pk_mu(torch.Tensor(int_mu))
+
+
+def calculate_mu(z, cov_S, cov_O, exp_Y, exp_O):
+    """Compute mu from optimal z"""
+    
+    c = 1/cov_S * (1 + z.T@cov_O@z)
+    cov_OS = cov_O @ z/np.sqrt(c)
+    joint_cov_OS = np.concatenate((-1*cov_OS, cov_OS), axis=1)
+    if joint_cov_OS[0,1] > joint_cov_OS[0,0]:
+        joint_cov_OS = joint_cov_OS.T[::-1].T
+    return (joint_cov_OS + (exp_O.reshape(-1,1) @ exp_Y.reshape(1,-1))) / np.tile(exp_Y, (joint_cov_OS.shape[0], 1))
+
+
+# +
+def fit_predict(label_matrix, class_balance, y_set):
+    """Fit label model and predict training labels"""
+    
+    y_dim = len(y_set) # number of classes
+    nr_wl = label_matrix.shape[1] # number of weak labels
+    
+    label_matrix_onehot = (y_set == label_matrix[...,None])*1
+    lm_sh = label_matrix_onehot.shape
+    label_matrix_onehot = label_matrix_onehot.reshape(lm_sh[0],lm_sh[1]*lm_sh[2])
+    
+    exp_O = label_matrix_onehot.mean(axis=0)
+    cov_O = np.cov(label_matrix_onehot.T)
+    
+    sq_exp = (y_set**2*class_balance).sum()
+    exp_Y = (y_set*class_balance).sum()
+    cov_S = sq_exp - exp_Y*exp_Y
+    
+    mask = np.ones(cov_O.shape)
+    for i in range(int(cov_O.shape[0]/y_dim)):
+        mask[i*y_dim:(i+1)*y_dim,i*y_dim:(i+1)*y_dim] = 0
+    
+    z = np.random.normal(0, 1, (y_dim*nr_wl, 1)) # random initialization
+    z = nn.Parameter(torch.Tensor(z), requires_grad=True)
+    n_epochs = 300
+    lr = 1e-1
+    optimizer = torch.optim.Adam({z}, lr=lr)
+    for epoch in range(n_epochs):
+       
+        optimizer.zero_grad()
+        loss = loss_func(z, cov_S, cov_O, exp_Y, exp_O, mask)
+        loss.backward()
+        optimizer.step()
+        
+    z = z.detach().numpy()
+    
+    mu = calculate_mu(z, cov_S, cov_O, exp_Y, exp_O)
+    
+#     c_probs = np.zeros((nr_wl*(y_dim+1), y_dim))
+#     for wl in range(nr_wl):
+#         c_probs[(wl*y_dim)+wl+1:y_dim+(wl*y_dim)+wl+1,:] = mu[(wl*y_dim):y_dim+(wl*y_dim),:]
+#         c_probs[(wl*y_dim)+wl,:] = 1 - mu[(wl*y_dim):y_dim+(wl*y_dim),:].sum(axis=0)
+    
+    X_Z = np.zeros((lm_sh[0], y_dim))
+    for i in range(y_dim):
+        X_Z[:,i] = np.prod(np.tile(mu[:,i], (N_total, 1)), axis=1, where=(label_matrix_onehot == 1.0))
+    
+        
+    Z = X_Z.sum(axis=1)
+    probs = X_Z/np.tile(Z, (y_dim, 1)).T
+    
+    return np.argmax(np.around(probs),axis=-1), probs
+# -
+
+_, Y_probs = fit_predict(L, [0.5, 0.5], np.array([0, 1]))
 
 # +
 it = 10
+accuracies = []
 
 for i in range(it):
-    Y_hat, preds = LM.predict(L, return_probs=True)
+    Y_hat, preds = fit_predict(L, [0.5, 0.5], np.array([0, 1]))
     
     # Find data points the model is least confident about
     abs_diff = np.abs(preds[:,1] - preds[:,0])
-    minimum = min(abs_diff[abs_diff > 0])
+    minimum = min(j for i,j in enumerate(abs_diff) if L[i,nr_wl-1] == -1)
     indices = [j for j, v in enumerate(abs_diff) if v == minimum]
     
-    random.seed(random.SystemRandom().random())
-
     # Make really random
     random.seed(random.SystemRandom().random())
     
     # Pick a random point from least confident data points and set to true value for AL weak label in label matrix
     sel_idx = random.choice(indices)
-    L[sel_idx, LM.m-1] = y[sel_idx]
+    print("Iteration:", i+1, " Label combination", L[sel_idx,:nr_wl], " True label:",y[sel_idx], "Estimated label:", Y_hat[sel_idx], " selected index:", sel_idx)
+    
+    L[sel_idx, nr_wl-1] = y[sel_idx]
     before = preds[sel_idx, :]
     
-    print("Iteration:", i+1, " Label combination", L[sel_idx,:nr_wl], " True label:",y[sel_idx], "Estimated label:", Y_hat[sel_idx], " selected index:", sel_idx)
-
     # Fit label model on refined label matrix
-    LM.fit(L, s=0.2)
-    
-    _, after = LM.predict(L[sel_idx,:].reshape(1,-1), return_probs = True)
+    Y_hat, preds = fit_predict(L, [0.5, 0.5], np.array([0, 1]))
+    after = preds[sel_idx]
     print("Before:", before, "After:", after)
     print("")
+    
+    accuracy = (Y_hat == np.array(df["y"])).sum()/N_total
+    accuracies.append(accuracy)
+# -
+accuracy_prob = (np.argmax(np.around(Y_probs[1]),axis=-1) == np.array(df["y"])).sum()/N_total
+
+# +
+x = list(range(len(accuracies)))
+
+fig = go.Figure(data=go.Scatter(x=x,y=accuracies))
+fig.add_trace(go.Scatter(x=x, y=np.repeat(accuracy_prob, len(accuracies))))
+
+from IPython.display import HTML, display
+display(HTML(fig.to_html()))
 # -
 
+fig = px.scatter(x=X[:,0], y=X[:,1], color=preds[:,1])
+fig.update_layout(xaxis=dict(range=[centroid_2[0]-2,centroid_1[0]+2]), yaxis=dict(range=[centroid_2[1]-2,centroid_1[1]+2],scaleanchor="x", scaleratio=1), width=700, height=700, xaxis_title="x1", yaxis_title="x2")
+fig.show()
 
 
+target = torch.Tensor(preds)
+train_tensor = torch.utils.data.TensorDataset(train, target) 
+train_loader = torch.utils.data.DataLoader(dataset = train_tensor, batch_size = batch_size, shuffle = True)
 
+model = LogisticRegression(input_dim, output_dim)
 
+optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
+# +
+model.train()
+
+for epoch in range(n_epochs):
+    for i, (features, soft_labels) in enumerate(train_loader):
+        optimizer.zero_grad()
+        logits = model(features)
+        loss = cross_entropy_soft_labels(logits, soft_labels)
+#         loss = F.cross_entropy(logits, soft_labels)
+        loss.backward()
+        optimizer.step()
+# -
+
+model.eval()
+logits = model(train)
+
+probs_2 = F.softmax(logits, dim=1)
+
+(np.argmax(np.around(probs_2.detach().numpy()),axis=-1) == np.array(df["y"])).sum()/N_total
 
 
