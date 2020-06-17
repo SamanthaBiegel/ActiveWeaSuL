@@ -46,10 +46,10 @@ def loss_pk_cov(cov_OS, cov_AL, s: float = 3):
     cov_OS_known[-y_dim:, :] = cov_AL
 
     # Mask for active learning weak label part of covariance
-    m = torch.ones([O_dim, y_dim])
-    m[:-y_dim, :] = 0
+    m = torch.ones([O_dim, y_dim], dtype=torch.bool)
+    m[:-y_dim, :] = False
 
-    return s * torch.norm((cov_OS - cov_OS_known)[m.type(torch.BoolTensor)]) ** 2
+    return s * torch.norm((cov_OS - cov_OS_known)[m]) ** 2
 
 
 def loss_func(z, cov_S, cov_O, mask, al=False, cov_AL=None):
@@ -155,7 +155,6 @@ def fit_predict_lm(label_matrix, label_model_kwargs, al=False):
     mu_hat = fit(label_matrix, al, **label_model_kwargs)
 
     return predict(label_matrix, mu_hat)
-
 
 
 def get_conditional_probabilities(label_matrix, mu):

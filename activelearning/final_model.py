@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class LogisticRegression(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(LogisticRegression, self).__init__()
@@ -11,6 +12,7 @@ class LogisticRegression(nn.Module):
     def forward(self, x):
         outputs = self.linear(x)
         return outputs
+
 
 def cross_entropy_soft_labels(predictions, targets):
     """Implement cross entropy loss for probabilistic labels"""
@@ -25,8 +27,7 @@ def cross_entropy_soft_labels(predictions, targets):
     return loss.mean()
 
 
-def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_epochs, soft_labels=True,
-                      subset=None):
+def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_epochs, soft_labels=True, subset=None):
     """Fit final logistic regression model on probabilistic or hard labels and predict"""
 
     if soft_labels:

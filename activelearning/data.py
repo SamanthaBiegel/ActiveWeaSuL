@@ -7,10 +7,10 @@ def sigmoid(z):
 
 def sample_X(N_1, N_2, centroids, std):
 
-    x1_1 = np.random.normal(loc=centroids[0,0], scale=std, size=N_1).reshape(-1, 1)
-    x2_1 = np.random.normal(loc=centroids[0,1], scale=std, size=N_1).reshape(-1, 1)
-    x1_2 = np.random.normal(loc=centroids[1,0], scale=std, size=N_2).reshape(-1, 1)
-    x2_2 = np.random.normal(loc=centroids[1,1], scale=std, size=N_2).reshape(-1, 1)
+    x1_1 = np.random.normal(loc=centroids[0, 0], scale=std, size=N_1).reshape(-1, 1)
+    x2_1 = np.random.normal(loc=centroids[0, 1], scale=std, size=N_1).reshape(-1, 1)
+    x1_2 = np.random.normal(loc=centroids[1, 0], scale=std, size=N_2).reshape(-1, 1)
+    x2_2 = np.random.normal(loc=centroids[1, 1], scale=std, size=N_2).reshape(-1, 1)
 
     X_1 = np.concatenate([x1_1, x2_1], axis=1)
     X_2 = np.concatenate([x1_2, x2_2], axis=1)
@@ -57,7 +57,7 @@ def concat_centroids(centroid_1, centroid_2):
     return np.concatenate([centroid_1.reshape(1, -1), centroid_2.reshape(1, -1)], axis=0)
 
 
-def sample_clusters(N_1, N_2, centroid_1, centroid_2, std = 0.5, scaling_factor = 1):
+def sample_clusters(N_1, N_2, centroid_1, centroid_2, std=0.5, scaling_factor=1):
 
     N_total = N_1 + N_2
 

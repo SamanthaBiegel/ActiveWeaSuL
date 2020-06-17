@@ -3,6 +3,7 @@ import random
 
 from label_model import fit_predict_lm, get_overall_accuracy
 
+
 def AL_query(probs, label_matrix):
     """Choose data point to label from label predictions"""
 
