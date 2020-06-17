@@ -74,19 +74,19 @@ N_total, nr_wl, y_set, y_dim = get_properties(label_matrix)
 label_model_kwargs = dict(n_epochs=200,
                         cliques=[[1,2]],
                         class_balance=[0.5,0.5],
-                        lr=1e-2)
+                        lr=1e-1)
 
-al_kwargs = dict(it=5)
+al_kwargs = dict(it=10)
 
 final_model_kwargs = dict(input_dim=2,
                       output_dim=2,
                       lr=1e-3,
-                      batch_size=32,
+                      batch_size=256,
                       n_epochs=200)
 # -
 
 accuracies = {}
-n_runs = 1
+n_runs = 5
 
 # +
 # label model without active learning
@@ -119,6 +119,9 @@ for i in range(n_runs):
 
     accuracies["yes_LM"].append(get_overall_accuracy(Y_probs_al, df["y"]))
     accuracies["yes_final"].append(get_overall_accuracy(probs_al, df["y"]))
+# -
+
+accuracies
 
 # +
 mean_accuracies = {keys: np.array(values).mean() for keys, values in accuracies.items()}

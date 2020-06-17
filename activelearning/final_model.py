@@ -46,7 +46,7 @@ def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_e
     train_loader = torch.utils.data.DataLoader(dataset=train_tensor, batch_size=batch_size, shuffle=True)
 
     model = LogisticRegression(input_dim, output_dim)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     model.train()
 
