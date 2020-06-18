@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 import torch
 import torch.nn as nn
 
@@ -75,10 +76,10 @@ def create_mask(cliques, nr_wl, y_dim):
 
     # Mask out interactions within cliques
     for clique in cliques:
-        i = clique[0]
-        j = clique[1]
-        mask[i * y_dim:(i + 1) * y_dim, j * y_dim:(j + 1) * y_dim] = 0
-        mask[j * y_dim:(j + 1) * y_dim, i * y_dim:(i + 1) * y_dim] = 0
+        for pair in itertools.permutations(clique, r=2):
+            i = pair[0]
+            j = pair[1]
+            mask[i * y_dim:(i + 1) * y_dim, j * y_dim:(j + 1) * y_dim] = 0
 
     return mask
 
