@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
 
 
 class LogisticRegression(nn.Module):
@@ -30,6 +31,8 @@ def cross_entropy_soft_labels(predictions, targets):
 def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_epochs, soft_labels=True, subset=None):
     """Fit final logistic regression model on probabilistic or hard labels and predict"""
 
+    # writer = SummaryWriter()
+
     if soft_labels:
         target = torch.Tensor(labels)
         loss_f = cross_entropy_soft_labels
@@ -46,7 +49,9 @@ def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_e
 
     train_loader = torch.utils.data.DataLoader(dataset=train_tensor, batch_size=batch_size, shuffle=True)
 
+    # if model is None:
     model = LogisticRegression(input_dim, output_dim)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     model.train()
@@ -56,6 +61,7 @@ def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_e
             optimizer.zero_grad()
             batch_logits = model(batch_features)
             loss = loss_f(batch_logits, batch_labels)
+            # writer.add_scalar("Loss/train", loss, epoch)
             loss.backward()
             optimizer.step()
 
@@ -66,4 +72,7 @@ def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_e
 
     Y_hat = np.argmax(np.around(preds), axis=-1)
 
-    return Y_hat, preds
+    # writer.flush()
+    # writer.close()
+
+    return Y_hat, preds#, model

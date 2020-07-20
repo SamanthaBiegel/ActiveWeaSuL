@@ -5,3 +5,5 @@
 *.ipynb_checkpoints/
 connect-s3.sh
 .idea/*
+*/runs/*
+*.png
