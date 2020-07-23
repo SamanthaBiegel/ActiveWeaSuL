@@ -1,8 +1,6 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.tensorboard import SummaryWriter
 
 
 class LogisticRegression(nn.Module):
@@ -70,9 +68,7 @@ def fit_predict_fm(train_set, labels, input_dim, output_dim, lr, batch_size, n_e
 
     preds = F.softmax(logits, dim=1).detach().numpy()
 
-    Y_hat = np.argmax(np.around(preds), axis=-1)
-
     # writer.flush()
     # writer.close()
 
-    return Y_hat, preds#, model
+    return preds

@@ -32,8 +32,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-sys.path.append(os.path.abspath("../snorkel/snorkel"))
-from labeling.model.label_model import LabelModel
+from snorkel.labeling.model import LabelModel
 
 
 # +
