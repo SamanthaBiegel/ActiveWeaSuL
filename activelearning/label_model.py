@@ -53,10 +53,28 @@ def loss_pk_cov(cov_OS, cov_AL, s: float = 3):
     return s * torch.norm((cov_OS - cov_OS_known)[m]) ** 2
 
 
-def loss_func(z, cov_S, cov_O, cov_O_inverse, mask, cov_AL=None):
+def loss_pk_probs(probs, y_al, label_matrix, s: float = 0.5):
+
+    N_total, nr_wl, y_set, y_dim = get_properties(label_matrix)
+
+    probs_al = ((y_set == y_al[..., None]) * 1).reshape(N_total, -1)
+    mask = (y_al != -1)
+
+    return s * torch.norm(torch.Tensor(probs_al - probs)[mask, :]) ** 2
+
+
+def loss_func(z, label_matrix, cov_S, cov_O, cov_O_inverse, E_S, E_O, mask, y_al, cov_AL=None):
     """Compute loss for matrix completion problem"""
 
+    N_total, nr_wl, y_set, y_dim = get_properties(label_matrix)
+
     loss = torch.norm((cov_O_inverse + z @ z.T)[torch.BoolTensor(mask)]) ** 2
+
+    if y_al is not None:
+        int_cov = calculate_cov_OS(z, cov_S, cov_O)
+        int_mu = calculate_mu(int_cov, E_S, E_O).clamp(1e-6, 1.0).detach().numpy()
+        _, int_probs = predict(label_matrix, int_mu)
+        loss += loss_pk_probs(int_probs, y_al, label_matrix)
 
     if cov_AL is not None:
         # Add loss for current covariance if taking active learning weak label into account
@@ -84,7 +102,7 @@ def create_mask(cliques, nr_wl, y_dim):
     return mask
 
 
-def fit(label_matrix, al, z, cliques, class_balance, n_epochs, lr):
+def fit(label_matrix, al, z, y_al, cliques, class_balance, n_epochs, lr):
     """Fit label model"""
 
     N_total, nr_wl, y_set, y_dim = get_properties(label_matrix)
@@ -120,14 +138,14 @@ def fit(label_matrix, al, z, cliques, class_balance, n_epochs, lr):
     else:
         cov_AL = None
 
-    if z is None:
-        z = nn.Parameter(torch.normal(0, 1, size=(y_dim * nr_wl, y_dim - 1)), requires_grad=True)
+    # if z is None:
+    z = nn.Parameter(torch.normal(0, 1, size=(y_dim * nr_wl, y_dim - 1)), requires_grad=True)
     optimizer = torch.optim.Adam({z}, lr=lr)
 
     # Find optimal z
     for epoch in range(n_epochs):
         optimizer.zero_grad()
-        loss = loss_func(z, cov_S, cov_O, cov_O_inverse, mask, cov_AL=cov_AL)
+        loss = loss_func(z, label_matrix, cov_S, cov_O, cov_O_inverse, E_S, E_O, mask, y_al, cov_AL=cov_AL)
         loss.backward()
         optimizer.step()
 
@@ -157,10 +175,10 @@ def predict(label_matrix, mu):
     return np.argmax(np.around(probs), axis=-1), probs
 
 
-def fit_predict_lm(label_matrix, label_model_kwargs, al=False, z=None):
+def fit_predict_lm(label_matrix, y_al, label_model_kwargs, al=False, z=None):
     """Fit label model and predict"""
 
-    mu_hat, z = fit(label_matrix, al, z, **label_model_kwargs)
+    mu_hat, z = fit(label_matrix, al, z, y_al, **label_model_kwargs)
     Y_hat, probs = predict(label_matrix, mu_hat)
 
     return Y_hat, probs, z

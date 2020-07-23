@@ -6,7 +6,7 @@ from label_model import fit_predict_lm, get_overall_accuracy
 from final_model import fit_predict_fm
 
 
-def AL_query(probs, label_matrix):
+def AL_query(probs, label_matrix, y_al):
     """Choose data point to label from label predictions"""
 
     nr_wl = label_matrix.shape[1]
@@ -14,14 +14,14 @@ def AL_query(probs, label_matrix):
     abs_diff = np.abs(probs[:, 1] - probs[:, 0])
 
     # Find data points the model where the model is least confident
-    minimum = min(j for i, j in enumerate(abs_diff) if label_matrix[i, nr_wl - 1] == -1)
+    minimum = min(j for i, j in enumerate(abs_diff) if y_al[i] == -1)
     indices = [j for j, v in enumerate(abs_diff) if v == minimum]
 
     # Make really random
     random.seed(random.SystemRandom().random())
 
     # Pick a random point from least confident data points
-    return random.choice(indices)
+    return random.choice(indices), y_al
 
 
 def random_query(label_matrix):
@@ -68,12 +68,13 @@ def AL_pipeline(label_matrix, df, label_model_kwargs, final_model_kwargs, it):
     prob_label_dict = {}
 
     y = df["y"].values
+    y_al = np.full_like(y, -1)
 
-    Y_hat, old_probs, z = fit_predict_lm(label_matrix, label_model_kwargs, al=True, z=None)
+    Y_hat, old_probs, z = fit_predict_lm(label_matrix, y_al, label_model_kwargs, al=False, z=None)
     # accuracies["prob_labels"].append(get_overall_accuracy(old_probs, y))
 
-    _, final_probs = fit_predict_fm(df[["x1", "x2"]].values, old_probs, **final_model_kwargs, soft_labels=True)
-    probs_dict[0] = final_probs[:, 1]
+    # _, final_probs = fit_predict_fm(df[["x1", "x2"]].values, old_probs, **final_model_kwargs, soft_labels=True)
+    # probs_dict[0] = final_probs[:, 1]
     prob_label_dict[0] = old_probs[:, 1]
 
     # final_model_kwargs["n_epochs"] = 50
@@ -81,18 +82,19 @@ def AL_pipeline(label_matrix, df, label_model_kwargs, final_model_kwargs, it):
     # accuracies["final_labels"].append(get_overall_accuracy(final_probs, y))
 
     for i in tqdm(range(it)):
-        sel_idx = AL_fm_query(old_probs, final_probs, label_matrix)
+        # sel_idx = AL_fm_query(old_probs, final_probs, label_matrix)
         # sel_idx = random_query(label_matrix)
-        # sel_idx = AL_query(old_probs, label_matrix)
+        sel_idx, y_al = AL_query(old_probs, label_matrix, y_al)
 
         # print("Iteration:", i + 1, " Label combination", label_matrix[sel_idx, :nr_wl], " True label:", y[sel_idx],
         #       "Estimated label:", Y_hat[sel_idx], " selected index:", sel_idx)
 
         # Add label to label matrix
-        label_matrix[sel_idx, nr_wl - 1] = y[sel_idx]
+        # label_matrix[sel_idx, nr_wl - 1] = y[sel_idx]
+        y_al[sel_idx] = y[sel_idx]
 
         # Fit label model on refined label matrix
-        Y_hat, new_probs, z = fit_predict_lm(label_matrix, label_model_kwargs, al=True, z=z)
+        Y_hat, new_probs, z = fit_predict_lm(label_matrix, y_al, label_model_kwargs, al=False, z=z)
 
         # print("Before:", old_probs[sel_idx, :], "After:", new_probs[sel_idx])
 
@@ -101,9 +103,9 @@ def AL_pipeline(label_matrix, df, label_model_kwargs, final_model_kwargs, it):
         # queried.append(sel_idx)
 
         # if (i+1) % 50 == 0:
-        _, final_probs = fit_predict_fm(df[["x1", "x2"]].values, new_probs, **final_model_kwargs, soft_labels=True)
-        probs_dict[i+1] = final_probs[:, 1]
-        prob_label_dict[i+1] = old_probs[:, 1]
+        # _, final_probs = fit_predict_fm(df[["x1", "x2"]].values, new_probs, **final_model_kwargs, soft_labels=True)
+        # probs_dict[i+1] = final_probs[:, 1]
+        prob_label_dict[i+1] = new_probs[:, 1]
 
         #     accuracies["final_labels"].append(get_overall_accuracy(final_probs, y))
 

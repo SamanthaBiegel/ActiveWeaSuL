@@ -87,7 +87,7 @@ label_model_kwargs = dict(n_epochs=200,
                         class_balance=np.array([0.5,0.5]),
                         lr=1e-1)
 
-al_kwargs = dict(it=10)
+al_kwargs = dict(it=100)
 
 final_model_kwargs = dict(input_dim=2,
                       output_dim=2,
@@ -96,25 +96,28 @@ final_model_kwargs = dict(input_dim=2,
                       n_epochs=200)
 # -
 
-# accuracies = {}
-n_runs = 1
+accuracies = {}
+n_runs = 10
 
 # +
 # label model without active learning
 
 label_model_kwargs["cliques"] = [[1,2]]
 
-# accuracies["no_LM"] = []
+accuracies["no_LM"] = []
 # accuracies["no_final"] = []
 
 for i in tqdm(range(n_runs)):
     L = label_matrix[:,:-1]
     
-    _, Y_probs, _ = fit_predict_lm(L, label_model_kwargs, al=False)
+    _, Y_probs, _ = fit_predict_lm(L, y_al=None, label_model_kwargs=label_model_kwargs, al=False)
 #     _, probs = fit_predict_fm(df[["x1", "x2"]].values, Y_probs, **final_model_kwargs, soft_labels=True)
 
-#     accuracies["no_LM"].append(get_overall_accuracy(Y_probs, df["y"]))
+    accuracies["no_LM"].append(get_overall_accuracy(Y_probs, df["y"]))
 #     accuracies["no_final"].append(get_overall_accuracy(probs, df["y"]))
+# -
+
+accuracies
 
 # +
 # label model with active learning
@@ -127,7 +130,8 @@ wl_al = np.full_like(df["y"], -1)
 # accuracies["yes_final"] = []
 
 for i in tqdm(range(n_runs)):
-    L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
+#     L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
+    L = label_matrix[:,:-1]
     
     Y_probs_al, _, _, probs_dict, prob_label_dict = AL_pipeline(L, df, label_model_kwargs, final_model_kwargs, **al_kwargs)
     _, probs_al = fit_predict_fm(df[["x1", "x2"]].values, Y_probs_al, **final_model_kwargs, soft_labels=True)
@@ -235,9 +239,9 @@ prob_label_df = prob_label_df.stack().reset_index().rename(columns={"level_0": "
 prob_label_df = prob_label_df.merge(df, left_on = "x", right_index=True)
 
 # +
-fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
-fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
-                  width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+# fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
+# fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+#                   width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
 
 fig2 = px.scatter(prob_label_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
 fig2.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
@@ -245,15 +249,15 @@ fig2.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
 
 # fig.show()
 
-# fig2.show()
+fig2.show()
 
-app = dash.Dash()
-app.layout = html.Div([
-    dcc.Graph(figure=fig),
-    dcc.Graph(figure=fig2)
-])
+# app = dash.Dash()
+# app.layout = html.Div([
+#     dcc.Graph(figure=fig),
+#     dcc.Graph(figure=fig2)
+# ])
 
-app.run_server(debug=True, use_reloader=False)
+# app.run_server(debug=True, use_reloader=False)
 
 # +
 x = list(range(len(accuracies_it["prob_labels"])))
