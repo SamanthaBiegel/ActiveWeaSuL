@@ -13,28 +13,12 @@ def plot_probs(df, probs, soft_labels=True, subset=None):
         df = df.iloc[subset, :]
         probs = probs[subset]
 
-    df["label"] = probs
+    df["label"] = probs.detach().numpy()
 
     fig = px.scatter(df, x="x1", y="x2", color="label", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
                       width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
     fig.show()
-
-
-# def plot_probs(X, probs, soft_labels=True, subset=None):
-#     """Plot data points with hard labels or estimated probability of one class"""
-
-#     if soft_labels:
-#         probs = probs[:, 1]
-
-#     if subset is not None:
-#         X = X[subset, :]
-#         probs = probs[subset]
-
-#     fig = px.scatter(x=X[:, 0], y=X[:, 1], color=probs)
-#     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
-#                       width=700, height=700, xaxis_title="x1", yaxis_title="x2")
-#     fig.show()
 
 
 def plot_accuracies(accuracies, prob_accuracy=None):

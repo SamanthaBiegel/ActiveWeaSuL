@@ -34,9 +34,9 @@ from tqdm import tqdm_notebook as tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import sample_clusters
-from final_model import fit_predict_fm
+from final_model import DiscriminativeModel
 from plot import plot_probs, plot_accuracies
-from label_model import LabelModel, get_overall_accuracy
+from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 # -
 
@@ -86,6 +86,8 @@ def random_LF(y, fp, fn, abstain):
     return y
 
 df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
+df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
+df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
 df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
 df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
 
@@ -142,30 +144,6 @@ for i in tqdm(range(n_runs)):
 
 accuracies
 
-
-def get_probs(add_cliques=False, mu=lm.mu):
-    if add_cliques:
-        cliques_joined = lm.cliques.copy()
-        for i, clique in enumerate(cliques_joined):
-            cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
-        idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(lm.wl_idx[clique[0]])])
-    else:
-        idx = np.array(range(lm.nr_wl*lm.y_dim))
-        
-    P_lambda_Y = np.zeros((lm.N, lm.y_dim))
-    for i in range(lm.y_dim):
-        P_lambda_Y[:, i] = (np.prod(np.tile(mu[idx, i], (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1))
-                                 / lm.class_balance[i])
-#                                  / np.prod(np.tile(lm.E_O[idx], (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1)))
-        
-    _, inverse, counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-    joint_probs = counts/(N_1+N_2)
-    P_Y_lambda = P_lambda_Y / joint_probs[inverse][:, np.newaxis]
-#     Z = P_lambda_Y.sum(axis=1)
-#     return P_lambda_Y / np.tile(Z, (lm.y_dim, 1)).T
-    return P_Y_lambda
-
-
 # # Label model without cliques
 
 L = label_matrix[:, :-1]
@@ -199,75 +177,104 @@ L = label_matrix[:, :-1]
 cliques=[[0],[1,2]]
 
 # L = label_matrix
-# cliques=[[0],[1,2],[3]]
+# cliques=[[0, 3],[1,2, 3]]
 
-lm = LabelModel(final_model_kwargs=final_model_kwargs, df=df, active_learning=False, add_cliques=True, n_epochs=4000)
+lm = LabelModel(final_model_kwargs=final_model_kwargs, df=df, active_learning=False, add_cliques=True, add_prob_loss=True, n_epochs=100, lr=1e-1)
 Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 print(lm.accuracy())
 # -
 
-np.unique(Y_probs_cliques)
+Y_probs_cliques
 
-lm.calculate_cov_OS().detach().numpy()[:,1]
+lm.predict()
 
-list(range(6))+list(range(8,12))
+# # Probability issue
 
-exp_OS = (lm.E_O[:, np.newaxis] @ lm.E_S[np.newaxis,])
+print(Y_probs_cliques.sum())
+print(Y_probs_cliques.sum(axis=1))
 
-lm.cov_O.numpy()[list(range(6))+list(range(8,12)),7]
+plot_probs(df, Y_probs_cliques, soft_labels=True, subset=None)
 
-mu = (lm.calculate_cov_OS().detach().numpy()[:,1][:, np.newaxis] + exp_OS[:, np.newaxis])
+# +
 
-mu = (lm.cov_O.numpy()[list(range(6))+list(range(8,12)),7][:, np.newaxis] + exp_OS[:, np.newaxis])
+combs, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
+lambda_counts/lm.N
+# -
 
-mu
+(lambda_counts/lm.N)[lambda_index]
+
+combs
 
 lm.mu
 
 lm.get_true_mu()
 
-pd.DataFrame(lm.cov_O.numpy()[list(range(6))+list(range(8,12)),7])
 
-lm.wl_idx
+def get_probs(add_cliques=False, true_mu=True):
+    if not lm.add_cliques:
+        idx = np.array(range(lm.nr_wl*lm.y_dim))
+    else:
+        cliques_joined = lm.cliques.copy()
+        for i, clique in enumerate(cliques_joined):
+            cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
+        idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(lm.wl_idx[clique[0]])])
+        
+    if true_mu:
+        mu = lm.get_true_mu()[:, 1][:, np.newaxis]
+        y_balance = lm.df["y"].mean()
+    else:
+        mu = lm.mu
+        y_balance = lm.E_S
+        
+    # Product of weak label or clique probabilities per data point
+    # Junction tree theorem
+    P_joint_lambda_Y = (np.prod(np.tile(mu[idx, :].T, (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1))
+                        / y_balance)
 
-lm.get_true_mu()
+    # Marginal weak label probabilities
+    _, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
+    P_lambda = lambda_counts/lm.N
 
-get_probs(add_cliques=True, mu=lm.mu).sum(axis=1)
+    # Conditional label probability
+    P_Y_given_lambda = (P_joint_lambda_Y[:, np.newaxis] / P_lambda[lambda_index][:, np.newaxis])
+
+    preds = np.concatenate([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
+    
+    return preds
+
 
 add_cliques=True
-# mu = lm.get_true_mu()
+mu = lm.get_true_mu()
 
-# +
-if add_cliques:
-    cliques_joined = lm.cliques.copy()
-    for i, clique in enumerate(cliques_joined):
-        cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
-    idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(lm.wl_idx[clique[0]])])
-else:
-    idx = np.array(range(lm.nr_wl*lm.y_dim))
+probs_true = get_probs(add_cliques=True, true_mu=True)
 
-P_lambda_Y = np.zeros((lm.N, 1))
-# for i in range(lm.y_dim):
-P_lambda_Y[:, 0] = (np.prod(np.tile(mu[idx, 0], (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1))
-                         / np.array([(label_matrix[:,-1] == 0).mean(), label_matrix[:,-1].mean()])[1])
-#                                  / np.prod(np.tile(lm.E_O[idx], (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1)))
+probs_true
 
-combs, inverse, counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-joint_probs = counts/(N_1+N_2)
-P_Y_lambda = P_lambda_Y / joint_probs[inverse][:, np.newaxis]
-# -
+probs_true[probs_true < 0]
 
-P_Y_lambda
+# # Matrix inverse
 
-Y_probs_cliques
+# All cliques, including Y
+np.linalg.inv(lm.cov_O.numpy())
 
-df
+# Observed part
+pd.DataFrame(lm.cov_O.numpy())
 
-get_probs(add_cliques=True, mu=lm.get_true_mu())
+np.linalg.inv(lm.cov_O.numpy())
 
-probs_final = fit_predict_fm(df[["x1", "x2"]].values, Y_probs_cliques, **final_model_kwargs, soft_labels=True)
+pd.DataFrame(np.linalg.pinv(lm.cov_O.numpy()))
 
-(np.argmax(np.around(probs_final), axis=-1) == np.array(y)).sum() / len(y)
+pd.DataFrame(torch.pinverse(lm.cov_O).numpy())
+
+# # Final model
+
+final_model_kwargs
+
+fm = DiscriminativeModel(df, **final_model_kwargs)
+
+probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=Y_probs_cliques.detach().numpy()).predict()
+
+fm.accuracy()
 
 plot_probs(df, probs_final, soft_labels=True, subset=None)
 
@@ -294,7 +301,7 @@ fig.show()
 # # Active learning
 
 # +
-it = 20
+it = 1
 active_learning = "probs"
 
 if active_learning == "cov":
@@ -305,11 +312,13 @@ if active_learning == "probs":
     cliques=[[0],[1,2]]
     L = label_matrix[:, :-1]
     
-al = ActiveLearningPipeline(it=it, df=df, final_model_kwargs=final_model_kwargs)
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, active_learning=active_learning)
+al = ActiveLearningPipeline(it=it, final_model_kwargs=final_model_kwargs, df=df, active_learning=active_learning, add_cliques=add_cliques)
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 # -
 
-al.accuracies
+torch.norm(torch.Tensor(Y_probs_al[Y_probs_al < 0]))
+
+al.accuracy()
 
 probs_al = fit_predict_fm(df[["x1", "x2"]].values, Y_probs_al, **final_model_kwargs, soft_labels=True)
 
@@ -422,26 +431,27 @@ fig, ax = plt.subplots(figsize=(15,15))
 sns.heatmap(df_inv_cov, ax=ax, vmin=-4, vmax=4, center=0, annot=True, linewidths=.5, cmap="RdBu_r", square=True, xticklabels=True, yticklabels=True, fmt='.3g')
 fig.savefig("cov2.png")
 
-probs_df = pd.DataFrame.from_dict(probs_dict)
+probs_df = pd.DataFrame.from_dict(al.prob_dict)
 probs_df = probs_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
 probs_df = probs_df.merge(df, left_on = "x", right_index=True)
 
-prob_label_df = pd.DataFrame.from_dict(prob_label_dict)
-prob_label_df = prob_label_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
-prob_label_df = prob_label_df.merge(df, left_on = "x", right_index=True)
+# +
+# prob_label_df = pd.DataFrame.from_dict(prob_label_dict)
+# prob_label_df = prob_label_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
+# prob_label_df = prob_label_df.merge(df, left_on = "x", right_index=True)
 
 # +
-# fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
-# fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
-#                   width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
-
-fig2 = px.scatter(prob_label_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
-fig2.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
+fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
                   width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
 
-# fig.show()
+# fig2 = px.scatter(prob_label_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
+# fig2.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+#                   width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
 
-fig2.show()
+fig.show()
+
+# fig2.show()
 
 # app = dash.Dash()
 # app.layout = html.Div([
@@ -481,6 +491,22 @@ df_accuracies["Active learning"], df_accuracies["Labels"] = df_accuracies.index.
 df_accuracies.set_index(["Labels", "Active learning"]).sort_values(["Active learning"])
 pd.pivot_table(df_accuracies, columns="Labels", index="Active learning")
 # -
+
+# # Final model active learning
+
+probs_al_0 = preds = np.concatenate([1 - al.prob_dict[0][:, np.newaxis], al.prob_dict[0][:, np.newaxis]], axis=1)
+probs_al_99 = preds = np.concatenate([1 - al.prob_dict[99][:, np.newaxis], al.prob_dict[99][:, np.newaxis]], axis=1)
+
+probs_final_0 = fit_predict_fm(df[["x1", "x2"]].values, probs_al_0, **final_model_kwargs, soft_labels=True)
+probs_final_99 = fit_predict_fm(df[["x1", "x2"]].values, probs_al_99, **final_model_kwargs, soft_labels=True)
+
+lm._accuracy(probs_final_0, df["y"].values)
+
+lm._accuracy(probs_final_99, df["y"].values)
+
+plot_probs(df, probs_final_0, soft_labels=True, subset=None)
+
+plot_probs(df, probs_final_99, soft_labels=True, subset=None)
 
 # # Train model on queried data points
 

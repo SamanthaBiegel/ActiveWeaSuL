@@ -17,12 +17,14 @@ class LabelModel(ModelPerformance):
                  n_epochs: int = 200,
                  lr: float = 1e-1,
                  active_learning: bool = False,
-                 add_cliques: bool = False):
+                 add_cliques: bool = False,
+                 add_prob_loss: bool = False):
 
         self.n_epochs = n_epochs
         self.lr = lr
         self.active_learning = active_learning
         self.add_cliques = add_cliques
+        self.add_prob_loss = add_prob_loss
         self.final_model_kwargs = final_model_kwargs
         self.z = None
         super().__init__(df=df)
@@ -66,19 +68,23 @@ class LabelModel(ModelPerformance):
 
         return penalty_strength * torch.norm(torch.Tensor((probs_al - probs))[mask, :]) ** 2
     
-    def loss_probs(self, probs, penalty_strength: float = 1e6):
+    def loss_probs(self, probs, penalty_strength: float = 1e3):
 
-        return penalty_strength * torch.norm(torch.Tensor(probs[probs < 0])) ** 2
+        loss_0 = torch.norm(torch.Tensor(probs[probs < 0])) ** 2
+        loss_1 = torch.norm(torch.Tensor(probs[probs > 1] - 1)) ** 2
+
+        return penalty_strength * (loss_0 + loss_1)
 
     def loss_func(self):
         """Compute loss for matrix completion problem"""
 
         loss = torch.norm((self.cov_O_inverse + self.z @ self.z.T)[torch.BoolTensor(self.mask)]) ** 2
 
-        tmp_cov = self.calculate_cov_OS()
-        tmp_mu = self.calculate_mu(tmp_cov).detach().numpy()
-        tmp_probs = self._predict(tmp_mu)
-        loss += self.loss_probs(tmp_probs)
+        if self.add_prob_loss:
+            tmp_cov = self.calculate_cov_OS()
+            tmp_mu = self.calculate_mu(tmp_cov)
+            tmp_probs = self._predict(tmp_mu)
+            loss += self.loss_probs(tmp_probs)
 
         if self.active_learning == "cov":
             # Add loss for current covariance if taking active learning weak label into account
@@ -87,7 +93,7 @@ class LabelModel(ModelPerformance):
 
         if self.active_learning == "probs":
             tmp_cov = self.calculate_cov_OS()
-            tmp_mu = self.calculate_mu(tmp_cov).detach().numpy()
+            tmp_mu = self.calculate_mu(tmp_cov)
             tmp_probs = self._predict(tmp_mu)
             loss += self.loss_prior_knowledge_probs(tmp_probs)
 
@@ -199,6 +205,11 @@ class LabelModel(ModelPerformance):
         # In the rank-one setting we only consider one column of psi(Y)
         self.cov_S = self.cov_Y[-1, -1]
 
+        # Marginal weak label probabilities
+        _, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
+        P_lambda = lambda_counts/self.N
+        self.P_lambda = torch.Tensor(P_lambda[lambda_index][:, np.newaxis])
+
     def fit(self,
             label_matrix,
             cliques,
@@ -241,7 +252,7 @@ class LabelModel(ModelPerformance):
             writer.add_scalar('label model loss', loss, epoch)
 
             tmp_cov_OS = self.calculate_cov_OS()
-            tmp_mu = self.calculate_mu(tmp_cov_OS).detach().numpy()
+            tmp_mu = self.calculate_mu(tmp_cov_OS)
             tmp_probs = self._predict(tmp_mu)
             writer.add_scalar('label model accuracy', self._accuracy(tmp_probs, self.df["y"].values), epoch)
 
@@ -251,7 +262,7 @@ class LabelModel(ModelPerformance):
 
         # Compute covariances and label model probabilities from optimal z
         self.cov_OS = self.calculate_cov_OS()
-        self.mu = self.calculate_mu(self.cov_OS).detach().numpy()
+        self.mu = self.calculate_mu(self.cov_OS)
 
         writer.flush()
         writer.close()
@@ -275,17 +286,17 @@ class LabelModel(ModelPerformance):
 
         # Product of weak label or clique probabilities per data point
         # Junction tree theorem
-        P_joint_lambda_Y = (np.prod(np.tile(mu[idx, :].T, (self.N, 1)), axis=1, where=(self.psi[:, idx] == 1))
-                            / self.E_S)
+        # P_joint_lambda_Y = (np.prod(np.tile(mu[idx, :].T, (self.N, 1)), axis=1, where=(self.psi[:, idx] == 1))
+        #                     / self.E_S)
 
-        # Marginal weak label probabilities
-        _, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
-        P_lambda = lambda_counts/self.N
+        clique_probs = mu[idx, :] * torch.Tensor(self.psi[:, idx].T)
+        clique_probs[clique_probs == 0] = 1
+        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/torch.Tensor(self.E_S)
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, np.newaxis] / P_lambda[lambda_index][:, np.newaxis])
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)
 
-        preds = np.concatenate([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
+        preds = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
         if self._accuracy(preds, self.df["y"].values) < 0.5:
             preds[:, [1, 0]] = preds[:, [0, 1]]
@@ -337,12 +348,6 @@ class LabelModel(ModelPerformance):
 #     coverage = (label_matrix != -1).mean(axis=0)
 
 #     return np.clip(weights / coverage, 1e-6, 1)
-
-
-# def get_overall_accuracy(probs, y):
-#     """Compute overall accuracy from label predictions"""
-
-#     return (np.argmax(np.around(probs), axis=-1) == np.array(y)).sum() / len(y)
 
 
 # def get_true_accuracies(label_matrix, y):

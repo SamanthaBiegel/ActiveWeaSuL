@@ -85,13 +85,13 @@ class DiscriminativeModel(LogisticRegression, ModelPerformance):
     def predict(self):
         """Predict on the train set"""
 
-        return self._predict_final(self.train_set)
+        return self._predict(self.train_set)
 
-    def _predict_final(self, input):
+    def _predict(self, input):
         """Predict on input"""
 
         self.eval()
         logits = self.forward(input)
-        preds = F.softmax(logits, dim=1).detach().numpy()
+        preds = F.softmax(logits, dim=1)
 
         return preds

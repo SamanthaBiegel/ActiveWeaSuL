@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 class ModelPerformance:
@@ -14,6 +15,5 @@ class ModelPerformance:
         return self._accuracy(probs, y)
 
     def _accuracy(self, prob_labels, y):
-        prob_labels_numpy = prob_labels.detach().clone().numpy()
 
-        return (np.argmax(np.around(prob_labels_numpy), axis=-1) == np.array(y)).sum() / len(y)
+        return (torch.argmax(prob_labels, dim=1) == torch.Tensor(y)).sum().item() / len(y)
