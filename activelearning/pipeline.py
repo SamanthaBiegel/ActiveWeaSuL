@@ -2,13 +2,13 @@ import numpy as np
 import random
 from tqdm import tqdm_notebook as tqdm
 
-from label_model import LabelModel, get_overall_accuracy
+from label_model import LabelModel
 
 
 class ActiveLearningPipeline(LabelModel):
-    def __init__(self, it, df, final_model_kwargs):
+    def __init__(self, it, final_model_kwargs, df, active_learning, add_cliques):
         self.it = it
-        super().__init__(final_model_kwargs, df)
+        super().__init__(final_model_kwargs=final_model_kwargs, df=df, active_learning=active_learning, add_cliques=add_cliques)
 
     def query(self, probs):
         """Choose data point to label from label predictions"""
@@ -28,14 +28,14 @@ class ActiveLearningPipeline(LabelModel):
         # Pick a random point from least confident data points
         return random.choice(indices)
 
-    def refine_probabilities(self, label_matrix, cliques, class_balance, active_learning):
+    def refine_probabilities(self, label_matrix, cliques, class_balance):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
 
         self.accuracies = []
         self.queried = []
+        self.prob_dict = {}
 
         self.label_matrix = label_matrix
-        self.active_learning = active_learning
 
         if self.active_learning == "cov":
             self.add_cliques = False
@@ -44,13 +44,11 @@ class ActiveLearningPipeline(LabelModel):
             self.add_cliques = True
             self.ground_truth_labels = np.full_like(self.df["y"].values, -1)
 
-        lm = LabelModel(final_model_kwargs=self.final_model_kwargs, df=self.df, active_learning=self.active_learning, add_cliques=self.add_cliques)
+        old_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
-        old_probs = lm.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+        self.accuracies.append(self.accuracy())
 
-        self.accuracies.append(lm.accuracy())
-
-        for i in range(self.it):
+        for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs)
 
             # print("Iteration:", i + 1, " Label combination", label_matrix[sel_idx, :nr_wl], " True label:", y[sel_idx],
@@ -61,12 +59,13 @@ class ActiveLearningPipeline(LabelModel):
             self.ground_truth_labels[sel_idx] = self.df["y"].values[sel_idx]
 
             # Fit label model on refined label matrix
-            new_probs = lm.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+            new_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
             # print("Before:", old_probs[sel_idx, :], "After:", new_probs[sel_idx])
 
-            self.accuracies.append(lm.accuracy())
+            self.accuracies.append(self.accuracy())
             self.queried.append(sel_idx)
+            self.prob_dict[i] = new_probs[:, 1]
 
             old_probs = new_probs.copy()
 

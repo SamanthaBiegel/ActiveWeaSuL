@@ -41,6 +41,8 @@ def sample_y(centroids, X, N, scaling_factor):
 
     b, perp_slope = compute_decision_boundary(centroids)
 
+    # We have the line x2 = b + perp_slope * x1, rearranging we get 0 = b + perp_slope * x1 - x2,
+    # so coefficients are b, perp_slope, -1
     coef = [b, perp_slope, -1]
     coef = [scaling_factor * co for co in coef]
 
