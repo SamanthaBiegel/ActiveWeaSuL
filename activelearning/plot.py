@@ -13,7 +13,7 @@ def plot_probs(df, probs, soft_labels=True, subset=None):
         df = df.iloc[subset, :]
         probs = probs[subset]
 
-    df["label"] = probs.detach().numpy()
+    df["label"] = probs
 
     fig = px.scatter(df, x="x1", y="x2", color="label", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),

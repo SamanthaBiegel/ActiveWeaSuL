@@ -1,19 +1,32 @@
 import numpy as np
 import random
+import torch
 from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
 
 
 class ActiveLearningPipeline(LabelModel):
-    def __init__(self, it, final_model_kwargs, df, active_learning, add_cliques):
+    def __init__(self,
+                 it: int = 100,
+                 final_model_kwargs,
+                 df,
+                 active_learning: str = "probs",
+                 add_cliques: bool = True,
+                 add_prob_loss: bool = False):
+
         self.it = it
-        super().__init__(final_model_kwargs=final_model_kwargs, df=df, active_learning=active_learning, add_cliques=add_cliques)
+        super().__init__(final_model_kwargs=final_model_kwargs,
+                         df=df,
+                         active_learning=active_learning,
+                         add_cliques=add_cliques,
+                         add_prob_loss=add_prob_loss,
+                         hide_progress_bar=True)
 
     def query(self, probs):
         """Choose data point to label from label predictions"""
 
-        abs_diff = np.abs(probs[:, 1] - probs[:, 0])
+        abs_diff = torch.abs(probs[:, 1] - probs[:, 0])
 
         # Find data points the model where the model is least confident
         if self.active_learning == "probs":
@@ -67,6 +80,6 @@ class ActiveLearningPipeline(LabelModel):
             self.queried.append(sel_idx)
             self.prob_dict[i] = new_probs[:, 1]
 
-            old_probs = new_probs.copy()
+            old_probs = new_probs.clone()
 
         return new_probs

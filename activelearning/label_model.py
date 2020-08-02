@@ -18,13 +18,15 @@ class LabelModel(ModelPerformance):
                  lr: float = 1e-1,
                  active_learning: bool = False,
                  add_cliques: bool = False,
-                 add_prob_loss: bool = False):
+                 add_prob_loss: bool = False,
+                 hide_progress_bar: bool = False):
 
         self.n_epochs = n_epochs
         self.lr = lr
         self.active_learning = active_learning
         self.add_cliques = add_cliques
         self.add_prob_loss = add_prob_loss
+        self.hide_progress_bar = hide_progress_bar
         self.final_model_kwargs = final_model_kwargs
         self.z = None
         super().__init__(df=df)
@@ -63,10 +65,10 @@ class LabelModel(ModelPerformance):
 
     def loss_prior_knowledge_probs(self, probs, penalty_strength: float = 1000):
 
-        probs_al = ((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1)
+        probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
         mask = (self.ground_truth_labels != -1)
 
-        return penalty_strength * torch.norm(torch.Tensor((probs_al - probs))[mask, :]) ** 2
+        return penalty_strength * torch.norm((probs_al - probs)[mask, :]) ** 2
     
     def loss_probs(self, probs, penalty_strength: float = 1e3):
 
@@ -243,7 +245,7 @@ class LabelModel(ModelPerformance):
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
 
         # Find optimal z
-        for epoch in tqdm(range(self.n_epochs)):
+        for epoch in tqdm(range(self.n_epochs), disable=self.hide_progress_bar):
             optimizer.zero_grad()
             loss = self.loss_func()
             loss.backward()
@@ -291,7 +293,7 @@ class LabelModel(ModelPerformance):
 
         clique_probs = mu[idx, :] * torch.Tensor(self.psi[:, idx].T)
         clique_probs[clique_probs == 0] = 1
-        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/torch.Tensor(self.E_S)
+        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/torch.tensor(self.df["y"].mean())
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)

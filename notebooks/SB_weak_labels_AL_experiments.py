@@ -33,7 +33,7 @@ import torch.nn.functional as F
 from tqdm import tqdm_notebook as tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import sample_clusters
+from data import sample_clusters, SyntheticData
 from final_model import DiscriminativeModel
 from plot import plot_probs, plot_accuracies
 from label_model import LabelModel
@@ -44,7 +44,7 @@ from pipeline import ActiveLearningPipeline
 pd.options.display.expand_frame_repr = False 
 np.set_printoptions(suppress=True, precision=16)
 
-# # Create clusters
+# # Sample data
 
 N_1 = 5000
 N_2 = 5000
@@ -61,6 +61,8 @@ X[y==1, :] = np.random.normal(loc=centroid_2, scale=np.array([0.5,0.5]), size=(l
 # -
 
 df = pd.DataFrame({'x1': X[:,0], 'x2': X[:,1], 'y': y})
+
+
 
 plot_probs(df, y.astype(str), soft_labels=False)
 
@@ -179,100 +181,34 @@ cliques=[[0],[1,2]]
 # L = label_matrix
 # cliques=[[0, 3],[1,2, 3]]
 
-lm = LabelModel(final_model_kwargs=final_model_kwargs, df=df, active_learning=False, add_cliques=True, add_prob_loss=True, n_epochs=100, lr=1e-1)
-Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-print(lm.accuracy())
-# -
+for i in range(10):
 
-Y_probs_cliques
+    lm = LabelModel(final_model_kwargs=final_model_kwargs, df=df, active_learning=False, add_cliques=True, add_prob_loss=True, n_epochs=500, lr=1e-1)
+    Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+    print(lm.accuracy())
+# -
 
 lm.predict()
 
-# # Probability issue
-
-print(Y_probs_cliques.sum())
-print(Y_probs_cliques.sum(axis=1))
-
-plot_probs(df, Y_probs_cliques, soft_labels=True, subset=None)
-
-# +
-
-combs, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-lambda_counts/lm.N
-# -
-
-(lambda_counts/lm.N)[lambda_index]
-
-combs
-
 lm.mu
 
-lm.get_true_mu()
+lm.get_true_mu()[:,1]
 
+probs_test = lm._predict(torch.Tensor(lm.get_true_mu()[:,1][:,None]))
 
-def get_probs(add_cliques=False, true_mu=True):
-    if not lm.add_cliques:
-        idx = np.array(range(lm.nr_wl*lm.y_dim))
-    else:
-        cliques_joined = lm.cliques.copy()
-        for i, clique in enumerate(cliques_joined):
-            cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
-        idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(lm.wl_idx[clique[0]])])
-        
-    if true_mu:
-        mu = lm.get_true_mu()[:, 1][:, np.newaxis]
-        y_balance = lm.df["y"].mean()
-    else:
-        mu = lm.mu
-        y_balance = lm.E_S
-        
-    # Product of weak label or clique probabilities per data point
-    # Junction tree theorem
-    P_joint_lambda_Y = (np.prod(np.tile(mu[idx, :].T, (lm.N, 1)), axis=1, where=(lm.psi[:, idx] == 1))
-                        / y_balance)
+probs_test
 
-    # Marginal weak label probabilities
-    _, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-    P_lambda = lambda_counts/lm.N
-
-    # Conditional label probability
-    P_Y_given_lambda = (P_joint_lambda_Y[:, np.newaxis] / P_lambda[lambda_index][:, np.newaxis])
-
-    preds = np.concatenate([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
-    
-    return preds
-
-
-add_cliques=True
-mu = lm.get_true_mu()
-
-probs_true = get_probs(add_cliques=True, true_mu=True)
-
-probs_true
-
-probs_true[probs_true < 0]
-
-# # Matrix inverse
-
-# All cliques, including Y
-np.linalg.inv(lm.cov_O.numpy())
-
-# Observed part
-pd.DataFrame(lm.cov_O.numpy())
-
-np.linalg.inv(lm.cov_O.numpy())
-
-pd.DataFrame(np.linalg.pinv(lm.cov_O.numpy()))
-
-pd.DataFrame(torch.pinverse(lm.cov_O).numpy())
+torch.tensor(df["y"].mean())
 
 # # Final model
 
 final_model_kwargs
 
-fm = DiscriminativeModel(df, **final_model_kwargs)
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=probs_test.detach().numpy()).predict()
 
-probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=Y_probs_cliques.detach().numpy()).predict()
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=False)
+probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=df["y"].values).predict()
 
 fm.accuracy()
 
