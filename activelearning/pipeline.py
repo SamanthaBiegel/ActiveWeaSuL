@@ -8,9 +8,9 @@ from label_model import LabelModel
 
 class ActiveLearningPipeline(LabelModel):
     def __init__(self,
-                 it: int = 100,
                  final_model_kwargs,
                  df,
+                 it: int = 100,
                  active_learning: str = "probs",
                  add_cliques: bool = True,
                  add_prob_loss: bool = False):
@@ -47,11 +47,12 @@ class ActiveLearningPipeline(LabelModel):
         self.accuracies = []
         self.queried = []
         self.prob_dict = {}
+        self.unique_prob_dict = {}
 
         self.label_matrix = label_matrix
 
         if self.active_learning == "cov":
-            self.add_cliques = False
+            # self.add_cliques = False
             self.ground_truth_labels = None
         if self.active_learning == "probs":
             self.add_cliques = True
@@ -59,17 +60,22 @@ class ActiveLearningPipeline(LabelModel):
 
         old_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
+        _, unique_idx = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True)
+
         self.accuracies.append(self.accuracy())
+        self.prob_dict[0] = old_probs[:, 1].clone().detach().numpy()
+        self.unique_prob_dict[0] = self.prob_dict[0][unique_idx]
 
         for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs)
 
             # print("Iteration:", i + 1, " Label combination", label_matrix[sel_idx, :nr_wl], " True label:", y[sel_idx],
             #       "Estimated label:", Y_hat[sel_idx], " selected index:", sel_idx)
-
-            # Add label to label matrix
-            # label_matrix[sel_idx, nr_wl - 1] = y[sel_idx]
-            self.ground_truth_labels[sel_idx] = self.df["y"].values[sel_idx]
+           
+            if self.active_learning == "probs":
+                self.ground_truth_labels[sel_idx] = self.df["y"].values[sel_idx]
+            if self.active_learning == "cov":
+                self.label_matrix[sel_idx, self.nr_wl - 1] = self.df["y"].values[sel_idx]
 
             # Fit label model on refined label matrix
             new_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
@@ -78,7 +84,8 @@ class ActiveLearningPipeline(LabelModel):
 
             self.accuracies.append(self.accuracy())
             self.queried.append(sel_idx)
-            self.prob_dict[i] = new_probs[:, 1]
+            self.prob_dict[i+1] = new_probs[:, 1].clone().detach().numpy()
+            self.unique_prob_dict[i+1] = self.prob_dict[i+1][unique_idx]
 
             old_probs = new_probs.clone()
 

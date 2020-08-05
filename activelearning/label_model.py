@@ -70,7 +70,7 @@ class LabelModel(ModelPerformance):
 
         return penalty_strength * torch.norm((probs_al - probs)[mask, :]) ** 2
     
-    def loss_probs(self, probs, penalty_strength: float = 1e3):
+    def loss_probs(self, probs, penalty_strength: float = 1e6):
 
         loss_0 = torch.norm(torch.Tensor(probs[probs < 0])) ** 2
         loss_1 = torch.norm(torch.Tensor(probs[probs > 1] - 1)) ** 2
@@ -85,7 +85,7 @@ class LabelModel(ModelPerformance):
         if self.add_prob_loss:
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
-            tmp_probs = self._predict(tmp_mu)
+            tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
             loss += self.loss_probs(tmp_probs)
 
         if self.active_learning == "cov":
@@ -96,7 +96,7 @@ class LabelModel(ModelPerformance):
         if self.active_learning == "probs":
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
-            tmp_probs = self._predict(tmp_mu)
+            tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
             loss += self.loss_prior_knowledge_probs(tmp_probs)
 
         return loss
@@ -255,7 +255,7 @@ class LabelModel(ModelPerformance):
 
             tmp_cov_OS = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov_OS)
-            tmp_probs = self._predict(tmp_mu)
+            tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
             writer.add_scalar('label model accuracy', self._accuracy(tmp_probs, self.df["y"].values), epoch)
 
             # if epoch == 0 or epoch % 25 == 24:
@@ -274,26 +274,25 @@ class LabelModel(ModelPerformance):
     def predict(self):
         """Predict training labels"""
 
-        return self._predict(self.mu)
+        return self._predict(self.mu, torch.tensor(self.E_S))
 
-    def _predict(self, mu):
+    def _predict(self, mu, P_Y):
 
         if not self.add_cliques:
             idx = np.array(range(self.nr_wl*self.y_dim))
+            n_cliques = self.nr_wl
         else:
             cliques_joined = self.cliques.copy()
             for i, clique in enumerate(cliques_joined):
                 cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
             idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
+            n_cliques = len(cliques_joined)
 
         # Product of weak label or clique probabilities per data point
         # Junction tree theorem
-        # P_joint_lambda_Y = (np.prod(np.tile(mu[idx, :].T, (self.N, 1)), axis=1, where=(self.psi[:, idx] == 1))
-        #                     / self.E_S)
-
         clique_probs = mu[idx, :] * torch.Tensor(self.psi[:, idx].T)
         clique_probs[clique_probs == 0] = 1
-        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/torch.tensor(self.df["y"].mean())
+        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(P_Y ** (n_cliques - 1))
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)
@@ -305,15 +304,19 @@ class LabelModel(ModelPerformance):
 
         return preds
 
+    def predict_true(self):
+        
+        return self._predict(self.get_true_mu(), self.df["y"].mean())
+
     def get_true_mu(self):
         """Obtain actual label model parameters from data and ground truth labels"""
 
-        exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
-        for i in range(self.y_dim):
+        exp_mu = np.zeros((self.psi.shape[1], self.y_dim-1))
+        for i in range(1, self.y_dim):
             mean = self.psi[self.df["y"].values == i].sum(axis=0) / self.N
-            exp_mu[:, i] = mean
+            exp_mu[:, i-1] = mean
 
-        return exp_mu
+        return torch.Tensor(exp_mu)
 
 
 # def get_conditional_probabilities(label_matrix, mu):
