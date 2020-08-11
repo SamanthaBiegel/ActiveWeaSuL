@@ -31,6 +31,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm_notebook as tqdm
+import dash
+import dash_html_components as html
+import dash_core_components as dcc
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
@@ -69,6 +72,8 @@ df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
 # df.loc[:, "wl4"] = (df["x1"]<0.5)*1
+# df.loc[:, "wl5"] = (df["x2"]<1.5)*1
+# df.loc[:, "wl6"] = (df["x2"]<-0.5)*1
 
 # df.loc[:, "wl1"] = (df["x2"]<0.2)*1
 # df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
@@ -109,8 +114,12 @@ def random_LF(y, fp, fn, abstain):
 df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
 df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
 df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
+df.loc[:, "wl4"] = [random_LF(y, fp=0.1, fn=0.1, abstain=0) for y in df["y"]]
+df.loc[:, "wl5"] = [random_LF(y, fp=0.1, fn=0.1, abstain=0) for y in df["y"]]
 
 # +
+# label_matrix = np.array(df[["wl1", "wl2", "wl3", "wl4", "wl5", "wl6", "y"]])
+
 # label_matrix = np.array(df[["wl1", "wl2", "wl3", "wl4", "wl5", "y"]])
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
@@ -129,40 +138,34 @@ class_balance = np.array([0.5, 0.5])
 
 # +
 # L = label_matrix[:, :-1]
-# cliques=[[0, 4],[1,2,3]]
+# cliques=[[0, 4, 5],[1,2,3]]
 
-L = label_matrix[:, :-1]
-cliques=[[0],[1,2]]
+# L = label_matrix[:, :-1]
+# cliques=[[0],[1],[2],[3],[4]]
 
 # L = label_matrix
 # cliques=[[0, 3],[1,2, 3]]
 
-for i in range(10):
+L = label_matrix[:, :-1]
+cliques=[[0],[1,2]]
 
-    lm = LabelModel(final_model_kwargs=final_model_kwargs, df=df, active_learning=False, add_cliques=True, add_prob_loss=False, n_epochs=200, lr=1e-1)
+for i in range(1):
+
+    lm = LabelModel(final_model_kwargs=final_model_kwargs,
+                    df=df,
+                    active_learning=False,
+                    add_cliques=True,
+                    add_prob_loss=False,
+                    n_epochs=200,
+                    lr=1e-1)
+    
     Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
     print(lm.accuracy())
 # -
 
-lm.wl_idx
-
-lm.psi[:, lm.wl_idx["1_2"]]
-
-lm.psi[:, lm.wl_idx["2"]]
-
-lm.psi[:, lm.wl_idx["1"]]
-
-L[L[:,3] != -1]
-
-lm.predict()
-
-lm.mu
-
-lm.get_true_mu()
+plot_probs(df, Y_probs_cliques.detach().numpy(), soft_labels=True, subset=None)
 
 probs_test = lm.predict_true()
-
-plot_probs(df, Y_probs_cliques.detach().numpy(), soft_labels=True, subset=None)
 
 plot_probs(df, probs_test.detach().numpy(), soft_labels=True, subset=None)
 
@@ -176,6 +179,12 @@ fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=False)
 probs_final_true = fm.fit(features=data.X, labels=data.y).predict()
 fm.accuracy()
 
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_test_final = fm.fit(features=data.X, labels=probs_test).predict()
+fm.accuracy()
+
+plot_probs(df, probs_test_final.detach().numpy(), soft_labels=True, subset=None)
+
 plot_probs(df, probs_final.detach().numpy(), soft_labels=True, subset=None)
 
 plot_probs(df, probs_final_true.detach().numpy(), soft_labels=True, subset=None)
@@ -183,13 +192,14 @@ plot_probs(df, probs_final_true.detach().numpy(), soft_labels=True, subset=None)
 # # Active learning
 
 # +
-it = 100
+it = 50
 active_learning = "probs"
 add_cliques=True
 add_prob_loss=False
 
 if active_learning == "cov":
-    cliques=[[0],[1,2],[3]]
+#     cliques=[[0],[1, 2,], [3]]
+    cliques=[[0,3],[1, 2,3]]
     wl_al = np.full_like(df["y"], -1)
     L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
 if active_learning == "probs":
@@ -199,21 +209,14 @@ if active_learning == "probs":
 al = ActiveLearningPipeline(it=it,
                             final_model_kwargs=final_model_kwargs,
                             df=df,
+                            n_epochs=200,
                             active_learning=active_learning,
                             add_cliques=add_cliques,
                             add_prob_loss=add_prob_loss)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-# -
-
-wl_al = np.full_like(df["y"], -1)
-L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
-
-L[al.queried, 3] = data.y[al.queried]
-
-L = np.concatenate([L, data.y[:, None]], axis=1)
-
 al.accuracy()
+# -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
@@ -223,7 +226,7 @@ plot_probs(df, Y_probs_al.detach().numpy(), soft_labels=True, subset=None)
 
 plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
 
-probs_df = pd.DataFrame.from_dict(al.prob_dict)
+# probs_df = pd.DataFrame.from_dict(al.prob_dict)
 probs_df = probs_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
 probs_df = probs_df.merge(df, left_on = "x", right_index=True)
 
@@ -232,7 +235,14 @@ fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iter
 fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
                   width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
 
-fig.show()
+# fig.show()
+
+app = dash.Dash()
+app.layout = html.Div([
+    dcc.Graph(figure=fig)
+])
+
+app.run_server(debug=True, use_reloader=False)
 # -
 unique_probs_df = pd.DataFrame.from_dict(al.unique_prob_dict)
 unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0": "Configuration", "level_1": "Iteration", 0: "P_Y_1"})
@@ -241,7 +251,10 @@ unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0
 fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
 fig.show()
 
+for i in range(500):
+    probs_df.iloc[al.queried[:i], i+1] = data.y[al.queried[:i]]
 
+df.iloc[al.queried][:30]
 
 # +
 df_res = pd.DataFrame(accuracies)

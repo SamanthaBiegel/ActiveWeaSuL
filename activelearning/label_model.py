@@ -46,7 +46,7 @@ class LabelModel(ModelPerformance):
     def calculate_mu(self, cov_OS):
         """Compute mu from OS covariance"""
 
-        return cov_OS + torch.Tensor(self.E_O[:, np.newaxis] @ self.E_S[np.newaxis, ][:, np.newaxis])
+        return cov_OS + torch.Tensor(self.E_O[:, np.newaxis] @ self.E_S[np.newaxis, np.newaxis])
 
     def calculate_cov_OS(self):
         """Compute unobserved part of covariance"""
@@ -59,11 +59,11 @@ class LabelModel(ModelPerformance):
     def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 3):
         """Compute loss from prior knowledge on part of covariance matrix"""
 
-        cov_OS_al = cov_OS[self.al_idx, :]
+        cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
 
-        return penalty_strength * torch.norm(cov_OS_al - self.cov_AL) ** 2
+        return penalty_strength * torch.norm(cov_OS_al - self.cov_AL[:, np.newaxis])
 
-    def loss_prior_knowledge_probs(self, probs, penalty_strength: float = 1000):
+    def loss_prior_knowledge_probs(self, probs, penalty_strength: float = 1e3):
 
         probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
         mask = (self.ground_truth_labels != -1)
@@ -72,9 +72,9 @@ class LabelModel(ModelPerformance):
     
     def loss_probs(self, probs, penalty_strength: float = 1e6):
 
-        loss_0 = torch.norm(torch.Tensor(probs[probs < 0])) ** 2
-        loss_1 = torch.norm(torch.Tensor(probs[probs > 1] - 1)) ** 2
-
+        loss_0 = torch.norm(torch.Tensor(probs[probs < 0]))
+        loss_1 = torch.norm(torch.Tensor(probs[probs > 1] - 1))
+        print(loss_0+loss_1)
         return penalty_strength * (loss_0 + loss_1)
 
     def loss_func(self):
@@ -198,8 +198,9 @@ class LabelModel(ModelPerformance):
 
         # Compute observed expectations and covariances
         self.E_O = self.psi.mean(axis=0)
-        self.cov_O = torch.Tensor(np.cov(self.psi.T, bias=True))
-        self.cov_O_inverse = torch.Tensor(np.linalg.pinv(self.cov_O.numpy()))
+        cov_O = np.cov(self.psi.T, bias=True)
+        self.cov_O_inverse = torch.Tensor(np.linalg.pinv(cov_O))
+        self.cov_O = torch.Tensor(cov_O)
         # self.cov_O_inverse = torch.pinverse(self.cov_O)
 
         self.E_S = np.array(self.class_balance[-1])
@@ -208,7 +209,10 @@ class LabelModel(ModelPerformance):
         self.cov_S = self.cov_Y[-1, -1]
 
         # Marginal weak label probabilities
-        _, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
+        if self.active_learning == "cov":
+            _, lambda_index, lambda_counts = np.unique(self.label_matrix[:,:-1], axis=0, return_counts=True, return_inverse=True)
+        else:
+            _, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
         P_lambda = lambda_counts/self.N
         self.P_lambda = torch.Tensor(P_lambda[lambda_index][:, np.newaxis])
 
@@ -236,13 +240,35 @@ class LabelModel(ModelPerformance):
         if self.active_learning is not False:
             # Calculate known covariance for active learning weak label
             self.al_idx = self.wl_idx[str(self.nr_wl-1)]
-            self.cov_AL = torch.Tensor((self.psi[:, self.al_idx] * self.psi[:, self.al_idx]).mean(axis=0) / self.class_balance.reshape(-1, 1) * self.cov_Y)
             self.ground_truth_labels = ground_truth_labels
+
+            if self.active_learning == "cov":
+                # self.cov_AL = torch.Tensor((self.psi[:, self.al_idx] * self.psi[:, self.al_idx]).mean(axis=0) / self.class_balance.reshape(-1, 1) * self.cov_Y)[:, 1]
+                E_AL_Y = self.E_O.copy()
+                # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
+                E_AL_Y[self.al_idx[0]] = 0
+                self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
+
+                E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
+                self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
+
+                E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
+                self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
+
+                E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
+                self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
+
+                E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
+                self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
+
+                self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
 
         if self.z is None:
             self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
+        # lambda1 = lambda epoch: 0.999 ** epoch
+        # scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
 
         # Find optimal z
         for epoch in tqdm(range(self.n_epochs), disable=self.hide_progress_bar):
@@ -250,6 +276,7 @@ class LabelModel(ModelPerformance):
             loss = self.loss_func()
             loss.backward()
             optimizer.step()
+            # scheduler.step()
 
             writer.add_scalar('label model loss', loss, epoch)
 
@@ -264,7 +291,7 @@ class LabelModel(ModelPerformance):
 
         # Compute covariances and label model probabilities from optimal z
         self.cov_OS = self.calculate_cov_OS()
-        self.mu = self.calculate_mu(self.cov_OS)
+        self.mu = self.calculate_mu(self.cov_OS)#.clamp(0, 1)
 
         writer.flush()
         writer.close()
@@ -288,6 +315,10 @@ class LabelModel(ModelPerformance):
             idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
             n_cliques = len(cliques_joined)
 
+        if self.active_learning == "cov":
+            idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
+            n_cliques = 2
+
         # Product of weak label or clique probabilities per data point
         # Junction tree theorem
         clique_probs = mu[idx, :] * torch.Tensor(self.psi[:, idx].T)
@@ -295,7 +326,7 @@ class LabelModel(ModelPerformance):
         P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(P_Y ** (n_cliques - 1))
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
 
         preds = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
@@ -306,17 +337,32 @@ class LabelModel(ModelPerformance):
 
     def predict_true(self):
         
-        return self._predict(self.get_true_mu(), self.df["y"].mean())
+        return self._predict(self.get_true_mu()[:, 1][:, np.newaxis], self.df["y"].mean())
 
     def get_true_mu(self):
         """Obtain actual label model parameters from data and ground truth labels"""
 
-        exp_mu = np.zeros((self.psi.shape[1], self.y_dim-1))
-        for i in range(1, self.y_dim):
+        exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
+        for i in range(0, self.y_dim):
             mean = self.psi[self.df["y"].values == i].sum(axis=0) / self.N
-            exp_mu[:, i-1] = mean
+            exp_mu[:, i] = mean
 
         return torch.Tensor(exp_mu)
+
+    def get_true_cov_OS(self):
+
+        y_onehot = ((self.df["y"].values[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
+        psi_y = np.concatenate([self.psi, y_onehot], axis=1)
+
+        cov_O_S = np.cov(psi_y.T, bias=True)
+
+        return cov_O_S[:-self.y_dim, -self.y_dim:]
+
+
+
+
+        
+
 
 
 # def get_conditional_probabilities(label_matrix, mu):

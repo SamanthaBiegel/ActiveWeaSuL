@@ -11,6 +11,8 @@ class ActiveLearningPipeline(LabelModel):
                  final_model_kwargs,
                  df,
                  it: int = 100,
+                 n_epochs: int = 200,
+                 lr: float = 1e-1,
                  active_learning: str = "probs",
                  add_cliques: bool = True,
                  add_prob_loss: bool = False):
@@ -18,6 +20,8 @@ class ActiveLearningPipeline(LabelModel):
         self.it = it
         super().__init__(final_model_kwargs=final_model_kwargs,
                          df=df,
+                         n_epochs=n_epochs,
+                         lr=lr,
                          active_learning=active_learning,
                          add_cliques=add_cliques,
                          add_prob_loss=add_prob_loss,
@@ -28,13 +32,17 @@ class ActiveLearningPipeline(LabelModel):
 
         abs_diff = torch.abs(probs[:, 1] - probs[:, 0])
 
-        # Find data points the model where the model is least confident
-        if self.active_learning == "probs":
-            minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1)
-        if self.active_learning == "cov":
-            minimum = min(j for i, j in enumerate(abs_diff) if self.label_matrix[i, self.nr_wl - 1] == -1)
-        indices = [j for j, v in enumerate(abs_diff) if v == minimum]
-
+        pick = np.random.uniform()
+        if pick < 0:
+            indices = [i for i in range(self.N) if self.ground_truth_labels[i] == -1]
+        else:
+            # Find data points the model where the model is least confident
+            if self.active_learning == "probs":
+                minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1)
+            if self.active_learning == "cov":
+                minimum = min(j for i, j in enumerate(abs_diff) if self.label_matrix[i, self.nr_wl - 1] == -1)
+            indices = [j for j, v in enumerate(abs_diff) if v == minimum]
+            
         # Make really random
         random.seed(random.SystemRandom().random())
 
