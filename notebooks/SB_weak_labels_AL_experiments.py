@@ -50,7 +50,7 @@ np.set_printoptions(suppress=True, precision=16)
 # # Sample data and weak labels
 
 # +
-N = 10000
+N = 1000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 # centroids = np.array([[0.3, 0.5], [-0.8, -0.5]])
 # centroids = np.array([[0.1, 0.3], [-0.8, -0.5]])
@@ -134,7 +134,7 @@ final_model_kwargs = {'input_dim': 2,
                       'batch_size': 256,
                       'n_epochs': 250}
 
-class_balance = np.array([0.5, 0.5])
+class_balance = np.array([0.5,0.5])
 
 # +
 # L = label_matrix[:, :-1]
@@ -163,6 +163,23 @@ for i in range(1):
     print(lm.accuracy())
 # -
 
+lm.mu
+
+
+def color(df_opt):
+    c1 = 'background-color: red'
+    c2 = 'background-color: green'
+    df1 = pd.DataFrame(c1, index=df_opt.index, columns=df_opt.columns)
+    idx = np.where(lm.mask)
+    for i in range(len(idx[0])):
+        df1.loc[(idx[0][i], idx[1][i])] = c2
+    return df1
+
+
+df_opt = pd.DataFrame((lm.cov_O_inverse.numpy()))
+
+df_opt.style.apply(color, axis=None)
+
 plot_probs(df, Y_probs_cliques.detach().numpy(), soft_labels=True, subset=None)
 
 probs_test = lm.predict_true()
@@ -189,7 +206,84 @@ plot_probs(df, probs_final.detach().numpy(), soft_labels=True, subset=None)
 
 plot_probs(df, probs_final_true.detach().numpy(), soft_labels=True, subset=None)
 
-# # Active learning
+# # Active learning - covariance constraint
+
+# +
+it = 100
+active_learning = "cov"
+add_cliques=True
+add_prob_loss=False
+
+# cliques=[[0],[1, 2,], [3]]
+# cliques=[[0,3],[1,3],[2,3]]
+cliques = [[0,3], [1,2,3]]
+wl_al = np.full_like(df["y"], -1)
+L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
+
+al = ActiveLearningPipeline(it=it,
+                            final_model_kwargs=final_model_kwargs,
+                            df=df,
+                            n_epochs=200,
+                            active_learning=active_learning,
+                            add_cliques=add_cliques,
+                            add_prob_loss=add_prob_loss,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al.accuracy()
+# -
+
+al.mu
+
+al.get_true_mu()
+
+al.cov_AL
+
+al.cov_OS[al.al_idx] - al.cov_AL[:, np.newaxis]
+
+al.cov_OS[list(itertools.chain.from_iterable([al.wl_idx[clique] for clique in ["0", "1", "2", "1_2"]]))]
+
+al.get_true_cov_OS()
+
+al.cov_OS[list(itertools.chain.from_iterable([al.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
+
+
+def color(df_opt):
+    c1 = 'background-color: red'
+    c2 = 'background-color: green'
+    df1 = pd.DataFrame(c1, index=df_opt.index, columns=df_opt.columns)
+    idx = np.where(al.mask)
+    for i in range(len(idx[0])):
+        df1.loc[(idx[0][i], idx[1][i])] = c2
+    return df1
+
+
+pd.DataFrame((al.cov_O_inverse.numpy())).style.apply(color, axis=None)
+
+pd.DataFrame((al.z.detach().numpy() @ al.z.detach().numpy().T)).style.apply(color, axis=None)
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm.accuracy()
+
+al.queried
+
+# +
+df["label"] = Y_probs_al.detach().numpy()[:,1]
+
+fig = go.Figure(go.Scatter(x=df["x1"], y=df["x2"], mode="markers", hovertext=df["label"],hoverinfo="text", marker=dict(color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"),cmid=0.5), showlegend=False))
+
+fig.add_trace(go.Scatter(x=data.X[al.queried,0], y=data.X[al.queried,1], mode="markers", marker=dict(color='Black', size=5), showlegend=False))
+
+fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+                      width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+
+fig.show()
+# -
+
+plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
+
+# # Active learning - probability constraint
 
 # +
 it = 50
@@ -197,14 +291,8 @@ active_learning = "probs"
 add_cliques=True
 add_prob_loss=False
 
-if active_learning == "cov":
-#     cliques=[[0],[1, 2,], [3]]
-    cliques=[[0,3],[1, 2,3]]
-    wl_al = np.full_like(df["y"], -1)
-    L = np.concatenate([label_matrix[:,:-1], wl_al.reshape(len(wl_al),1)], axis=1)
-if active_learning == "probs":
-    cliques=[[0],[1,2]]
-    L = label_matrix[:, :-1]
+cliques=[[0],[1,2]]
+L = label_matrix[:, :-1]
     
 al = ActiveLearningPipeline(it=it,
                             final_model_kwargs=final_model_kwargs,
@@ -212,7 +300,8 @@ al = ActiveLearningPipeline(it=it,
                             n_epochs=200,
                             active_learning=active_learning,
                             add_cliques=add_cliques,
-                            add_prob_loss=add_prob_loss)
+                            add_prob_loss=add_prob_loss,
+                            randomness = 0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.accuracy()
@@ -222,11 +311,26 @@ fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
 fm.accuracy()
 
-plot_probs(df, Y_probs_al.detach().numpy(), soft_labels=True, subset=None)
+al.mu
+
+al.get_true_mu()
+
+# +
+df["label"] = Y_probs_al.detach().numpy()[:,1]
+
+fig = go.Figure(go.Scatter(x=df["x1"], y=df["x2"], mode="markers", hovertext=df["label"],hoverinfo="text", marker=dict(color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"),cmid=0.5), showlegend=False))
+
+fig.add_trace(go.Scatter(x=data.X[al.queried,0], y=data.X[al.queried,1], mode="markers", marker=dict(color='Black', size=5), showlegend=False))
+
+fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+                      width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+
+fig.show()
+# -
 
 plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
 
-# probs_df = pd.DataFrame.from_dict(al.prob_dict)
+probs_df = pd.DataFrame.from_dict(al.prob_dict)
 probs_df = probs_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
 probs_df = probs_df.merge(df, left_on = "x", right_index=True)
 
@@ -250,6 +354,118 @@ unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0
 
 fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
 fig.show()
+
+mu_df = pd.DataFrame.from_dict(al.mu_dict)
+mu_df = mu_df.stack().reset_index().rename(columns={"level_0": "Parameter", "level_1": "Iteration", 0: "Probability"})
+
+fig = px.line(mu_df, x="Iteration", y="Probability", color="Parameter")
+fig.show()
+
+# # Random sampling
+
+# +
+it = 50
+active_learning = "probs"
+add_cliques=True
+add_prob_loss=False
+
+cliques=[[0],[1,2]]
+L = label_matrix[:, :-1]
+    
+al = ActiveLearningPipeline(it=it,
+                            final_model_kwargs=final_model_kwargs,
+                            df=df,
+                            n_epochs=200,
+                            active_learning=active_learning,
+                            add_cliques=add_cliques,
+                            add_prob_loss=add_prob_loss)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al.accuracy()
+# -
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm.accuracy()
+
+# +
+fig = go.Figure(go.Scatter(x=df["x1"], y=df["x2"], mode="markers", hovertext=df["label"],hoverinfo="text", marker=dict(color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"),cmid=0.5), showlegend=False))
+
+fig.add_trace(go.Scatter(x=data.X[al.queried,0], y=data.X[al.queried,1], mode="markers", marker=dict(color='Black', size=5), showlegend=False))
+
+fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+                      width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+
+fig.show()
+
+# -
+
+unique_probs_df = pd.DataFrame.from_dict(al.unique_prob_dict)
+unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0": "Configuration", "level_1": "Iteration", 0: "P_Y_1"})
+
+fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
+fig.show()
+
+plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
+
+# # Update rule experiments
+
+# +
+it = 1000
+active_learning = "update_params"
+query_strategy = "margin"
+alpha = 0.1
+add_cliques=True
+add_prob_loss=False
+
+cliques=[[0],[1,2]]
+L = label_matrix[:, :-1]
+    
+al = ActiveLearningPipeline(it=it,
+                            final_model_kwargs=final_model_kwargs,
+                            df=df,
+                            n_epochs=200,
+                            active_learning=active_learning,
+                            alpha=alpha,
+                            query_strategy=query_strategy,
+                            add_cliques=add_cliques,
+                            add_prob_loss=add_prob_loss)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al._accuracy(Y_probs_al, data.y)
+# -
+
+mus_df = pd.DataFrame(al.mus[[0,1,6,7,8,9],:].detach().numpy()).stack().reset_index().rename(columns={"level_0": "Parameter", "level_1": "Iteration", 0: "Probability"})
+
+fig = px.line(mus_df, x="Iteration", y="Probability", color="Parameter")
+fig.show()
+
+unique_probs_df = pd.DataFrame.from_dict(al.unique_prob_dict)
+unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0": "Configuration", "level_1": "Iteration", 0: "P_Y_1"})
+
+fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
+fig.show()
+
+al.prob_dict
+
+# +
+preds_tmp = lm._predict(al.mus[:,300][:,None], torch.tensor(lm.E_S))
+
+df["label"] = Y_probs_al.detach().numpy()[:,1]
+
+fig = go.Figure(go.Scatter(x=df["x1"], y=df["x2"], mode="markers", hovertext=df["label"],hoverinfo="text", marker=dict(color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"),cmid=0.5), showlegend=False))
+
+fig.add_trace(go.Scatter(x=data.X[al.queried[:300],0], y=data.X[al.queried[:300],1], mode="markers", marker=dict(color='Black', size=5), showlegend=False))
+
+fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
+                      width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+
+fig.show()
+# -
+
+
+
+
 
 for i in range(500):
     probs_df.iloc[al.queried[:i], i+1] = data.y[al.queried[:i]]

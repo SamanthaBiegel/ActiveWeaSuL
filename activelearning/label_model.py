@@ -51,17 +51,19 @@ class LabelModel(ModelPerformance):
     def calculate_cov_OS(self):
         """Compute unobserved part of covariance"""
 
+        # cov_S^-1, cov_S is a scalar
         c = 1 / self.cov_S * (1 + torch.mm(torch.mm(self.z.T, self.cov_O), self.z))
         cov_OS = torch.mm(self.cov_O, self.z / torch.sqrt(c))
 
         return cov_OS
 
-    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 3):
+    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 1e4):
         """Compute loss from prior knowledge on part of covariance matrix"""
 
-        cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
+        # cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
+        cov_OS_al = cov_OS[self.al_idx]
 
-        return penalty_strength * torch.norm(cov_OS_al - self.cov_AL[:, np.newaxis])
+        return penalty_strength * torch.norm(cov_OS_al - self.cov_AL[:, np.newaxis]) ** 2
 
     def loss_prior_knowledge_probs(self, probs, penalty_strength: float = 1e3):
 
@@ -104,12 +106,26 @@ class LabelModel(ModelPerformance):
     def create_mask(self):
         """Create mask to encode graph structure in covariance matrix"""
 
-        if not self.add_cliques:
-            mask = np.ones((self.nr_wl * self.y_dim, self.nr_wl * self.y_dim))
-            for i in range(self.nr_wl):
-                # Mask out diagonal blocks for the individual weak labels
-                mask[i * self.y_dim:(i + 1) * self.y_dim, i * self.y_dim:(i + 1) * self.y_dim] = 0
+        mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
 
+        for key in self.wl_idx.keys():
+            mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
+
+            key = key.split("_")
+
+            # Create all possible subsets of clique
+            clique_list = list(itertools.chain.from_iterable(
+                itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
+
+            # Create all pairs of subsets of clique
+            clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
+
+            for pair in clique_pairs:
+                i = self.wl_idx[pair[0]]
+                j = self.wl_idx[pair[1]]
+                mask[i[0]:i[-1]+1, j[0]:j[-1]+1] = 0
+
+        if not self.add_cliques:
             # Mask out interactions within cliques
             for clique in self.cliques:
                 for pair in itertools.permutations(clique, r=2):
@@ -117,38 +133,20 @@ class LabelModel(ModelPerformance):
                     j = pair[1]
                     mask[i * self.y_dim:(i + 1) * self.y_dim, j * self.y_dim:(j + 1) * self.y_dim] = 0
 
-            return mask
-
-        else:
-            mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
-
-            for key in self.wl_idx.keys():
-                mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
-
-                key = key.split("_")
-
-                # Create all possible subsets of clique
-                clique_list = list(itertools.chain.from_iterable(
-                    itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
-
-                # Create all pairs of subsets of clique
-                clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
-
-                for pair in clique_pairs:
-                    i = self.wl_idx[pair[0]]
-                    j = self.wl_idx[pair[1]]
-                    mask[i[0]:i[-1]+1, j[0]:j[-1]+1] = 0
-
-            return mask
+        return mask
 
     def get_psi(self):
+
+        return self._get_psi(self.label_matrix)
+
+    def _get_psi(self, label_matrix):
         """Transform label matrix to indicator variables"""
 
         psi_list = []
         col_counter = 0
         wl_idx = {}
         for i in range(self.nr_wl):
-            wl = self.label_matrix[:, i]
+            wl = label_matrix[:, i]
             wl_onehot = (wl[:, np.newaxis] == self.y_set)*1
             psi_list.append(wl_onehot)
             wl_idx[str(i)] = list(range(col_counter, col_counter+wl_onehot.shape[1]))
@@ -191,7 +189,15 @@ class LabelModel(ModelPerformance):
 
         psi_2 = np.hstack(psi_int_list)
 
-        return np.concatenate([psi, psi_2], axis=1), wl_idx
+        psi = np.concatenate([psi, psi_2], axis=1)
+
+        # wl_idx = {k: v for k, v in wl_idx.items() if k in ["0", "1", "2", "3", "1_2"]}
+
+        # psi = np.concatenate([psi, psi_2], axis=1)[:, list(itertools.chain.from_iterable([wl_idx[clique] for clique in wl_idx.keys()]))]
+
+        # wl_idx["1_2"] = [8,9,10,11]
+
+        return psi, wl_idx
 
     def init_cov_exp(self):
         "Compute expectations and covariances for observed set and separator set"
@@ -209,8 +215,8 @@ class LabelModel(ModelPerformance):
         self.cov_S = self.cov_Y[-1, -1]
 
         # Marginal weak label probabilities
-        if self.active_learning == "cov":
-            _, lambda_index, lambda_counts = np.unique(self.label_matrix[:,:-1], axis=0, return_counts=True, return_inverse=True)
+        if self.active_learning == "cov" and self.add_cliques:
+            _, lambda_index, lambda_counts = np.unique(self.label_matrix[:, :3], axis=0, return_counts=True, return_inverse=True)
         else:
             _, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
         P_lambda = lambda_counts/self.N
@@ -247,24 +253,28 @@ class LabelModel(ModelPerformance):
                 E_AL_Y = self.E_O.copy()
                 # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
                 E_AL_Y[self.al_idx[0]] = 0
-                self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
+                self.cov_AL = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
-                self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
+                # self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
-                self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
+                # self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
-                self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
+                # self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
-                self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
+                # self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
 
-                self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
+                # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
+                # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23))
 
         if self.z is None:
             self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
+
+        if self.cov_O_inverse.shape[0] != self.z.shape[0]:
+            self.z = nn.Parameter(torch.cat((self.z, torch.normal(0, 1, size=(self.y_dim, self.y_dim - 1)))), requires_grad=True)
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
         # lambda1 = lambda epoch: 0.999 ** epoch
@@ -315,7 +325,7 @@ class LabelModel(ModelPerformance):
             idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
             n_cliques = len(cliques_joined)
 
-        if self.active_learning == "cov":
+        if self.active_learning == "cov" and self.add_cliques:
             idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
             n_cliques = 2
 

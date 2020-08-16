@@ -14,3 +14,4 @@ Pillow==7.1.1
 skorch==0.8.0
 scikit-learn==0.21.3
 tensorflow==2.2.0
+dash==1.13.4

@@ -18,7 +18,7 @@ def plot_probs(df, probs, soft_labels=True, subset=None):
     fig = px.scatter(df, x="x1", y="x2", color="label", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
                       width=700, height=700, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
-    fig.show()
+    return fig
 
 
 def plot_accuracies(accuracies, prob_accuracy=None):
