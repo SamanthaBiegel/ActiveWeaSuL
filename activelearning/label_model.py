@@ -299,6 +299,12 @@ class LabelModel(ModelPerformance):
             #     final_probs = fit_predict_fm(self.df[["x1", "x2"]].values, tmp_probs, **self.final_model_kwargs, soft_labels=True)
             #     writer.add_scalar('final model accuracy', self._accuracy(final_probs, self.df["y"].values), epoch)
 
+        # Determine the sign of z
+        # Assuming cov_OS corresponds to Y=1, then cov(wl1=0,Y=1) should be negative
+        # If not, flip signs to get the covariance for Y=1
+        if self.calculate_cov_OS()[0] > 0:
+            self.z = -self.z
+
         # Compute covariances and label model probabilities from optimal z
         self.cov_OS = self.calculate_cov_OS()
         self.mu = self.calculate_mu(self.cov_OS)#.clamp(0, 1)
@@ -339,9 +345,6 @@ class LabelModel(ModelPerformance):
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
 
         preds = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
-
-        if self._accuracy(preds, self.df["y"].values) < 0.5:
-            preds[:, [1, 0]] = preds[:, [0, 1]]
 
         return preds
 

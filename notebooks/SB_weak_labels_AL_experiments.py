@@ -161,10 +161,9 @@ for i in range(1):
     
     Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
     print(lm.accuracy())
+
+
 # -
-
-lm.mu
-
 
 def color(df_opt):
     c1 = 'background-color: red'
@@ -288,6 +287,7 @@ plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
 # +
 it = 50
 active_learning = "probs"
+query_strategy = "margin"
 add_cliques=True
 add_prob_loss=False
 
@@ -299,9 +299,10 @@ al = ActiveLearningPipeline(it=it,
                             df=df,
                             n_epochs=200,
                             active_learning=active_learning,
+                            query_strategy=query_strategy,
                             add_cliques=add_cliques,
                             add_prob_loss=add_prob_loss,
-                            randomness = 0)
+                            randomness = 0.1)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.accuracy()
@@ -356,7 +357,15 @@ fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
 fig.show()
 
 mu_df = pd.DataFrame.from_dict(al.mu_dict)
-mu_df = mu_df.stack().reset_index().rename(columns={"level_0": "Parameter", "level_1": "Iteration", 0: "Probability"})
+mu_df = mu_df.iloc[[0,1,6,7,8,9],:].stack().reset_index().rename(columns={"level_0": "Parameter", "level_1": "Iteration", 0: "Probability"})
+
+mu_df
+
+# +
+# fig = sns.FacetGrid(mu_df, col = "Parameter")
+# fig.map(plt.plot, "Iteration", "Probability")
+# plt.show()
+# -
 
 fig = px.line(mu_df, x="Iteration", y="Probability", color="Parameter")
 fig.show()
@@ -413,8 +422,8 @@ plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
 # +
 it = 1000
 active_learning = "update_params"
-query_strategy = "margin"
-alpha = 0.1
+query_strategy = "entropy"
+alpha = 0.03
 add_cliques=True
 add_prob_loss=False
 
@@ -429,7 +438,8 @@ al = ActiveLearningPipeline(it=it,
                             alpha=alpha,
                             query_strategy=query_strategy,
                             add_cliques=add_cliques,
-                            add_prob_loss=add_prob_loss)
+                            add_prob_loss=add_prob_loss,
+                            randomness=0.1)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al._accuracy(Y_probs_al, data.y)
@@ -446,8 +456,6 @@ unique_probs_df = unique_probs_df.stack().reset_index().rename(columns={"level_0
 fig = px.line(unique_probs_df, x="Iteration", y="P_Y_1", color="Configuration")
 fig.show()
 
-al.prob_dict
-
 # +
 preds_tmp = lm._predict(al.mus[:,300][:,None], torch.tensor(lm.E_S))
 
@@ -462,6 +470,29 @@ fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
 
 fig.show()
 # -
+
+a_1 = 0.03
+a_2 = 0.05
+a_3 = 0.1
+
+# +
+x = np.array(list(range(it)))
+y_1 = np.exp(-a_1*x)
+y_2 = 1 - y_1
+
+y_3 = np.exp(-a_2*x)
+y_4 = 1 - y_3
+
+y_5 = np.exp(-a_3*x)
+y_6 = 1 - y_5
+
+df_weights = pd.DataFrame(np.concatenate([x[:,None], y_2[:,None], y_4[:,None], y_6[:,None]], axis=1))
+# -
+
+df_weights = df_weights.set_index(0).rename(columns={1: a_1, 2: a_2, 3: a_3}).stack().reset_index(1).rename(index={0: "x"}, columns={"level_1": "alpha", 0: "Weight"}).reset_index()
+
+fig = px.line(df_weights, x=0, y="Weight", color="alpha")
+fig.show()
 
 
 

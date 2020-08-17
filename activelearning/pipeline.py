@@ -99,7 +99,7 @@ class ActiveLearningPipeline(LabelModel):
         self.accuracies.append(self._accuracy(probs, self.y))
         self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
         self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
-        self.mu_dict[count] = self.mu.clone().detach().numpy()
+        self.mu_dict[count] = self.mu.clone().detach().numpy().squeeze()
 
         if selected_point is not None:
             self.queried.append(selected_point)
@@ -169,6 +169,5 @@ class ActiveLearningPipeline(LabelModel):
 
             #     self.label_matrix = np.concatenate([self.label_matrix, np.full_like(self.df["y"].values, -1)[:,None]], axis=1)
             #     cliques.append([nr_wl + i + 1])
-            
 
         return new_probs
