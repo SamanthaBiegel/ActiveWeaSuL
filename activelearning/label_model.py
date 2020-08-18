@@ -324,16 +324,15 @@ class LabelModel(ModelPerformance):
         if not self.add_cliques:
             idx = np.array(range(self.nr_wl*self.y_dim))
             n_cliques = self.nr_wl
+        elif self.active_learning == "cov" and self.add_cliques:
+            idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
+            n_cliques = 2
         else:
             cliques_joined = self.cliques.copy()
             for i, clique in enumerate(cliques_joined):
                 cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
             idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
             n_cliques = len(cliques_joined)
-
-        if self.active_learning == "cov" and self.add_cliques:
-            idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
-            n_cliques = 2
 
         # Product of weak label or clique probabilities per data point
         # Junction tree theorem
