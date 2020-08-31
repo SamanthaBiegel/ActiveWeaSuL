@@ -142,15 +142,15 @@ class LabelModel(ModelPerformance):
 
     def get_psi(self):
 
-        return self._get_psi(self.label_matrix)
+        return self._get_psi(self.label_matrix, self.cliques, self.nr_wl)
 
-    def _get_psi(self, label_matrix):
+    def _get_psi(self, label_matrix, cliques, nr_wl):
         """Transform label matrix to indicator variables"""
 
         psi_list = []
         col_counter = 0
         wl_idx = {}
-        for i in range(self.nr_wl):
+        for i in range(nr_wl):
             wl = label_matrix[:, i]
             wl_onehot = (wl[:, np.newaxis] == self.y_set)*1
             psi_list.append(wl_onehot)
@@ -164,7 +164,7 @@ class LabelModel(ModelPerformance):
 
         psi_int_list = []
         clique_idx = {}
-        for clique in self.cliques:
+        for clique in cliques:
             clique_comb = itertools.chain.from_iterable(
                 itertools.combinations(clique, r) for r in range(len(clique)+1) if r > 1)
             for i, comb in enumerate(clique_comb):

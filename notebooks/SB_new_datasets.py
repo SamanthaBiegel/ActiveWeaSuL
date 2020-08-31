@@ -78,8 +78,8 @@ X = np.zeros((N, 2))
 
 for i in range(0, 2):
     for j in range(len(p_z_[i])):
-        scale = np.random.uniform(0.2, 0.5)
-#         scale = [[0.2, 0.3], [0.3, 0.2]][i][j]
+#         scale = np.random.uniform(0.2, 0.5)
+        scale = [[0.2, 0.3], [0.3, 0.2]][i][j]
         X[np.logical_and((data.y == i), (cluster == j)), :] = np.random.normal(loc=centroids[i][j, :], scale=np.array([scale, scale]), size=(np.logical_and((data.y == i), (cluster == j)).sum(), 2))
         
 # -
@@ -95,38 +95,36 @@ plot_probs(df, probs=data.y, soft_labels=False)
 
 df.loc[:, "wl1"] = (df["x2"]>0.5)*1
 df.loc[:, "wl2"] = (df["x1"]>0.5)*1
-df.loc[:, "wl3"] = (df["x1"]>-0.5)*1
-df.loc[:, "wl4"] = (df["x2"]>-0.5)*1
+# df.loc[:, "wl3"] = (df["x1"]>-0.5)*1
+# df.loc[:, "wl4"] = (df["x2"]>-0.5)*1
 
 # df.loc[:, "wl1"] = (df["x2"]>3)*1
 # df.loc[:, "wl2"] = (df["x1"]<-1)*1
 # df.loc[:, "wl3"] = (df["x1"]<1)*1
 
 # +
-# def random_LF(y, fp, fn, abstain):
-#     ab = np.random.uniform()
+def random_LF(y, fp, fn, abstain):
+    ab = np.random.uniform()
     
-#     if ab < abstain:
-#         return -1
+    if ab < abstain:
+        return -1
     
-#     threshold = np.random.uniform()
+    threshold = np.random.uniform()
     
-#     if y == 1 and threshold < fn:
-#         return 0
+    if y == 1 and threshold < fn:
+        return 0
         
-#     elif y == 0 and threshold < fp:
-#         return 1
-        
+    elif y == 0 and threshold < fp:
+        return 1
     
-    
-#     return y
+    return y
 
 # df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
 # df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
-# df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
+df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
 # -
 
-label_matrix = np.array(df[["wl1", "wl2", "wl3", "wl4", "y"]])
+label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
 
 _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
@@ -140,11 +138,11 @@ final_model_kwargs = {'input_dim': 2,
                       'n_epochs': 250}
 
 class_balance = np.array([0.5,0.5])
-cliques=[[0],[1,2]]
-# cliques=[[0],[1],[2]]
+# cliques=[[0],[1,2]]
+cliques=[[0],[1],[2]]
 
 al_kwargs = {'add_prob_loss': False,
-             'add_cliques': True,
+             'add_cliques': False,
              'active_learning': "probs",
              'final_model_kwargs': final_model_kwargs,
              'df': df,
@@ -171,7 +169,7 @@ L = label_matrix[:, :-1]
 lm = LabelModel(final_model_kwargs=final_model_kwargs,
                 df=df,
                 active_learning=False,
-                add_cliques=True,
+                add_cliques=False,
                 add_prob_loss=False,
                 n_epochs=200,
                 lr=1e-1)
@@ -192,10 +190,7 @@ lm.mu
 
 lm.get_true_mu()
 
-y_onehot = ((lm.y_set == data.y[..., None]) * 1).reshape(N, -1)
-
-
-L_y = np.concatenate([lm.psi, y_onehot], axis=1)
+psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
 
 
 def color(df_opt):
@@ -207,6 +202,8 @@ def color(df_opt):
         df1.loc[(idx[0][i], idx[1][i])] = c2
     return df1
 
+
+pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
 
 pd.DataFrame(np.linalg.pinv(np.cov(lm.psi.T))).style.apply(color, axis=None)
 

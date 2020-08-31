@@ -59,28 +59,29 @@ df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
+
 # +
-# def random_LF(y, fp, fn, abstain):
-#     ab = np.random.uniform()
+def random_LF(y, fp, fn, abstain):
+    ab = np.random.uniform()
     
-#     if ab < abstain:
-#         return -1
+    if ab < abstain:
+        return -1
     
-#     threshold = np.random.uniform()
+    threshold = np.random.uniform()
     
-#     if y == 1 and threshold < fn:
-#         return 0
+    if y == 1 and threshold < fn:
+        return 0
         
-#     elif y == 0 and threshold < fp:
-#         return 1
+    elif y == 0 and threshold < fp:
+        return 1
         
     
     
-#     return y
+    return y
 
 # df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
 # df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
-# df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
+# df.loc[:, "wl3"] = [random_LF(y, fp=0.6, fn=0.8, abstain=0) for y in df["y"]]
 # -
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
@@ -89,6 +90,10 @@ _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
 plot_probs(df, probs=inv_idx, soft_labels=False)
 
+psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
+
+pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
+
 # +
 final_model_kwargs = {'input_dim': 2,
                       'output_dim': 2,
@@ -96,7 +101,7 @@ final_model_kwargs = {'input_dim': 2,
                       'batch_size': 256,
                       'n_epochs': 250}
 
-class_balance = np.array([0.5,0.5])
+class_balance = np.array([1 - p_z, p_z])
 cliques=[[0],[1,2]]
 # cliques=[[0],[1],[2]]
 
@@ -112,20 +117,6 @@ al_kwargs = {'add_prob_loss': False,
 # # Margin strategy
 
 # +
-it = 20
-query_strategy = "margin"
-
-L = label_matrix[:, :-1]
-    
-al = ActiveLearningPipeline(it=it,
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=1)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-print("Accuracy:", al._accuracy(Y_probs_al, data.y))
-
-# +
 L = label_matrix[:, :-1]
 
 lm = LabelModel(final_model_kwargs=final_model_kwargs,
@@ -137,16 +128,38 @@ lm = LabelModel(final_model_kwargs=final_model_kwargs,
                 lr=1e-1)
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.accuracy()
+lm.analyze()
+lm.accuracy
+
+# +
+it = 20
+query_strategy = "margin"
+
+L = label_matrix[:, :-1]
+    
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0.5)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al.analyze()
+print("Accuracy:", al._accuracy(Y_probs_al, data.y))
 # -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final_al = fm.fit(features=X, labels=Y_probs_al.detach().numpy()).predict()
-fm.accuracy()
+probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm.analyze().accuracy
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final = fm.fit(features=X, labels=Y_probs.detach().numpy()).predict()
-fm.accuracy()
+probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
+fm.analyze().MCC()
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()
+fm.analyze().MCC()
+
+al.mu
 
 lm.mu
 
@@ -154,9 +167,15 @@ lm.get_true_mu()
 
 plot_probs(df, lm.predict_true().detach().numpy())
 
+plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
+
 plot_probs(df, Y_probs.detach().numpy())
 
-plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
+plot_probs(df, probs_final_al.detach().numpy())
+
+plot_probs(df, probs_final.detach().numpy())
+
+
 
 al.plot_iterations()
 
@@ -253,6 +272,88 @@ app.layout = html.Div([
 
 app.run_server(debug=True, use_reloader=False)
 # -
+
+# # Class balance
+
+p_z = 0.01
+data = SyntheticData(N, p_z, centroids)
+df = data.sample_data_set().create_df()
+
+# +
+df.loc[:, "wl1"] = (df["x2"]<0.4)*1
+df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
+df.loc[:, "wl3"] = (df["x1"]<-1)*1
+
+label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+
+# +
+final_model_kwargs = {'input_dim': 2,
+                      'output_dim': 2,
+                      'lr': 0.001,
+                      'batch_size': 256,
+                      'n_epochs': 250}
+
+class_balance = np.array([1 - p_z, p_z])
+cliques=[[0],[1,2]]
+# cliques=[[0],[1],[2]]
+
+al_kwargs = {'add_prob_loss': False,
+             'add_cliques': True,
+             'active_learning': "probs",
+             'final_model_kwargs': final_model_kwargs,
+             'df': df,
+             'n_epochs': 200
+            }
+
+# +
+L = label_matrix[:, :-1]
+
+lm = LabelModel(final_model_kwargs=final_model_kwargs,
+                df=df,
+                active_learning=False,
+                add_cliques=True,
+                add_prob_loss=False,
+                n_epochs=200,
+                lr=1e-1)
+    
+Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+lm.analyze()
+# -
+
+lm.print_metrics()
+
+# +
+it = 20
+query_strategy = "margin"
+
+L = label_matrix[:, :-1]
+    
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al.analyze()
+# -
+
+al.print_metrics()
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
+fm.analyze()
+
+fm.print_metrics()
+
+fm_al = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final_al = fm_al.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm_al.analyze()
+
+fm_al.print_metrics()
+
+plot_probs(df, Y_probs.detach().numpy())
+
+plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
 
 

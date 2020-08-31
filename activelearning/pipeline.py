@@ -251,7 +251,7 @@ class ActiveLearningPipeline(LabelModel):
                                      y=true_mu_df[i],
                                      opacity=0.4,
                                      mode="lines",
-                                     line=dict(dash="dash"),
+                                     line=dict(dash="dash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
                                      hoverinfo="none",
                                      showlegend=False))
 
