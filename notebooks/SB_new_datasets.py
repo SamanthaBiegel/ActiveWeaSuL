@@ -46,18 +46,61 @@ from pipeline import ActiveLearningPipeline
 pd.options.display.expand_frame_repr = False 
 np.set_printoptions(suppress=True, precision=16)
 
+# +
 N = 10000
-centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
+
+
+# centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
+# centroids = {0: np.array([[1.1, 2.3], [-2, 1.5], [3, 3]]), 1: np.array([[-0.8, -0.5], [1.5, -0.5], [-3, -1.5]])}
+# centroids = {0: np.array([[0, 0], [4, 0], [2, -2]]), 1: np.array([[2, 2], [-2, 2], [0, 4]])}
+
+centroids = {0: np.array([[-1, 0], [0, -1]]), 1: np.array([[0,1], [1, 0]])}
+
 p_z = 0.5
 
-data = SyntheticData(N, p_z, centroids)
-df = data.sample_data_set().create_df()
+# p_z_ = {0: np.array([0.5, 0.25, 0.25]), 1: np.array([0.5, 0.25, 0.25])}
+
+p_z_ = {0: np.array([0.25, 0.75]), 1: np.array([0.75, 0.25])}
+
+# p_z_ = {0: np.array([1/3, 1/3, 1/3]), 1: np.array([1/3, 1/3, 1/3])}
+# -
+
+data = SyntheticData(N, p_z, np.array([[0.1, 1.3], [-0.8, -0.5]]))
+data.sample_data_set()
+
+cluster = np.zeros((N))
+
+cluster[data.y == 0] = np.random.choice(a=np.arange(len(p_z_[0])), size=(len(data.y[data.y == 0])), p=p_z_[0])
+cluster[data.y == 1] = np.random.choice(a=np.arange(len(p_z_[1])), size=(len(data.y[data.y == 1])), p=p_z_[1])
+
+# +
+X = np.zeros((N, 2))
+
+for i in range(0, 2):
+    for j in range(len(p_z_[i])):
+        scale = np.random.uniform(0.2, 0.5)
+#         scale = [[0.2, 0.3], [0.3, 0.2]][i][j]
+        X[np.logical_and((data.y == i), (cluster == j)), :] = np.random.normal(loc=centroids[i][j, :], scale=np.array([scale, scale]), size=(np.logical_and((data.y == i), (cluster == j)).sum(), 2))
+        
+# -
+
+df = pd.DataFrame({'x1': X[:, 0], 'x2': X[:, 1], 'y': data.y})
 
 plot_probs(df, probs=data.y, soft_labels=False)
 
-df.loc[:, "wl1"] = (df["x2"]<0.4)*1
-df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
-df.loc[:, "wl3"] = (df["x1"]<-1)*1
+# +
+# df.loc[:, "wl1"] = (df["x2"]<0.4)*1
+# df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
+# df.loc[:, "wl3"] = (df["x1"]<-1)*1
+
+df.loc[:, "wl1"] = (df["x2"]>0.5)*1
+df.loc[:, "wl2"] = (df["x1"]>0.5)*1
+df.loc[:, "wl3"] = (df["x1"]>-0.5)*1
+df.loc[:, "wl4"] = (df["x2"]>-0.5)*1
+
+# df.loc[:, "wl1"] = (df["x2"]>3)*1
+# df.loc[:, "wl2"] = (df["x1"]<-1)*1
+# df.loc[:, "wl3"] = (df["x1"]<1)*1
 
 # +
 # def random_LF(y, fp, fn, abstain):
@@ -83,7 +126,7 @@ df.loc[:, "wl3"] = (df["x1"]<-1)*1
 # df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
 # -
 
-label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+label_matrix = np.array(df[["wl1", "wl2", "wl3", "wl4", "y"]])
 
 _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
@@ -107,9 +150,6 @@ al_kwargs = {'add_prob_loss': False,
              'df': df,
              'n_epochs': 200
             }
-# -
-
-# # Margin strategy
 
 # +
 it = 20
@@ -152,107 +192,42 @@ lm.mu
 
 lm.get_true_mu()
 
+y_onehot = ((lm.y_set == data.y[..., None]) * 1).reshape(N, -1)
+
+
+L_y = np.concatenate([lm.psi, y_onehot], axis=1)
+
+
+def color(df_opt):
+    c1 = 'background-color: red'
+    c2 = 'background-color: green'
+    df1 = pd.DataFrame(c1, index=df_opt.index, columns=df_opt.columns)
+    idx = np.where(lm.mask)
+    for i in range(len(idx[0])):
+        df1.loc[(idx[0][i], idx[1][i])] = c2
+    return df1
+
+
+pd.DataFrame(np.linalg.pinv(np.cov(lm.psi.T))).style.apply(color, axis=None)
+
+pd.DataFrame(np.linalg.pinv(np.cov(L_y.T))).style.apply(color, axis=None)
+
+pd.DataFrame(np.linalg.pinv(np.cov(L_y.T))).style.apply(color, axis=None)
+
 plot_probs(df, lm.predict_true().detach().numpy())
 
 plot_probs(df, Y_probs.detach().numpy())
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
-al.plot_iterations()
-
-al.plot_parameters()
-
-fig = al.plot_probabilistic_labels()
-
-conf_list = np.vectorize(al.confs.get)(al.unique_inverse[al.queried])
-
-# +
-input_df = pd.DataFrame.from_dict(al.unique_prob_dict)
-input_df = input_df.stack().reset_index().rename(columns={"level_0": "WL Configuration", "level_1": "Active Learning Iteration", 0: "P(Y = 1|...)"})
-
-input_df["WL Configuration"] = input_df["WL Configuration"].map(al.confs)
-# -
-
-for i, conf in enumerate(np.unique(conf_list)):
-    x = np.array(range(it))[conf_list == conf]
-    y = input_df[(input_df["WL Configuration"] == conf)].set_index("Active Learning Iteration").iloc[x]["P(Y = 1|...)"]
-
-    fig.add_trace(go.Scatter(x=x, y=y, mode="markers", marker=dict(size=10, color="black"), showlegend=False, hoverinfo="none"))
-
-fig.show()
-
-al.plot_parameters()
-
-plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
-
-probs_df = pd.DataFrame.from_dict(al.prob_dict)
-probs_df = probs_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
-probs_df = probs_df.merge(df, left_on = "x", right_index=True)
-
-# +
-fig = px.scatter(probs_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
-fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
-                  width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
-
-# fig.show()
-
-# app = dash.Dash()
-# app.layout = html.Div([
-#     dcc.Graph(figure=fig)
-# ])
-
-# app.run_server(debug=True, use_reloader=False)
-# -
-
-# # Margin + information density
-
-# +
-it = 20
-query_strategy = "margin_density"
-
-L = label_matrix[:, :-1]
-    
-al = ActiveLearningPipeline(it=it,
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=0)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-print("Accuracy:", al._accuracy(Y_probs_al, data.y))
-# -
-
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
-fm.accuracy()
-
-al.plot_parameters()
-
-al.plot_iterations()
-
-al.plot_iterations()
-
-al.plot_parameters()
+plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
-prob_label_df = pd.DataFrame.from_dict(al.prob_dict)
-prob_label_df = prob_label_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
-prob_label_df = prob_label_df.merge(df, left_on = "x", right_index=True)
+plot_probs(df, probs_final.detach().numpy())
 
-# +
-fig = px.scatter(prob_label_df, x="x1", y="x2", color="prob_y", animation_frame="iteration", color_discrete_sequence=np.array(px.colors.diverging.Geyser)[[0,-1]], color_continuous_scale=px.colors.diverging.Geyser, color_continuous_midpoint=0.5)
-fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
-                  width=1000, height=1000, xaxis_title="x1", yaxis_title="x2", template="plotly_white")
+plot_probs(df, probs_final_al.detach().numpy())
 
-# fig2.show()
-
-app = dash.Dash()
-app.layout = html.Div([
-    dcc.Graph(figure=fig)
-])
-
-app.run_server(debug=True, use_reloader=False)
-# -
 
 
 

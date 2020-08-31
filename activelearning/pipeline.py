@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import random
+from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import NearestNeighbors
 import torch
 from tqdm import tqdm_notebook as tqdm
@@ -21,6 +22,7 @@ class ActiveLearningPipeline(LabelModel):
                  active_learning: str = "probs",
                  query_strategy: str = "margin",
                  alpha: float = 0.01,
+                 beta: float = 0.1,
                  add_neighbors: int = 0,
                  add_cliques: bool = True,
                  add_prob_loss: bool = False,
@@ -29,6 +31,7 @@ class ActiveLearningPipeline(LabelModel):
         self.it = it
         self.query_strategy = query_strategy
         self.alpha = alpha
+        self.beta = beta
         self.add_neighbors = add_neighbors
         self.randomness = randomness
         super().__init__(final_model_kwargs=final_model_kwargs,
@@ -48,25 +51,55 @@ class ActiveLearningPipeline(LabelModel):
         return - prod.sum(axis=1)
 
     def list_options(self, values, criterium):
+        """Return options with equal informativeness according to criterium"""
 
         return [j for j, v in enumerate(values) if v == criterium and self.ground_truth_labels[j] == -1]
 
-    def margin_strategy(self, probs):
+    def margin(self, probs):
+        """P(Y=1|...) - P(Y=0|...)"""
 
         abs_diff = torch.abs(probs[:, 1] - probs[:, 0])
 
-        # Find data points the model where the model is least confident
+        return abs_diff
+
+    def margin_strategy(self, probs):
+        """List query options based on minimum margin strategy"""
+
+        abs_diff = self.margin(probs)
+
         minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1)
         
         return self.list_options(abs_diff, minimum)
 
+    def uncertainty(self, probs):
+        """1 - P(Y=1|...)"""
+
+        return 1 - torch.max(probs, dim=1, keepdim=True).values
+
     def entropy_strategy(self, probs):
+        """List query options based on maximum entropy strategy"""
 
         H = self.entropy(probs)
 
         maximum = max(j for i, j in enumerate(H) if self.ground_truth_labels[i] == -1)
 
         return self.list_options(H, maximum)
+
+    def information_density(self):
+        """Compute information density of each point"""
+
+        I = torch.Tensor(1 / (self.N - len(self.queried)) * squareform(1 / pdist(self.X, metric="euclidean")).sum(axis=1))
+
+        return I
+
+    def margin_density(self, probs):
+        """Query data point based on combined margin and information density measures"""
+
+        measure = (1/self.margin(probs))**self.beta * self.information_density()**(1 - self.beta)
+
+        maximum = max([j for i, j in enumerate(measure) if self.ground_truth_labels[i] == -1])
+
+        return self.list_options(measure, maximum)[0]
 
     def query(self, probs):
         """Choose data point to label from label predictions"""
@@ -81,6 +114,9 @@ class ActiveLearningPipeline(LabelModel):
 
         elif self.query_strategy == "entropy":
             indices = self.entropy_strategy(probs)
+        
+        elif self.query_strategy == "margin_density":
+            return self.margin_density(probs)
 
         # Make really random
         random.seed(random.SystemRandom().random())
@@ -92,6 +128,7 @@ class ActiveLearningPipeline(LabelModel):
             return random.choice(indices)
 
     def logging(self, count, probs, selected_point=None):
+        """Keep track of accuracy and other metrics"""
 
         if count == 0:
             self.accuracies = []
@@ -111,6 +148,7 @@ class ActiveLearningPipeline(LabelModel):
         return self
 
     def update_parameters(self, n_queried, alpha):
+        """Use update rule to adjust parameters based on sampled data points"""
 
         if n_queried == 1:
             self.mu_0 = self.mu.clone()
@@ -126,17 +164,17 @@ class ActiveLearningPipeline(LabelModel):
 
         self.label_matrix = label_matrix
         self.ground_truth_labels = np.full_like(self.df["y"].values, -1)
-        X = self.df[["x1", "x2"]].values
+        self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
         nr_wl = label_matrix.shape[1]
 
         if self.active_learning == "cov":
             # self.add_cliques = False
-            self.label_matrix = np.concatenate([self.label_matrix, self.ground_truth_labels], axis=1)
+            self.label_matrix = np.concatenate([self.label_matrix, self.ground_truth_labels[:, None]], axis=1)
 
         if self.add_neighbors:
             neigh = NearestNeighbors(n_neighbors=self.add_neighbors)
-            neigh.fit(X)
+            neigh.fit(self.X)
 
         old_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
@@ -150,7 +188,7 @@ class ActiveLearningPipeline(LabelModel):
 
             if self.active_learning == "cov":
                 if self.add_neighbors:
-                    neighbors_sel_idx = neigh.kneighbors(X[sel_idx, :][None, :], return_distance=False)
+                    neighbors_sel_idx = neigh.kneighbors(self.X[sel_idx, :][None, :], return_distance=False)
                     self.label_matrix[neighbors_sel_idx, nr_wl] = self.y[sel_idx]
                 else:
                     self.label_matrix[sel_idx, nr_wl] = self.y[sel_idx]
@@ -183,12 +221,13 @@ class ActiveLearningPipeline(LabelModel):
 
         input_df[categories] = input_df[categories].map(label_dict)
 
-        fig = px.line(input_df, x="Active Learning Iteration", y=y_axis, color=categories, color_discrete_sequence=np.array(px.colors.qualitative.Pastel))
+        fig = px.line(input_df, x="Active Learning Iteration", y=y_axis, color=categories, color_discrete_sequence=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold))
         fig.update_layout(height=700, template="plotly_white")
 
         return fig
 
     def plot_parameters(self):
+        """Plot each parameter against number of iterations"""
 
         class_list = []
         for key, value in self.wl_idx.items():
@@ -201,31 +240,42 @@ class ActiveLearningPipeline(LabelModel):
 
         idx_dict = {value: key for key, idx_list in self.wl_idx.items() for value in idx_list}
 
-        label_dict = {list(range(10))[i]: "mu_" + str(list(range(10))[i]) + " = P(wl_" + str(item) + " = " + class_list[i] + ", Y = 1)" for i, item in enumerate(idx_dict.values())}
+        label_dict = {list(range(len(idx_dict.keys())))[i]: "mu_" + str(list(range(len(idx_dict.keys())))[i]) + " = P(wl_" + str(item) + " = " + class_list[i] + ", Y = 1)" for i, item in enumerate(idx_dict.values())}
 
         fig = self.plot_dict(self.mu_dict, "Parameter", "Probability", label_dict)
 
-        true_mu_df = pd.DataFrame(np.repeat(self.get_true_mu().detach().numpy()[:, 1][None, :], self.it, axis=0))
+        true_mu_df = pd.DataFrame(np.repeat(self.get_true_mu().detach().numpy()[:, 1][None, :], self.it + 1, axis=0))
 
-        for i in range(10):
+        for i in range(len(idx_dict.keys())):
             fig.add_trace(go.Scatter(x=true_mu_df.index,
                                      y=true_mu_df[i],
                                      opacity=0.4,
-                                     line=dict(color=np.array(px.colors.qualitative.Pastel)[i], dash="dash"),
+                                     mode="lines",
+                                     line=dict(dash="dash"),
                                      hoverinfo="none",
                                      showlegend=False))
 
         return fig
 
     def plot_probabilistic_labels(self):
+        """Plot probabilistic labels"""
 
         fig = self.plot_dict(self.unique_prob_dict, "WL Configuration", "P(Y = 1|...)", self.confs)
+
+        fig.add_trace(go.Scatter(x=list(range(self.it + 1)),
+                                 y=np.repeat(0.5, self.it + 1),
+                                 opacity=0.4,
+                                 showlegend=False,
+                                 hoverinfo="none",
+                                 mode="lines",
+                                 line=dict(color="black", dash="dash")))
 
         fig.update_yaxes(range=[-0.2, 1.2])
 
         return fig
 
     def plot_sampled_points(self):
+        """Plot weak label configurations that have been sampled from over time"""
 
         conf_list = np.vectorize(self.confs.get)(self.unique_inverse[self.queried])
 
@@ -242,6 +292,7 @@ class ActiveLearningPipeline(LabelModel):
         return fig
 
     def plot_sampled_classes(self):
+        """Plot sampled ground truth labels over time"""
 
         fig = go.Figure()
 
@@ -257,13 +308,14 @@ class ActiveLearningPipeline(LabelModel):
         return fig
 
     def plot_iterations(self):
+        """Plot sampled weak label configurations, ground truth labels and resulting probabilistic labels over time"""
 
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.2, 0.1, 0.7])
 
         fig.add_trace(self.plot_sampled_points().data[0], row=1, col=1)
-        for i in range(2):
+        for i in range(self.y_dim):
             fig.add_trace(self.plot_sampled_classes().data[i], row=2, col=1)
-        for i in range(6):
+        for i in range(len(self.unique_idx) + 1):
             fig.add_trace(self.plot_probabilistic_labels().data[i], row=3, col=1)
             
         fig.update_layout(height=1200, template="plotly_white")

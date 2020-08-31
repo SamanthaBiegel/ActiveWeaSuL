@@ -149,18 +149,18 @@ class_balance = np.array([0.5,0.5])
 L = label_matrix[:, :-1]
 cliques=[[0],[1,2]]
 
-for i in range(1):
+# for i in range(1):
 
-    lm = LabelModel(final_model_kwargs=final_model_kwargs,
-                    df=df,
-                    active_learning=False,
-                    add_cliques=True,
-                    add_prob_loss=False,
-                    n_epochs=200,
-                    lr=1e-1)
-    
-    Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-    print(lm.accuracy())
+lm = LabelModel(final_model_kwargs=final_model_kwargs,
+                df=df,
+                active_learning=False,
+                add_cliques=True,
+                add_prob_loss=False,
+                n_epochs=200,
+                lr=1e-1)
+
+Y_probs_cliques = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+print(lm.accuracy())
 
 
 # -

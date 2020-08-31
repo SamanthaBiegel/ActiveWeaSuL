@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-def plot_probs(df, probs, add_labeled_points=None, soft_labels=True, subset=None):
+def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=True, subset=None):
     """Plot data points with hard labels or estimated probability of one class"""
 
     if soft_labels:
@@ -21,14 +21,14 @@ def plot_probs(df, probs, add_labeled_points=None, soft_labels=True, subset=None
                                  mode="markers",
                                  hovertext=df["label"],
                                  hoverinfo="text",
-                                 marker=dict(size=8, color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"), cmid=0.5),
+                                 marker=dict(size=8, color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"), cmid=midpoint),
                                  showlegend=False))
 
     if add_labeled_points is not None:
         fig.add_trace(go.Scattergl(x=df["x1"].values[add_labeled_points],
                                    y=df["x2"].values[add_labeled_points],
                                    mode="markers",
-                                   marker=dict(size=6.5, color=df["label"].values[add_labeled_points], colorscale=px.colors.diverging.Geyser, line=dict(width=1.5), opacity=1),
+                                   marker=dict(size=6.5, color=df["y"].values[add_labeled_points], colorscale=px.colors.diverging.Geyser, line=dict(width=1.5), opacity=1, cmid=midpoint),
                                    showlegend=False))
 
     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),
@@ -47,6 +47,5 @@ def plot_accuracies(accuracies, prob_accuracy=None):
     if prob_accuracy:
         fig.add_trace(go.Scatter(x=x, y=np.repeat(prob_accuracy, len(accuracies))))
 
-    from IPython.display import HTML, display
-    display(HTML(fig.to_html()))
+    return fig
 
