@@ -119,9 +119,9 @@ def random_LF(y, fp, fn, abstain):
     
     return y
 
-# df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
-# df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
-df.loc[:, "wl3"] = [random_LF(y, fp=0.2, fn=0.3, abstain=0) for y in df["y"]]
+df.loc[:, "wl1"] = [random_LF(y, fp=0.6, fn=0.2, abstain=0.6) for y in df["y"]]
+df.loc[:, "wl2"] = [random_LF(y, fp=0.3, fn=0.4, abstain=0.7) for y in df["y"]]
+df.loc[:, "wl3"] = [random_LF(y, fp=0.1, fn=0.7, abstain=0.4) for y in df["y"]]
 # -
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
@@ -161,7 +161,8 @@ al = ActiveLearningPipeline(it=it,
                             randomness=1)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-print("Accuracy:", al._accuracy(Y_probs_al, data.y))
+al.analyze()
+al.accuracy
 
 # +
 L = label_matrix[:, :-1]
@@ -175,7 +176,8 @@ lm = LabelModel(final_model_kwargs=final_model_kwargs,
                 lr=1e-1)
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.accuracy()
+lm.analyze()
+lm.accuracy
 # -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
@@ -184,11 +186,93 @@ fm.accuracy()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=X, labels=Y_probs.detach().numpy()).predict()
-fm.accuracy()
+fm.analyze()
+fm.accuracy
 
 lm.mu
 
+lm.P_lambda
+
 lm.get_true_mu()
+
+(0.0854*0.2667)/(0.5)/0.0118
+
+df
+
+lambda_combs, lambda_index, lambda_counts = np.unique(lm.label_matrix[:, [0,1,2]], axis=0, return_counts=True, return_inverse=True)
+
+# +
+counts_new = lambda_counts.copy()
+P_lambda = lm.P_lambda
+rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
+rows_abstain, cols_abstain = np.where(lambda_combs == -1)
+
+for i, comb in enumerate(lambda_combs):
+    nr_non_abstain = (comb != -1).sum()
+    if nr_non_abstain < lm.nr_wl:
+        if nr_non_abstain == 0:
+            counts_new[i] = 0
+        else:
+#             print(cols_abstain[rows_abstain == i])
+#             print(lambda_combs[i, :])
+#             print(lambda_combs[i, cols_abstain[rows_abstain == i]])
+            match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
+#             print(match_rows)
+            counts_new[i] = lambda_counts[match_rows].sum()
+#             print(i)
+#             print(comb)
+#             match_abstain_rows = np.where((lambda_combs[:, cols_abstain[rows_abstain == i]] == lambda_combs[i, cols_abstain[rows_abstain == i]]).all(axis=1))
+#             print(lambda_counts[match_abstain_rows[0]].sum())
+            
+#             break
+
+
+        
+# -
+
+counts_new/N
+
+lambda_combs
+
+(df["wl2"] == 1).sum()
+
+np.where(lambda_combs == -1)
+
+np.where(lambda_combs != -1)
+
+# +
+# np.where(lambda_combs[:,0] == -1 & (lambda_combs != -1).sum(axis=1) == 2)[0]
+# -
+
+lambda_combs[match_rows, :]
+
+counts_new
+
+(counts_new/lambda_counts[np.where((lambda_combs != -1).sum(axis=1) == 2)[0]].sum())[np.where((lambda_combs != -1).sum(axis=1) == 2)[0]]
+
+lambda_counts
+
+lambda_combs
+
+lambda_combs[np.where((lambda_combs != -1).all(axis=1))]
+
+rows, cols = np.where(lambda_combs != -1)
+
+rows
+
+cols[rows == 4]
+
+(lambda_counts[11] + lambda_counts[14] + lambda_counts[17])/N
+
+lambda_index
+
+lambda_counts
+
+df.iloc[7]
+
+lm.P_lambda[7]
+
+Y_probs.min()
 
 psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
 

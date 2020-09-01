@@ -323,13 +323,14 @@ lm.analyze()
 lm.print_metrics()
 
 # +
-it = 20
-query_strategy = "margin"
+it = 10
+query_strategy = "margin_density"
 
 L = label_matrix[:, :-1]
     
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
+                            beta=1,
                             query_strategy=query_strategy,
                             randomness=0)
 
@@ -351,12 +352,20 @@ fm_al.analyze()
 
 fm_al.print_metrics()
 
+plot_probs(df, lm.predict_true().numpy())
+
 plot_probs(df, Y_probs.detach().numpy())
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
+plot_probs(df, probs_final.detach().numpy())
 
+plot_probs(df, probs_final_al.detach().numpy())
 
+al.plot_parameters()
 
+al.get_true_mu().numpy()
+
+al.mu
 
 
