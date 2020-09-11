@@ -322,24 +322,31 @@ class LabelModel(ModelPerformance):
         """Predict labels from given parameters and class balance"""
 
         if not self.add_cliques:
-            idx = np.array(range(self.nr_wl*self.y_dim))
+            self.max_clique_idx = np.array(range(self.nr_wl*self.y_dim))
             n_cliques = torch.Tensor(self.label_matrix != -1).sum(dim=1)
         elif self.active_learning == "cov" and self.add_cliques:
-            idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
+            self.max_clique_idx = list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["0", "1_2"]]))
             n_cliques = 2
         else:
             cliques_joined = self.cliques.copy()
             for i, clique in enumerate(cliques_joined):
                 cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
-            idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
-            n_cliques = torch.Tensor(self.label_matrix != -1).sum(dim=1)
+            self.max_clique_idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
+            # n_cliques = torch.Tensor(self.label_matrix != -1).sum(dim=1)
+            # n_cliques = len(cliques_joined)
+            clique_sums = torch.zeros((self.N, len(self.cliques)))
+            for i, clique in enumerate(self.cliques):
+                clique_sums[:, i] = torch.Tensor(self.label_matrix[:, clique] != -1).sum(dim=1) > 0
+            n_cliques = clique_sums.sum(dim=1)
 
         # Product of weak label or clique probabilities per data point
         # Junction tree theorem
-        psi_idx = torch.Tensor(self.psi[:, idx].T)
-        clique_probs = mu[idx, :] * psi_idx
+        psi_idx = torch.Tensor(self.psi[:, self.max_clique_idx].T)
+        clique_probs = mu[self.max_clique_idx, :] * psi_idx
         clique_probs[psi_idx == 0] = 1
         P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(P_Y ** (n_cliques - 1))
+        # Mask out data points with abstains in all cliques
+        P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
         if self.active_learning == "cov" and self.add_cliques:
@@ -359,6 +366,8 @@ class LabelModel(ModelPerformance):
                     new_counts[i] = lambda_counts[match_rows].sum()
 
         P_lambda = torch.Tensor((new_counts/self.N)[lambda_index][:, None])
+        self.P_lambda = P_lambda
+        self.P_joint_lambda_Y = P_joint_lambda_Y
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / P_lambda)#.clamp(0,1)

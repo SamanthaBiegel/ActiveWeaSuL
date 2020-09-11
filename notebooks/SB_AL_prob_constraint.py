@@ -38,7 +38,7 @@ import dash_core_components as dcc
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
 from final_model import DiscriminativeModel
-from plot import plot_probs, plot_accuracies
+from plot import plot_probs
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 # -
@@ -90,9 +90,11 @@ _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
 plot_probs(df, probs=inv_idx, soft_labels=False)
 
-psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
+# +
+# psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
 
-pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
+# +
+# pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
 
 # +
 final_model_kwargs = {'input_dim': 2,
@@ -129,7 +131,27 @@ lm = LabelModel(final_model_kwargs=final_model_kwargs,
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
-lm.accuracy
+lm.print_metrics()
+
+# +
+it = 1
+query_strategy = "test"
+
+L = label_matrix[:, :-1]
+    
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+al.analyze()
+al.print_metrics()
+# -
+
+al.metrics
+
+al.final_metrics
 
 # +
 it = 20
@@ -140,24 +162,45 @@ L = label_matrix[:, :-1]
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=0.5)
+                            randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.analyze()
-print("Accuracy:", al._accuracy(Y_probs_al, data.y))
+al.print_metrics()
+# -
+
+al.final_accuracies
+
+al.accuracies
+
+# +
+x = list(range(al.it))
+
+fig = go.Figure(data=go.Scatter(x=x, y=al.final_accuracies, name="Margin sampling"))
+fig.update_layout(height=200, template="plotly_white", xaxis_title="Active Learning Iteration", yaxis_title="Accuracy")
+
+fig.show()
 # -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
-fm.analyze().accuracy
+probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()
+fm.analyze()
+fm.print_metrics()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
-fm.analyze().MCC()
+fm.analyze()
+fm.print_metrics()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()
-fm.analyze().MCC()
+probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm.analyze()
+fm.print_metrics()
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
+fm.analyze()
+fm.print_metrics()
 
 al.mu
 
@@ -165,7 +208,13 @@ lm.mu
 
 lm.get_true_mu()
 
+lm.P_lambda
+
+lm.nr_wl
+
 plot_probs(df, lm.predict_true().detach().numpy())
+
+plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
@@ -173,13 +222,21 @@ plot_probs(df, Y_probs.detach().numpy())
 
 plot_probs(df, probs_final_al.detach().numpy())
 
+plot_probs(df, probs_final_al.detach().numpy())
+
 plot_probs(df, probs_final.detach().numpy())
-
-
 
 al.plot_iterations()
 
 al.plot_parameters()
+
+al.mu_dict
+
+al.mu_dict[1][6] - al.mu_dict[0][6]
+
+al.mu_dict[1][7] - al.mu_dict[0][7] + (al.mu_dict[1][9] - al.mu_dict[0][9])
+
+al.mu_dict[1][9] - al.mu_dict[0][9]
 
 fig = al.plot_probabilistic_labels()
 
@@ -276,6 +333,7 @@ app.run_server(debug=True, use_reloader=False)
 # # Class balance
 
 p_z = 0.01
+centroids = np.array([[0.1, 1.3], [-1, -1]])
 data = SyntheticData(N, p_z, centroids)
 df = data.sample_data_set().create_df()
 
@@ -285,6 +343,9 @@ df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+# -
+
+plot_probs(df, probs=data.y, soft_labels=False)
 
 # +
 final_model_kwargs = {'input_dim': 2,
@@ -318,39 +379,44 @@ lm = LabelModel(final_model_kwargs=final_model_kwargs,
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
-# -
-
 lm.print_metrics()
 
 # +
 it = 10
-query_strategy = "margin_density"
+query_strategy = "margin"
 
 L = label_matrix[:, :-1]
     
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
-                            beta=1,
+#                             beta=1,
                             query_strategy=query_strategy,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.analyze()
-# -
-
 al.print_metrics()
+# -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
 fm.analyze()
-
 fm.print_metrics()
 
 fm_al = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final_al = fm_al.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
 fm_al.analyze()
-
 fm_al.print_metrics()
+
+# +
+
+df.iloc[al.queried]
+# -
+
+
+
+diff_prob_labels = al.prob_dict[1] - al.prob_dict[1-1]
+df.iloc[np.where(al.unique_inverse == al.unique_inverse[np.argmax(diff_prob_labels)])[0]]
 
 plot_probs(df, lm.predict_true().numpy())
 
@@ -363,6 +429,8 @@ plot_probs(df, probs_final.detach().numpy())
 plot_probs(df, probs_final_al.detach().numpy())
 
 al.plot_parameters()
+
+al.plot_iterations()
 
 al.get_true_mu().numpy()
 

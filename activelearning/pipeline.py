@@ -10,8 +10,9 @@ import torch
 from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
+from final_model import DiscriminativeModel
 
-
+# class ActiveLearningPipeline(LabelModel, DiscriminativeModel):
 class ActiveLearningPipeline(LabelModel):
     def __init__(self,
                  final_model_kwargs,
@@ -34,26 +35,29 @@ class ActiveLearningPipeline(LabelModel):
         self.beta = beta
         self.add_neighbors = add_neighbors
         self.randomness = randomness
+
         super().__init__(final_model_kwargs=final_model_kwargs,
-                         df=df,
-                         n_epochs=n_epochs,
-                         lr=lr,
-                         active_learning=active_learning,
-                         add_cliques=add_cliques,
-                         add_prob_loss=add_prob_loss,
-                         hide_progress_bar=True)
+                        df=df,
+                        n_epochs=n_epochs,
+                        lr=lr,
+                        active_learning=active_learning,
+                        add_cliques=add_cliques,
+                        add_prob_loss=add_prob_loss,
+                        hide_progress_bar=True)
+
+        # super(DiscriminativeModel, self).__init__(df, **final_model_kwargs)
 
     def entropy(self, probs):
-    
+
         prod = probs * torch.log(probs)
         prod[torch.isnan(prod)] = 0
-        
+
         return - prod.sum(axis=1)
 
     def list_options(self, values, criterium):
         """Return options with equal informativeness according to criterium"""
 
-        return [j for j, v in enumerate(values) if v == criterium and self.ground_truth_labels[j] == -1]
+        return [j for j, v in enumerate(values) if v == criterium and self.ground_truth_labels[j] == -1 and not self.all_abstain[j]]
 
     def margin(self, probs):
         """P(Y=1|...) - P(Y=0|...)"""
@@ -67,8 +71,8 @@ class ActiveLearningPipeline(LabelModel):
 
         abs_diff = self.margin(probs)
 
-        minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1)
-        
+        minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i])
+
         return self.list_options(abs_diff, minimum)
 
     def uncertainty(self, probs):
@@ -81,7 +85,7 @@ class ActiveLearningPipeline(LabelModel):
 
         H = self.entropy(probs)
 
-        maximum = max(j for i, j in enumerate(H) if self.ground_truth_labels[i] == -1)
+        maximum = max(j for i, j in enumerate(H) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i])
 
         return self.list_options(H, maximum)
 
@@ -97,17 +101,17 @@ class ActiveLearningPipeline(LabelModel):
 
         measure = (1/self.margin(probs))**self.beta * self.information_density()**(1 - self.beta)
 
-        maximum = max([j for i, j in enumerate(measure) if self.ground_truth_labels[i] == -1])
+        maximum = max([j for i, j in enumerate(measure) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]])
 
         return self.list_options(measure, maximum)[0]
 
-    def query(self, probs):
+    def query(self, probs, iteration):
         """Choose data point to label from label predictions"""
 
         pick = np.random.uniform()
 
         if pick < self.randomness:
-            indices = [i for i in range(self.N) if self.ground_truth_labels[i] == -1]
+            indices = [i for i in range(self.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
 
         elif self.query_strategy == "margin":
             indices = self.margin_strategy(probs)
@@ -118,6 +122,9 @@ class ActiveLearningPipeline(LabelModel):
         elif self.query_strategy == "margin_density":
             return self.margin_density(probs)
 
+        elif self.query_strategy == "test":
+            indices = self.test_strategy(iteration)
+
         # Make really random
         random.seed(random.SystemRandom().random())
 
@@ -127,18 +134,27 @@ class ActiveLearningPipeline(LabelModel):
         else:
             return random.choice(indices)
 
-    def logging(self, count, probs, selected_point=None):
+    def logging(self, count, probs, final_probs=None, selected_point=None):
         """Keep track of accuracy and other metrics"""
 
         if count == 0:
-            self.accuracies = []
+            self.metrics = {}
+            self.final_metrics = {}
             self.queried = []
             self.prob_dict = {}
+            self.final_prob_dict = {}
             self.unique_prob_dict = {}
             self.mu_dict = {}
 
-        self.accuracies.append(self._accuracy(probs, self.y))
+        LabelModel.analyze(self)
+        self.metrics[count] = self.metric_dict
+        DiscriminativeModel.analyze(self)
+        self.final_metrics[count] = self.metric_dict
+
+        # self.accuracies.append(self._accuracy(probs, self.y))
+        # self.final_accuracies.append(self._accuracy(final_probs, self.y))
         self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
+        # self.final_prob_dict[count] = final_probs[:, 1]
         self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
         self.mu_dict[count] = self.mu.clone().detach().numpy().squeeze()
 
@@ -153,43 +169,54 @@ class ActiveLearningPipeline(LabelModel):
         if n_queried == 1:
             self.mu_0 = self.mu.clone()
 
-        psi, _ = self._get_psi(self.label_matrix[self.ground_truth_labels != -1])
+        psi, _ = self._get_psi(self.label_matrix[self.ground_truth_labels != -1], self.cliques, self.nr_wl)
         mu_samples = torch.Tensor(psi[self.y[self.ground_truth_labels != -1] == 1].sum(axis=0) / n_queried)[:, None]
         self.mu = self.mu_0*np.exp(-self.alpha*n_queried) + mu_samples*(1 - np.exp(-self.alpha*n_queried))
 
-        return self.predict()
+        return self.predict(self)
+
+    def test_strategy(self, iteration):
+
+        if iteration == 0:
+            return [i for i in range(self.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
+        else:
+            diff_prob_labels = self.prob_dict[iteration] - self.prob_dict[iteration-1]
+            return np.where(self.unique_inverse == self.unique_inverse[np.argmax(diff_prob_labels)])[0]
 
     def refine_probabilities(self, label_matrix, cliques, class_balance):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
 
         self.label_matrix = label_matrix
-        self.ground_truth_labels = np.full_like(self.df["y"].values, -1)
-        self.X = self.df[["x1", "x2"]].values
+        self.ground_truth_labels = np.full_like(self.df["y"].values, -1) 
+        # self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
         nr_wl = label_matrix.shape[1]
+        self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
 
         if self.active_learning == "cov":
             # self.add_cliques = False
             self.label_matrix = np.concatenate([self.label_matrix, self.ground_truth_labels[:, None]], axis=1)
 
-        if self.add_neighbors:
-            neigh = NearestNeighbors(n_neighbors=self.add_neighbors)
-            neigh.fit(self.X)
+        # if self.add_neighbors:
+            # neigh = NearestNeighbors(n_neighbors=self.add_neighbors)
+            # neigh.fit(self.X)
 
         old_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+        # final_probs = DiscriminativeModel.fit(self, features=self.X, labels=old_probs.detach().numpy()).predict_final()
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 
         self.logging(count=0, probs=old_probs)
 
         for i in tqdm(range(self.it)):
-            sel_idx = self.query(old_probs)
+            sel_idx = self.query(old_probs, i)
             self.ground_truth_labels[sel_idx] = self.y[sel_idx]
 
             if self.active_learning == "cov":
                 if self.add_neighbors:
-                    neighbors_sel_idx = neigh.kneighbors(self.X[sel_idx, :][None, :], return_distance=False)
-                    self.label_matrix[neighbors_sel_idx, nr_wl] = self.y[sel_idx]
+                    # neighbors_sel_idx = neigh.kneighbors(self.X[sel_idx, :][None, :], return_distance=False)
+                    # self.label_matrix[neighbors_sel_idx, nr_wl] = self.y[sel_idx]
+                    pass
                 else:
                     self.label_matrix[sel_idx, nr_wl] = self.y[sel_idx]
 
@@ -199,6 +226,7 @@ class ActiveLearningPipeline(LabelModel):
                 # Fit label model on refined label matrix
                 new_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
+            # final_probs = DiscriminativeModel.fit(self, features=self.X, labels=new_probs.detach().numpy()).predict_final()
             self.logging(count=i+1, probs=new_probs, selected_point=sel_idx)
 
             old_probs = new_probs.clone()
@@ -247,13 +275,14 @@ class ActiveLearningPipeline(LabelModel):
         true_mu_df = pd.DataFrame(np.repeat(self.get_true_mu().detach().numpy()[:, 1][None, :], self.it + 1, axis=0))
 
         for i in range(len(idx_dict.keys())):
-            fig.add_trace(go.Scatter(x=true_mu_df.index,
-                                     y=true_mu_df[i],
-                                     opacity=0.4,
-                                     mode="lines",
-                                     line=dict(dash="dash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
-                                     hoverinfo="none",
-                                     showlegend=False))
+            if i in [0,1,6,7,8,9]:
+                fig.add_trace(go.Scatter(x=true_mu_df.index,
+                                        y=true_mu_df[i],
+                                        opacity=0.4,
+                                        mode="lines",
+                                        line=dict(dash="dash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
+                                        hoverinfo="none",
+                                        showlegend=False))
 
         return fig
 
@@ -279,11 +308,11 @@ class ActiveLearningPipeline(LabelModel):
 
         conf_list = np.vectorize(self.confs.get)(self.unique_inverse[self.queried])
 
-        fig = go.Figure(go.Scatter(x=list(range(self.it)),
+        fig = go.Figure(go.Scatter(x=list(range(1, self.it + 1)),
                                    y=conf_list,
                                    mode="markers",
                                    marker=dict(size=8,
-                                               color=np.array(px.colors.qualitative.Pastel)[self.unique_inverse[self.queried]],
+                                            #    color=np.array(px.colors.qualitative.Pastel)[self.unique_inverse[self.queried]],
                                                line_width=0.2),
                                    text=self.y[self.queried],
                                    name="Sampled points"))
@@ -297,13 +326,26 @@ class ActiveLearningPipeline(LabelModel):
         fig = go.Figure()
 
         for i in self.y_set:
-            fig.add_trace(go.Scatter(x=np.array(list(range(self.it)))[self.y[self.queried] == i],
+            fig.add_trace(go.Scatter(x=np.array(list(range(self.it)))[self.y[self.queried] == i] + 1,
                                      y=self.y[self.queried][self.y[self.queried] == i],
                                      mode="markers",
                                      marker_color=np.array(px.colors.diverging.Geyser)[[0,-1]][i],
                                      name="Class: " + str(i)))
 
         fig.update_layout(height=200, template="plotly_white", xaxis_title="Active Learning Iteration", yaxis_title="Ground truth label")
+
+        return fig
+
+    def plot_accuracies(self, prob_accuracy=None):
+        """Plot accuracy per iteration"""
+
+        x = list(range(self.it))
+
+        fig = go.Figure(data=go.Scatter(x=x, y=self.accuracies))
+
+        # Probabilistic label accuracy
+        if prob_accuracy:
+            fig.add_trace(go.Scatter(x=x, y=np.repeat(prob_accuracy, len(accuracies))))
 
         return fig
 

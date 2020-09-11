@@ -36,16 +36,5 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
     return fig
 
 
-def plot_accuracies(accuracies, prob_accuracy=None):
-    """Plot accuracy per iteration"""
 
-    x = list(range(len(accuracies)))
-
-    fig = go.Figure(data=go.Scatter(x=x, y=accuracies))
-
-    # Probabilistic label accuracy
-    if prob_accuracy:
-        fig.add_trace(go.Scatter(x=x, y=np.repeat(prob_accuracy, len(accuracies))))
-
-    return fig
 

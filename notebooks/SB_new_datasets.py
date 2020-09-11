@@ -93,9 +93,9 @@ plot_probs(df, probs=data.y, soft_labels=False)
 # df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 # df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
-df.loc[:, "wl1"] = (df["x2"]>0.5)*1
-df.loc[:, "wl2"] = (df["x1"]>0.5)*1
-# df.loc[:, "wl3"] = (df["x1"]>-0.5)*1
+df.loc[:, "wl1"] = (df["x1"]>0.5)*1
+df.loc[:, "wl2"] = (df["x2"]<-0.5)*1
+df.loc[:, "wl3"] = (df["x2"]>-1)*1
 # df.loc[:, "wl4"] = (df["x2"]>-0.5)*1
 
 # df.loc[:, "wl1"] = (df["x2"]>3)*1
@@ -119,9 +119,9 @@ def random_LF(y, fp, fn, abstain):
     
     return y
 
-df.loc[:, "wl1"] = [random_LF(y, fp=0.6, fn=0.2, abstain=0.6) for y in df["y"]]
-df.loc[:, "wl2"] = [random_LF(y, fp=0.3, fn=0.4, abstain=0.7) for y in df["y"]]
-df.loc[:, "wl3"] = [random_LF(y, fp=0.1, fn=0.7, abstain=0.4) for y in df["y"]]
+df.loc[:, "wl1"] = [random_LF(y, fp=0.6, fn=0.2, abstain=0.2) for y in df["y"]]
+df.loc[:, "wl2"] = [random_LF(y, fp=0.3, fn=0.4, abstain=0.1) for y in df["y"]]
+df.loc[:, "wl3"] = [random_LF(y, fp=0.1, fn=0.7, abstain=0.2) for y in df["y"]]
 # -
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
@@ -150,7 +150,7 @@ al_kwargs = {'add_prob_loss': False,
             }
 
 # +
-it = 20
+it = 10
 query_strategy = "margin"
 
 L = label_matrix[:, :-1]
@@ -158,7 +158,7 @@ L = label_matrix[:, :-1]
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=1)
+                            randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.analyze()
@@ -180,99 +180,19 @@ lm.analyze()
 lm.accuracy
 # -
 
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final_al = fm.fit(features=X, labels=Y_probs_al.detach().numpy()).predict()
-fm.accuracy()
+fm = DiscriminativeModel(df.iloc[~al.all_abstain], **final_model_kwargs, soft_labels=True)
+probs_final_al = fm.fit(features=X[~al.all_abstain], labels=Y_probs_al[~al.all_abstain].detach().numpy()).predict()
+fm.analyze()
+fm.accuracy
 
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final = fm.fit(features=X, labels=Y_probs.detach().numpy()).predict()
+fm = DiscriminativeModel(df.iloc[~al.all_abstain], **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=X[~al.all_abstain], labels=Y_probs[~al.all_abstain].detach().numpy()).predict()
 fm.analyze()
 fm.accuracy
 
 lm.mu
 
-lm.P_lambda
-
 lm.get_true_mu()
-
-(0.0854*0.2667)/(0.5)/0.0118
-
-df
-
-lambda_combs, lambda_index, lambda_counts = np.unique(lm.label_matrix[:, [0,1,2]], axis=0, return_counts=True, return_inverse=True)
-
-# +
-counts_new = lambda_counts.copy()
-P_lambda = lm.P_lambda
-rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
-rows_abstain, cols_abstain = np.where(lambda_combs == -1)
-
-for i, comb in enumerate(lambda_combs):
-    nr_non_abstain = (comb != -1).sum()
-    if nr_non_abstain < lm.nr_wl:
-        if nr_non_abstain == 0:
-            counts_new[i] = 0
-        else:
-#             print(cols_abstain[rows_abstain == i])
-#             print(lambda_combs[i, :])
-#             print(lambda_combs[i, cols_abstain[rows_abstain == i]])
-            match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
-#             print(match_rows)
-            counts_new[i] = lambda_counts[match_rows].sum()
-#             print(i)
-#             print(comb)
-#             match_abstain_rows = np.where((lambda_combs[:, cols_abstain[rows_abstain == i]] == lambda_combs[i, cols_abstain[rows_abstain == i]]).all(axis=1))
-#             print(lambda_counts[match_abstain_rows[0]].sum())
-            
-#             break
-
-
-        
-# -
-
-counts_new/N
-
-lambda_combs
-
-(df["wl2"] == 1).sum()
-
-np.where(lambda_combs == -1)
-
-np.where(lambda_combs != -1)
-
-# +
-# np.where(lambda_combs[:,0] == -1 & (lambda_combs != -1).sum(axis=1) == 2)[0]
-# -
-
-lambda_combs[match_rows, :]
-
-counts_new
-
-(counts_new/lambda_counts[np.where((lambda_combs != -1).sum(axis=1) == 2)[0]].sum())[np.where((lambda_combs != -1).sum(axis=1) == 2)[0]]
-
-lambda_counts
-
-lambda_combs
-
-lambda_combs[np.where((lambda_combs != -1).all(axis=1))]
-
-rows, cols = np.where(lambda_combs != -1)
-
-rows
-
-cols[rows == 4]
-
-(lambda_counts[11] + lambda_counts[14] + lambda_counts[17])/N
-
-lambda_index
-
-lambda_counts
-
-df.iloc[7]
-
-lm.P_lambda[7]
-
-Y_probs.min()
 
 psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
 
@@ -287,13 +207,8 @@ def color(df_opt):
     return df1
 
 
+# Noisy weak labels
 pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
-
-pd.DataFrame(np.linalg.pinv(np.cov(lm.psi.T))).style.apply(color, axis=None)
-
-pd.DataFrame(np.linalg.pinv(np.cov(L_y.T))).style.apply(color, axis=None)
-
-pd.DataFrame(np.linalg.pinv(np.cov(L_y.T))).style.apply(color, axis=None)
 
 plot_probs(df, lm.predict_true().detach().numpy())
 
@@ -301,16 +216,121 @@ plot_probs(df, Y_probs.detach().numpy())
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
-plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
+plot_probs(df.iloc[~al.all_abstain], probs_final.detach().numpy())
 
-plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
+plot_probs(df.iloc[~al.all_abstain], probs_final_al.detach().numpy())
 
-plot_probs(df, probs_final.detach().numpy())
+al.plot_parameters()
 
-plot_probs(df, probs_final_al.detach().numpy())
+al.plot_iterations()
 
 
 
+
+
+
+
+df.loc[:, "wl1"] = (df["x1"]>0.5)*1
+df.loc[:, "wl2"] = (df["x2"]>0.5)*1
+df.loc[:, "wl3"] = (df["x2"]<1)*1
+
+
+label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
+
+_, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
+
+plot_probs(df, probs=inv_idx, soft_labels=False)
+
+# +
+final_model_kwargs = {'input_dim': 2,
+                      'output_dim': 2,
+                      'lr': 0.001,
+                      'batch_size': 256,
+                      'n_epochs': 250}
+
+class_balance = np.array([0.5,0.5])
+cliques=[[0],[1,2]]
+# cliques=[[0],[1],[2]]
+
+al_kwargs = {'add_prob_loss': False,
+             'add_cliques': True,
+             'active_learning': "probs",
+             'final_model_kwargs': final_model_kwargs,
+             'df': df,
+             'n_epochs': 200
+            }
+
+# +
+L = label_matrix[:, :-1]
+
+lm = LabelModel(final_model_kwargs=final_model_kwargs,
+                df=df,
+                active_learning=False,
+                add_cliques=True,
+                add_prob_loss=False,
+                n_epochs=200,
+                lr=1e-1)
+    
+Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+lm.analyze()
+lm.accuracy
+# -
+
+psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1,2],[3]], 4)
+
+# Inverse covariance matrix including y
+pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
+
+# +
+df.loc[:, "wl1"] = (df["x1"]>0.5)*1
+df.loc[:, "wl2"] = (df["x2"]>-0.5)*1
+df.loc[:, "wl3"] = (df["x2"]>0.5)*1
+
+label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
+
+_, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
+
+plot_probs(df, probs=inv_idx, soft_labels=False)
+
+# +
+final_model_kwargs = {'input_dim': 2,
+                      'output_dim': 2,
+                      'lr': 0.001,
+                      'batch_size': 256,
+                      'n_epochs': 250}
+
+class_balance = np.array([0.5,0.5])
+cliques=[[0],[1,2]]
+# cliques=[[0],[1],[2]]
+
+al_kwargs = {'add_prob_loss': False,
+             'add_cliques': True,
+             'active_learning': "probs",
+             'final_model_kwargs': final_model_kwargs,
+             'df': df,
+             'n_epochs': 200
+            }
+
+# +
+L = label_matrix[:, :-1]
+
+lm = LabelModel(final_model_kwargs=final_model_kwargs,
+                df=df,
+                active_learning=False,
+                add_cliques=True,
+                add_prob_loss=False,
+                n_epochs=200,
+                lr=1e-1)
+    
+Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+lm.analyze()
+lm.accuracy
+# -
+
+psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1,2],[3]], 4)
+
+# Inverse covariance matrix including y
+pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
 
 
 

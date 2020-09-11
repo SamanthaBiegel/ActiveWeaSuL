@@ -39,7 +39,7 @@ import dash_core_components as dcc
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
 from final_model import DiscriminativeModel
-from plot import plot_probs, plot_accuracies
+from plot import plot_probs
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 # -
@@ -81,8 +81,8 @@ al_kwargs = {'add_prob_loss': False,
             }
 
 # +
-it = 200
-query_strategy = "margin"
+it = 1
+query_strategy = "margin_density"
 alpha = 0.03
 
 L = label_matrix[:, :-1]
@@ -90,6 +90,7 @@ L = label_matrix[:, :-1]
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
                             alpha=alpha,
+                            beta=0.2,
                             query_strategy=query_strategy,
                             randomness=0)
 
@@ -99,11 +100,11 @@ print("Accuracy:", al._accuracy(Y_probs_al, data.y))
 
 plot_probs(df, al.predict_true().detach().numpy())
 
+plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
+
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
 fm.accuracy()
-
-al.z.grad
 
 al.plot_iterations()
 
@@ -160,7 +161,8 @@ lm = LabelModel(final_model_kwargs=final_model_kwargs,
                 lr=1e-1)
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.accuracy()
+lm.analyze()
+lm.accuracy
 # -
 
 # $m(x_i)^{\beta} * d(x_i)^{1-\beta}$
