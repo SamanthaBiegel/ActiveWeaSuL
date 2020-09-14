@@ -2,10 +2,7 @@ import numpy as np
 import torch
 
 
-class ModelPerformance:
-    def __init__(self, df):
-        self.df = df
-
+class PerformanceMixin:
     def analyze(self):
 
         self.probs = self.predict()

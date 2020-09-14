@@ -6,4 +6,7 @@
 connect-s3.sh
 .idea/*
 */runs/*
+**/runs/*
 *.png
+**/checkpoints/
+*.notebooks

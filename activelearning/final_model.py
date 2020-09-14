@@ -3,28 +3,29 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
-from performance import ModelPerformance
+from performance import PerformanceMixin
 
 
 class LogisticRegression(nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.linear = torch.nn.Linear(input_dim, output_dim)
+        self.linear = nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
         outputs = self.linear(x)
         return outputs
 
 
-class DiscriminativeModel(LogisticRegression, ModelPerformance):
+class DiscriminativeModel(PerformanceMixin, LogisticRegression):
     def __init__(self, df, input_dim, output_dim, lr, batch_size, n_epochs, soft_labels=True, subset=None):
         self.lr = lr
         self.batch_size = batch_size
         self.n_epochs = n_epochs
         self.soft_labels = soft_labels
         self.subset = subset
-        LogisticRegression.__init__(self, input_dim=input_dim, output_dim=output_dim)
-        ModelPerformance.__init__(self, df=df)
+        self.df = df
+
+        super().__init__(input_dim=input_dim, output_dim=output_dim)
 
     def cross_entropy_soft_labels(self, predictions, targets):
         """Implement cross entropy loss for probabilistic labels"""
@@ -43,7 +44,7 @@ class DiscriminativeModel(LogisticRegression, ModelPerformance):
 
         self.train()
 
-        writer = SummaryWriter()
+        # writer = SummaryWriter()
 
         if self.soft_labels:
             target = torch.Tensor(labels)
@@ -74,11 +75,11 @@ class DiscriminativeModel(LogisticRegression, ModelPerformance):
 
                 # logits = self.forward(self.train)
                 # preds = F.softmax(logits, dim=1).detach().numpy()
-                writer.add_scalar('final model loss', loss, epoch)
+                # writer.add_scalar('final model loss', loss, epoch)
                 # writer.add_scalar('final model accuracy', _accuracy(preds, y), epoch)
 
-        writer.flush()
-        writer.close()
+        # writer.flush()
+        # writer.close()
 
         return self
 

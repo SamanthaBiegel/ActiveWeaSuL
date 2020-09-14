@@ -7,12 +7,11 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 
-from performance import ModelPerformance
+from performance import PerformanceMixin
 
 
-class LabelModel(ModelPerformance):
+class LabelModel(PerformanceMixin):
     def __init__(self,
-                 final_model_kwargs: dict,
                  df: pd.DataFrame,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
@@ -27,9 +26,8 @@ class LabelModel(ModelPerformance):
         self.add_cliques = add_cliques
         self.add_prob_loss = add_prob_loss
         self.hide_progress_bar = hide_progress_bar
-        self.final_model_kwargs = final_model_kwargs
         self.z = None
-        super().__init__(df=df)
+        self.df = df
  
     def init_properties(self):
         """Get properties such as dimensions from label matrix"""
@@ -226,7 +224,7 @@ class LabelModel(ModelPerformance):
             ground_truth_labels: Optional[np.array] = None):
         """Fit label model"""
 
-        writer = SummaryWriter()
+        # writer = SummaryWriter()
         
         self.label_matrix = label_matrix
         self.cliques = cliques
@@ -287,16 +285,12 @@ class LabelModel(ModelPerformance):
             optimizer.step()
             # scheduler.step()
 
-            writer.add_scalar('label model loss', loss, epoch)
+            # writer.add_scalar('label model loss', loss, epoch)
 
-            tmp_cov_OS = self.calculate_cov_OS()
-            tmp_mu = self.calculate_mu(tmp_cov_OS)
-            tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
-            writer.add_scalar('label model accuracy', self._accuracy(tmp_probs, self.df["y"].values), epoch)
-
-            # if epoch == 0 or epoch % 25 == 24:
-            #     final_probs = fit_predict_fm(self.df[["x1", "x2"]].values, tmp_probs, **self.final_model_kwargs, soft_labels=True)
-            #     writer.add_scalar('final model accuracy', self._accuracy(final_probs, self.df["y"].values), epoch)
+            # tmp_cov_OS = self.calculate_cov_OS()
+            # tmp_mu = self.calculate_mu(tmp_cov_OS)
+            # tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
+            # writer.add_scalar('label model accuracy', self._accuracy(tmp_probs, self.df["y"].values), epoch)
 
         # Determine the sign of z
         # Assuming cov_OS corresponds to Y=1, then cov(wl1=0,Y=1) should be negative
@@ -308,8 +302,8 @@ class LabelModel(ModelPerformance):
         self.cov_OS = self.calculate_cov_OS()
         self.mu = self.calculate_mu(self.cov_OS)#.clamp(0, 1)
 
-        writer.flush()
-        writer.close()
+        # writer.flush()
+        # writer.close()
 
         return self
 
@@ -332,8 +326,6 @@ class LabelModel(ModelPerformance):
             for i, clique in enumerate(cliques_joined):
                 cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
             self.max_clique_idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
-            # n_cliques = torch.Tensor(self.label_matrix != -1).sum(dim=1)
-            # n_cliques = len(cliques_joined)
             clique_sums = torch.zeros((self.N, len(self.cliques)))
             for i, clique in enumerate(self.cliques):
                 clique_sums[:, i] = torch.Tensor(self.label_matrix[:, clique] != -1).sum(dim=1) > 0
@@ -345,6 +337,7 @@ class LabelModel(ModelPerformance):
         clique_probs = mu[self.max_clique_idx, :] * psi_idx
         clique_probs[psi_idx == 0] = 1
         P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(P_Y ** (n_cliques - 1))
+
         # Mask out data points with abstains in all cliques
         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
@@ -353,7 +346,6 @@ class LabelModel(ModelPerformance):
             lambda_combs, lambda_index, lambda_counts = np.unique(self.label_matrix[:, :3], axis=0, return_counts=True, return_inverse=True)
         else:
             lambda_combs, lambda_index, lambda_counts = np.unique(self.label_matrix, axis=0, return_counts=True, return_inverse=True)
-
         new_counts = lambda_counts.copy()
         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
         for i, comb in enumerate(lambda_combs):
@@ -366,8 +358,6 @@ class LabelModel(ModelPerformance):
                     new_counts[i] = lambda_counts[match_rows].sum()
 
         P_lambda = torch.Tensor((new_counts/self.N)[lambda_index][:, None])
-        self.P_lambda = P_lambda
-        self.P_joint_lambda_Y = P_joint_lambda_Y
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / P_lambda)#.clamp(0,1)

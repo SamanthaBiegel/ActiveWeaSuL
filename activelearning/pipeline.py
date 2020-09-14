@@ -12,11 +12,11 @@ from tqdm import tqdm_notebook as tqdm
 from label_model import LabelModel
 from final_model import DiscriminativeModel
 
-# class ActiveLearningPipeline(LabelModel, DiscriminativeModel):
-class ActiveLearningPipeline(LabelModel):
+
+class ActiveLearningPipeline():
     def __init__(self,
-                 final_model_kwargs,
                  df,
+                 final_model=False,
                  it: int = 100,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
@@ -35,17 +35,19 @@ class ActiveLearningPipeline(LabelModel):
         self.beta = beta
         self.add_neighbors = add_neighbors
         self.randomness = randomness
+        self.df = df
+        self.active_learning = active_learning
 
-        super().__init__(final_model_kwargs=final_model_kwargs,
-                        df=df,
-                        n_epochs=n_epochs,
-                        lr=lr,
-                        active_learning=active_learning,
-                        add_cliques=add_cliques,
-                        add_prob_loss=add_prob_loss,
-                        hide_progress_bar=True)
-
-        # super(DiscriminativeModel, self).__init__(df, **final_model_kwargs)
+        self.label_model = LabelModel(df=df,
+                                      n_epochs=n_epochs,
+                                      lr=lr,
+                                      active_learning=active_learning,
+                                      add_cliques=add_cliques,
+                                      add_prob_loss=add_prob_loss,
+                                      hide_progress_bar=True)
+        
+        self.final_model = final_model
+        self.final_probs = None
 
     def entropy(self, probs):
 
@@ -146,17 +148,18 @@ class ActiveLearningPipeline(LabelModel):
             self.unique_prob_dict = {}
             self.mu_dict = {}
 
-        LabelModel.analyze(self)
-        self.metrics[count] = self.metric_dict
-        DiscriminativeModel.analyze(self)
-        self.final_metrics[count] = self.metric_dict
+        self.label_model.analyze()
+        self.metrics[count] = self.label_model.metric_dict
+        if not not self.final_model:
+            self.final_model.analyze()
+            self.final_metrics[count] = self.final_model.metric_dict
+            self.final_prob_dict[count] = final_probs[:, 1]
+            self.final_accuracies.append(self._accuracy(final_probs, self.y))
 
-        # self.accuracies.append(self._accuracy(probs, self.y))
-        # self.final_accuracies.append(self._accuracy(final_probs, self.y))
+        self.accuracies.append(self._accuracy(probs, self.y))
         self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
-        # self.final_prob_dict[count] = final_probs[:, 1]
         self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
-        self.mu_dict[count] = self.mu.clone().detach().numpy().squeeze()
+        self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
         if selected_point is not None:
             self.queried.append(selected_point)
@@ -178,7 +181,7 @@ class ActiveLearningPipeline(LabelModel):
     def test_strategy(self, iteration):
 
         if iteration == 0:
-            return [i for i in range(self.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
+            return [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
         else:
             diff_prob_labels = self.prob_dict[iteration] - self.prob_dict[iteration-1]
             return np.where(self.unique_inverse == self.unique_inverse[np.argmax(diff_prob_labels)])[0]
@@ -188,7 +191,7 @@ class ActiveLearningPipeline(LabelModel):
 
         self.label_matrix = label_matrix
         self.ground_truth_labels = np.full_like(self.df["y"].values, -1) 
-        # self.X = self.df[["x1", "x2"]].values
+        self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
         nr_wl = label_matrix.shape[1]
         self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
@@ -201,12 +204,13 @@ class ActiveLearningPipeline(LabelModel):
             # neigh = NearestNeighbors(n_neighbors=self.add_neighbors)
             # neigh.fit(self.X)
 
-        old_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
-        # final_probs = DiscriminativeModel.fit(self, features=self.X, labels=old_probs.detach().numpy()).predict_final()
+        old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+        if not not self.final_model:
+            self.final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 
-        self.logging(count=0, probs=old_probs)
+        self.logging(count=0, final_probs=self.final_probs, probs=old_probs)
 
         for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs, i)
@@ -223,11 +227,12 @@ class ActiveLearningPipeline(LabelModel):
             if self.active_learning == "update_params":
                 new_probs = self.update_parameters(n_queried=i+1, alpha=self.alpha)
             else:
-                # Fit label model on refined label matrix
-                new_probs = self.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+                # Fit label model
+                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
-            # final_probs = DiscriminativeModel.fit(self, features=self.X, labels=new_probs.detach().numpy()).predict_final()
-            self.logging(count=i+1, probs=new_probs, selected_point=sel_idx)
+            if not not self.final_model:
+                self.final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+            self.logging(count=i+1, probs=new_probs, final_probs=self.final_probs, selected_point=sel_idx)
 
             old_probs = new_probs.clone()
 
