@@ -19,7 +19,7 @@ class LabelModel(PerformanceMixin):
                  add_cliques: bool = False,
                  add_prob_loss: bool = False,
                  hide_progress_bar: bool = False):
-
+        self.model_name = "Label Model"
         self.n_epochs = n_epochs
         self.lr = lr
         self.active_learning = active_learning
@@ -310,7 +310,9 @@ class LabelModel(PerformanceMixin):
     def predict(self):
         """Predict training labels"""
 
-        return self._predict(self.mu, torch.tensor(self.E_S))
+        self.preds = self._predict(self.mu, torch.tensor(self.E_S))
+
+        return self.preds
 
     def _predict(self, mu, P_Y):
         """Predict labels from given parameters and class balance"""

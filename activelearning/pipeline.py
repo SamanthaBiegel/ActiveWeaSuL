@@ -150,16 +150,14 @@ class ActiveLearningPipeline():
 
         self.label_model.analyze()
         self.metrics[count] = self.label_model.metric_dict
+        self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
+        self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
+        self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
+
         if not not self.final_model:
             self.final_model.analyze()
             self.final_metrics[count] = self.final_model.metric_dict
             self.final_prob_dict[count] = final_probs[:, 1]
-            self.final_accuracies.append(self._accuracy(final_probs, self.y))
-
-        self.accuracies.append(self._accuracy(probs, self.y))
-        self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
-        self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
-        self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
         if selected_point is not None:
             self.queried.append(selected_point)
@@ -191,7 +189,7 @@ class ActiveLearningPipeline():
 
         self.label_matrix = label_matrix
         self.ground_truth_labels = np.full_like(self.df["y"].values, -1) 
-        self.X = self.df[["x1", "x2"]].values
+        # self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
         nr_wl = label_matrix.shape[1]
         self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
