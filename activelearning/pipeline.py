@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import random
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import NearestNeighbors
@@ -11,9 +10,10 @@ from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
 from final_model import DiscriminativeModel
+from plot import PlotMixin
 
 
-class ActiveLearningPipeline():
+class ActiveLearningPipeline(PlotMixin):
     def __init__(self,
                  df,
                  final_model=False,
@@ -244,131 +244,3 @@ class ActiveLearningPipeline():
         self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
         return new_probs
-
-    def plot_dict(self, input_dict, categories, y_axis, label_dict):
-
-        input_df = pd.DataFrame.from_dict(input_dict)
-        input_df = input_df.stack().reset_index().rename(columns={"level_0": categories, "level_1": "Active Learning Iteration", 0: y_axis})
-
-        input_df[categories] = input_df[categories].map(label_dict)
-
-        fig = px.line(input_df, x="Active Learning Iteration", y=y_axis, color=categories, color_discrete_sequence=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold))
-        fig.update_layout(height=700, template="plotly_white")
-
-        return fig
-
-    def plot_parameters(self):
-        """Plot each parameter against number of iterations"""
-
-        class_list = []
-        for key, value in self.wl_idx.items():
-            if len(value) == 2:
-                class_list.extend(["0", "1"])
-            if len(value) == 4:
-                class_list.extend(["00", "10", "01", "11"])
-            if len(value) == 8:
-                class_list.extend(["000", "100", "010", "110", "001", "101", "011", "111"])
-
-        idx_dict = {value: key for key, idx_list in self.wl_idx.items() for value in idx_list}
-
-        label_dict = {list(range(len(idx_dict.keys())))[i]: "mu_" + str(list(range(len(idx_dict.keys())))[i]) + " = P(wl_" + str(item) + " = " + class_list[i] + ", Y = 1)" for i, item in enumerate(idx_dict.values())}
-
-        fig = self.plot_dict(self.mu_dict, "Parameter", "Probability", label_dict)
-
-        true_mu_df = pd.DataFrame(np.repeat(self.get_true_mu().detach().numpy()[:, 1][None, :], self.it + 1, axis=0))
-
-        for i in range(len(idx_dict.keys())):
-            if i in [0,1,6,7,8,9]:
-                fig.add_trace(go.Scatter(x=true_mu_df.index,
-                                        y=true_mu_df[i],
-                                        opacity=0.4,
-                                        mode="lines",
-                                        line=dict(dash="dash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
-                                        hoverinfo="none",
-                                        showlegend=False))
-
-        return fig
-
-    def plot_probabilistic_labels(self):
-        """Plot probabilistic labels"""
-
-        fig = self.plot_dict(self.unique_prob_dict, "WL Configuration", "P(Y = 1|...)", self.confs)
-
-        fig.add_trace(go.Scatter(x=list(range(self.it + 1)),
-                                 y=np.repeat(0.5, self.it + 1),
-                                 opacity=0.4,
-                                 showlegend=False,
-                                 hoverinfo="none",
-                                 mode="lines",
-                                 line=dict(color="black", dash="dash")))
-
-        fig.update_yaxes(range=[-0.2, 1.2])
-
-        return fig
-
-    def plot_sampled_points(self):
-        """Plot weak label configurations that have been sampled from over time"""
-
-        conf_list = np.vectorize(self.confs.get)(self.unique_inverse[self.queried])
-
-        fig = go.Figure(go.Scatter(x=list(range(1, self.it + 1)),
-                                   y=conf_list,
-                                   mode="markers",
-                                   marker=dict(size=8,
-                                            #    color=np.array(px.colors.qualitative.Pastel)[self.unique_inverse[self.queried]],
-                                               line_width=0.2),
-                                   text=self.y[self.queried],
-                                   name="Sampled points"))
-        fig.update_layout(height=600, template="plotly_white", xaxis_title="Active Learning Iteration", yaxis_title="WL Configuration")
-
-        return fig
-
-    def plot_sampled_classes(self):
-        """Plot sampled ground truth labels over time"""
-
-        fig = go.Figure()
-
-        for i in self.y_set:
-            fig.add_trace(go.Scatter(x=np.array(list(range(self.it)))[self.y[self.queried] == i] + 1,
-                                     y=self.y[self.queried][self.y[self.queried] == i],
-                                     mode="markers",
-                                     marker_color=np.array(px.colors.diverging.Geyser)[[0,-1]][i],
-                                     name="Class: " + str(i)))
-
-        fig.update_layout(height=200, template="plotly_white", xaxis_title="Active Learning Iteration", yaxis_title="Ground truth label")
-
-        return fig
-
-    def plot_accuracies(self, prob_accuracy=None):
-        """Plot accuracy per iteration"""
-
-        x = list(range(self.it))
-
-        fig = go.Figure(data=go.Scatter(x=x, y=self.accuracies))
-
-        # Probabilistic label accuracy
-        if prob_accuracy:
-            fig.add_trace(go.Scatter(x=x, y=np.repeat(prob_accuracy, len(accuracies))))
-
-        return fig
-
-    def plot_iterations(self):
-        """Plot sampled weak label configurations, ground truth labels and resulting probabilistic labels over time"""
-
-        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.2, 0.1, 0.7])
-
-        fig.add_trace(self.plot_sampled_points().data[0], row=1, col=1)
-        for i in range(self.y_dim):
-            fig.add_trace(self.plot_sampled_classes().data[i], row=2, col=1)
-        for i in range(len(self.unique_idx) + 1):
-            fig.add_trace(self.plot_probabilistic_labels().data[i], row=3, col=1)
-            
-        fig.update_layout(height=1200, template="plotly_white")
-        fig.update_xaxes(row=3, col=1, title_text="Active Learning Iteration")
-        fig.update_yaxes(row=1, col=1, title_text="WL Configuration")
-        fig.update_yaxes(row=2, col=1, title_text="Ground truth label")
-        fig.update_yaxes(row=3, col=1, title_text="P(Y = 1|...)", range=[-0.2, 1.2])
-
-        return fig
-
-

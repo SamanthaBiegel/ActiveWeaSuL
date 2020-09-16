@@ -91,6 +91,7 @@ class DiscriminativeModel(PerformanceMixin, LogisticRegression):
 
         return self.preds
 
+    @torch.no_grad()
     def _predict(self, input):
         """Predict on input"""
 
