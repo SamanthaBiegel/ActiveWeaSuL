@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.6.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -23,7 +23,7 @@
 # path to use when running on DAP
 # path_prefix = "/tmp/"
 
-path_prefix = ""
+path_prefix = "../"
 
 # +
 # %load_ext autoreload
@@ -45,18 +45,17 @@ import torch
 
 import sys
 import os
-sys.path.append(os.path.abspath("../../../../public_repos/snorkel/snorkel"))
-from classification.training.trainer import Trainer
-from classification.multitask_classifier import MultitaskClassifier
 
+sys.path.append(os.path.abspath("../snorkel/snorkel"))
 from snorkel.labeling import LFAnalysis, labeling_function, PandasLFApplier
-from labeling.model import SnorkelLabelModel
+from labeling.model.label_model import SnorkelLabelModel
 from snorkel.classification import DictDataLoader
 
-from model import SceneGraphDataset, create_model
-from utils import load_vrd_data
+sys.path.append(os.path.abspath("../"))
+from visual_relation_tutorial.model import SceneGraphDataset, create_model
+from visual_relation_tutorial.utils import load_vrd_data
 
-sys.path.append(os.path.abspath("../../activelearning"))
+sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
 from final_model import DiscriminativeModel
 from plot import plot_probs
@@ -69,21 +68,20 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 # +
-df_train, df_valid, df_test = load_vrd_data(path_prefix=path_prefix, sample=False)
+balance=True
+df_train, df_test = load_vrd_data(path_prefix=path_prefix, sample=False, drop_duplicates=True, balance=balance)
 
 print("Train Relationships: ", len(df_train))
-print("Dev Relationships: ", len(df_valid))
+# print("Dev Relationships: ", len(df_valid))
 print("Test Relationships: ", len(df_test))
 # -
 
-df_train = df_train.rename(columns={"label": "y"})
-df_valid = df_valid.rename(columns={"label": "y"})
-df_test = df_test.rename(columns={"label": "y"})
+df_train.y.mean()
 
 # # **Define labeling functions**
 
-SITON = 0
-OTHER = 1
+SITON = 1
+OTHER = 0
 ABSTAIN = -1
 
 
@@ -121,21 +119,21 @@ XMAX = 3
 @labeling_function()
 def lf_ydist(x):
     if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
-        return OTHER
-    return SITON
+        return SITON
+    return OTHER
 
 @labeling_function()
 def lf_xdist(x):
     if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]:
-        return SITON
-    return OTHER
+        return OTHER
+    return SITON
 
 
 @labeling_function()
 def lf_dist(x):
     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 500:
-        return SITON
-    return OTHER
+        return OTHER
+    return SITON
 
 
 
@@ -151,23 +149,22 @@ def lf_area(x):
 
 # +
 lfs = [
-#     lf_ride_object,
     lf_siton_object,
     lf_not_person,
-#     lf_ydist,
-    lf_xdist,
+    lf_ydist,
+#     lf_xdist,
     lf_dist,
     lf_area,
 ]
 
 applier = PandasLFApplier(lfs)
 L_train = applier.apply(df_train)
-L_valid = applier.apply(df_valid)
+# L_valid = applier.apply(df_valid)
 L_test = applier.apply(df_test)
 
 # +
 Y_train = np.array(df_train["y"])
-Y_valid = np.array(df_valid["y"])
+# Y_valid = np.array(df_valid["y"])
 Y_test = np.array(df_test["y"])
 
 Y_true = Y_train.copy()
@@ -175,13 +172,16 @@ Y_true = Y_train.copy()
 
 LFAnalysis(L_train, lfs).lf_summary(Y_train)
 
-# Class balance
-df_train["y"].mean()
-
 # # **Initial fit label model**
 
-class_balance = np.array([0.25, 0.75])
+# +
+if balance:
+    class_balance = np.array([0.5, 0.5])
+else:
+    class_balance = np.array([0.77, 0.23])
+
 cliques=[[0,1],[2,3],[4]]
+
 
 # +
 lm = LabelModel(df=df_train,
@@ -196,10 +196,13 @@ lm.analyze()
 lm.print_metrics()
 
 # +
-# label_model = SnorkelLabelModel(cardinality=cardinality)
+# lm.plot_train_loss()
+
+# +
+# label_model = SnorkelLabelModel(cardinality=2)
 # label_model.fit(L_train, class_balance=class_balance)
 # _, Y_probs = label_model.predict(L_train, return_probs=True)
-# label_model.score(L_valid, Y_valid, metrics=metrics)
+# label_model.score(L_train, Y_train, metrics=["accuracy"])
 # -
 
 al_kwargs = {'add_prob_loss': False,
@@ -223,14 +226,50 @@ al.label_model.analyze()
 al.label_model.print_metrics()
 # -
 
-al.color_df()
+al.plot_metrics()
+
+al.plot_parameters()
+
+al.label_model.get_true_mu()[8:18,1]
+
+lm.cov_O
+
+al.color_cov()
+
+cliques = [[0,1],[1,3],[2,3],[3,4],[0,5],[1,5],[2,5],[4,5]]
+
+2,3
+1,3
+3,4
+4,5
+
+6,7-8,9
+6,7-2,3
+10,11-4,5
+10,11-8,9
+12,13-6,7
+12,13-10,11
+
+psi_y
+
+al.label_model.cliques
+
+cliques
+
+L_train[al.queried[10:19]]
+
+df_train.iloc[al.queried[10:19]]
+
+al.plot_parameters()
+
+al.plot_metrics()
 
 # # **Train discriminative model on probabilistic labels**
 
 # +
 metrics = ["accuracy", "precision", "recall", "f1"]
 train_on = "probs" # probs or labels
-batch_size = 20
+batch_size = 10
 n_epochs = 3
 lr = 1e-3
 
@@ -244,7 +283,7 @@ dataset = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_
 dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
-vc = VisualRelationClassifier(pretrained_model, WordEmb(), FlatConcat(), dl, dl_test, df_train, n_epochs=n_epochs, lr=lr)
+vc = VisualRelationClassifier(pretrained_model, dl, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
 probs_final = vc.fit().predict()
 
@@ -267,7 +306,7 @@ dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/
 dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 
-vc_al = VisualRelationClassifier(pretrained_model, WordEmb(), FlatConcat(), dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr)
+vc_al = VisualRelationClassifier(pretrained_model, dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr)
 
 probs_final_al = vc_al.fit().predict()
 
@@ -275,6 +314,36 @@ vc_al.analyze()
 
 vc_al.print_metrics()
 # -
+
+fig = go.Figure(go.Scatter(x=list(range(len(vc_al.average_losses))), y=vc_al.average_losses))
+fig.update_layout(xaxis_title="Batch", yaxis_title="Loss", title_text="Final model - Training Loss", template="plotly_white")
+
+# +
+dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
+                      df=df_train, 
+                      Y=lm.predict_true().clone().detach().numpy())
+
+dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
+dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
+
+vc_true = VisualRelationClassifier(pretrained_model, dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr)
+
+probs_final_true = vc_true.fit().predict()
+
+vc_true.analyze()
+
+vc_true.print_metrics()
+# -
+
+al.label_model._analyze(Y_probs, al.y)
+
+al.label_model.metric_dict
+
+al.label_model.metric_dict
+
+al.label_model.metric_dict
+
+Y_probs_al[:30]
 
 # # Compare to Snorkel final model
 
@@ -311,6 +380,9 @@ trainer = Trainer(
     checkpointer_config={"checkpoint_dir": "checkpoint"}
 )
 trainer.fit(model, [dl_train])
+# -
+trainer.running_losses
+
 # +
 dl_train_test = DictDataLoader(
     SceneGraphDataset(name="train_dataset", 
