@@ -45,8 +45,6 @@ class DiscriminativeModel(PerformanceMixin, LogisticRegression):
 
         self.train()
 
-        # writer = SummaryWriter()
-
         if self.soft_labels:
             target = torch.Tensor(labels)
             loss_f = self.cross_entropy_soft_labels
@@ -76,11 +74,6 @@ class DiscriminativeModel(PerformanceMixin, LogisticRegression):
 
                 # logits = self.forward(self.train)
                 # preds = F.softmax(logits, dim=1).detach().numpy()
-                # writer.add_scalar('final model loss', loss, epoch)
-                # writer.add_scalar('final model accuracy', _accuracy(preds, y), epoch)
-
-        # writer.flush()
-        # writer.close()
 
         return self
 

@@ -110,7 +110,6 @@ cliques=[[0],[1,2]]
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
-             'final_model_kwargs': final_model_kwargs,
              'df': df,
              'n_epochs': 200
             }
@@ -121,8 +120,7 @@ al_kwargs = {'add_prob_loss': False,
 # +
 L = label_matrix[:, :-1]
 
-lm = LabelModel(final_model_kwargs=final_model_kwargs,
-                df=df,
+lm = LabelModel(df=df,
                 active_learning=False,
                 add_cliques=True,
                 add_prob_loss=False,
@@ -140,47 +138,33 @@ query_strategy = "test"
 L = label_matrix[:, :-1]
     
 al = ActiveLearningPipeline(it=it,
+#                             final_model = DiscriminativeModel(df, **final_model_kwargs),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.analyze()
-al.print_metrics()
-# -
-
-al.metrics
-
-al.final_metrics
+al.label_model.print_metrics()
 
 # +
-it = 20
+it = 10
 query_strategy = "margin"
 
 L = label_matrix[:, :-1]
     
 al = ActiveLearningPipeline(it=it,
+                            final_model = DiscriminativeModel(df, **final_model_kwargs),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.analyze()
-al.print_metrics()
+al.label_model.print_metrics()
 # -
 
-al.final_accuracies
+al.plot_animation()
 
-al.accuracies
-
-# +
-x = list(range(al.it))
-
-fig = go.Figure(data=go.Scatter(x=x, y=al.final_accuracies, name="Margin sampling"))
-fig.update_layout(height=200, template="plotly_white", xaxis_title="Active Learning Iteration", yaxis_title="Accuracy")
-
-fig.show()
-# -
+al.plot_metrics()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()
@@ -261,7 +245,7 @@ al.plot_parameters()
 
 plot_probs(df, probs_final_al.detach().numpy(), soft_labels=True, subset=None)
 
-probs_df = pd.DataFrame.from_dict(al.prob_dict)
+probs_df = pd.DataFrame.from_dict(al.final_prob_dict)
 probs_df = probs_df.stack().reset_index().rename(columns={"level_0": "x", "level_1": "iteration", 0: "prob_y"})
 probs_df = probs_df.merge(df, left_on = "x", right_index=True)
 

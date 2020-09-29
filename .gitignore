@@ -10,3 +10,4 @@ connect-s3.sh
 *.png
 **/checkpoints/
 *.notebooks
+.Rhistory

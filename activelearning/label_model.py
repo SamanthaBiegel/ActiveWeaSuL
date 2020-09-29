@@ -6,6 +6,7 @@ import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
+import plotly.graph_objects as go
 
 from performance import PerformanceMixin
 
@@ -223,12 +224,12 @@ class LabelModel(PerformanceMixin):
             class_balance,
             ground_truth_labels: Optional[np.array] = None):
         """Fit label model"""
-
-        # writer = SummaryWriter()
         
         self.label_matrix = label_matrix
         self.cliques = cliques
         self.class_balance = class_balance
+
+        self.losses = []
 
         self.init_properties()
 
@@ -242,8 +243,7 @@ class LabelModel(PerformanceMixin):
             # Calculate known covariance for active learning weak label
             self.al_idx = self.wl_idx[str(self.nr_wl-1)]
             self.ground_truth_labels = ground_truth_labels
-            self.mask[self.al_idx, :] = 0
-            self.mask[:, self.al_idx] = 0
+            
 
             if self.active_learning == "cov":
                 # self.cov_AL = torch.Tensor((self.psi[:, self.al_idx] * self.psi[:, self.al_idx]).mean(axis=0) / self.class_balance[:, None] * self.cov_Y)[:, 1]
@@ -251,6 +251,8 @@ class LabelModel(PerformanceMixin):
                 # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
                 E_AL_Y[self.al_idx[0]] = 0
                 self.cov_AL = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
+                # self.mask[self.al_idx, :] = 0
+                # self.mask[:, self.al_idx] = 0
 
                 # E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
                 # self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
@@ -284,8 +286,7 @@ class LabelModel(PerformanceMixin):
             loss.backward()
             optimizer.step()
             # scheduler.step()
-
-            # writer.add_scalar('label model loss', loss, epoch)
+            self.losses.append(loss.clone().detach().numpy())
 
             # tmp_cov_OS = self.calculate_cov_OS()
             # tmp_mu = self.calculate_mu(tmp_cov_OS)
@@ -301,9 +302,6 @@ class LabelModel(PerformanceMixin):
         # Compute covariances and label model probabilities from optimal z
         self.cov_OS = self.calculate_cov_OS()
         self.mu = self.calculate_mu(self.cov_OS)#.clamp(0, 1)
-
-        # writer.flush()
-        # writer.close()
 
         return self
 

@@ -38,6 +38,14 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
     return fig
 
 
+def plot_train_loss(loss_list, x_axis, model):
+
+        fig = go.Figure(go.Scatter(x=list(range(len(loss_list))), y=loss_list))
+        fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text="Label model - Training Loss", template="plotly_white")
+
+        return fig
+
+
 class PlotMixin:
     def plot_dict(self, input_dict, categories, y_axis, label_dict=None):
         input_df = pd.DataFrame.from_dict(input_dict)
@@ -71,16 +79,16 @@ class PlotMixin:
         fig = self.plot_dict(self.mu_dict, "Parameter", "Probability", label_dict)
 
         true_mu_df = pd.DataFrame(np.repeat(self.label_model.get_true_mu().detach().numpy()[:, 1][None, :], self.it + 1, axis=0))
-
-        for i in range(len(idx_dict.keys())):
-            if i in [0,1,6,7,8,9]:
+        
+        for idx in range(len(idx_dict.keys())):
+            if idx in self.label_model.max_clique_idx:
                 fig.add_trace(go.Scatter(x=true_mu_df.index,
-                                        y=true_mu_df[i],
-                                        opacity=0.4,
-                                        mode="lines",
-                                        line=dict(dash="dash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
-                                        hoverinfo="none",
-                                        showlegend=False))
+                                         y=true_mu_df[idx],
+                                        #  opacity=1,
+                                         mode="lines",
+                                         line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[idx]),
+                                         hoverinfo="none",
+                                         showlegend=False))
 
         return fig
 
@@ -123,7 +131,7 @@ class PlotMixin:
 
         fig = go.Figure()
 
-        for i in self.y_set:
+        for i in self.label_model.y_set:
             fig.add_trace(go.Scatter(x=np.array(list(range(self.it)))[self.y[self.queried] == i] + 1,
                                      y=self.y[self.queried][self.y[self.queried] == i],
                                      mode="markers",
@@ -155,7 +163,7 @@ class PlotMixin:
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.2, 0.1, 0.7])
 
         fig.add_trace(self.plot_sampled_points().data[0], row=1, col=1)
-        for i in range(self.y_dim):
+        for i in range(self.label_model.y_dim):
             fig.add_trace(self.plot_sampled_classes().data[i], row=2, col=1)
         for i in range(len(self.unique_idx) + 1):
             fig.add_trace(self.plot_probabilistic_labels().data[i], row=3, col=1)
@@ -193,13 +201,13 @@ class PlotMixin:
         self.first_labels = np.round(self.prob_dict[0].clip(0,1))
         self.second_labels = np.round(self.prob_dict[max(self.prob_dict.keys())].clip(0,1))
 
-        return self.df.style.apply(self._color, axis=None)
+        return self.df.style.apply(self._color_df, axis=None)
 
-    def _color(self, df_opt):
+    def _color_df(self, df):
         c1 = 'background-color: transparent'
         c2 = 'background-color: green'
         c3 = 'background-color: red'
-        df1 = pd.DataFrame(c1, index=df_opt.index, columns=df_opt.columns)
+        df1 = pd.DataFrame(c1, index=df.index, columns=df.columns)
         idx = np.where((self.first_labels != self.df["y"]) & (self.second_labels == self.df["y"]))
         print("Wrong to correct:", len(idx[0]))
         for i in range(len(idx[0])):
@@ -208,6 +216,22 @@ class PlotMixin:
         print("Correct to wrong:", len(idx[0]))
         for i in range(len(idx[0])):
             df1.loc[idx[0][i], :] = c3
+        return df1
+
+    def color_cov(self):
+        full_lm = np.append(self.label_matrix, self.df["y"].values[:, None], axis=1)
+        cliques = self.label_model.cliques.copy()
+        cliques.append([full_lm.shape[1]-1])
+        psi_y, _ = self.label_model._get_psi(full_lm, cliques, full_lm.shape[1])
+        return pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(self._color_cov, axis=None)
+
+    def _color_cov(self, df):
+        c1 = 'background-color: red'
+        c2 = 'background-color: green'
+        df1 = pd.DataFrame(c1, index=df.index, columns=df.columns)
+        idx = np.where(self.label_model.mask)
+        for i in range(len(idx[0])):
+            df1.loc[(idx[0][i], idx[1][i])] = c2
         return df1
 
         
