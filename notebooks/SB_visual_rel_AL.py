@@ -42,16 +42,11 @@ import plotly.graph_objects as go
 import seaborn as sns
 import torchvision.models as models
 import torch
+from torch.utils.data import DataLoader
+import torch.nn as nn
 
 import sys
 import os
-
-sys.path.append(os.path.abspath("../snorkel/snorkel"))
-from snorkel.labeling import LFAnalysis, labeling_function, PandasLFApplier
-from labeling.model.label_model import SnorkelLabelModel
-from snorkel.classification import DictDataLoader
-from classification.multitask_classifier import MultitaskClassifier
-from classification.training.trainer import Trainer
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
@@ -60,10 +55,8 @@ from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 from vr_utils import load_vr_data
+from lm_utils import apply_lfs, analyze_lfs
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
-
-from torch.utils.data import DataLoader
-import torch.nn as nn
 # -
 
 torch.cuda.is_available()
@@ -99,7 +92,6 @@ ABSTAIN = -1
 
 
 # +
-@labeling_function()
 def lf_siton_object(x):
     if x.subject_category == "person":
         if x.object_category in [
@@ -113,7 +105,6 @@ def lf_siton_object(x):
             return SITON
     return OTHER
 
-@labeling_function()
 def lf_not_person(x):
     if x.subject_category != "person":
         return OTHER
@@ -129,31 +120,24 @@ XMAX = 3
 
 
 # +
-@labeling_function()
 def lf_ydist(x):
     if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
         return SITON
     return OTHER
 
-@labeling_function()
 def lf_xdist(x):
     if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]:
         return OTHER
     return SITON
 
-
-@labeling_function()
 def lf_dist(x):
     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 500:
         return OTHER
     return SITON
 
-
-
 def area(bbox):
     return (bbox[YMAX] - bbox[YMIN]) * (bbox[XMAX] - bbox[XMIN])
 
-@labeling_function()
 def lf_area(x):
     if area(x.subject_bbox) / area(x.object_bbox) < 0.8:
         return SITON
@@ -170,19 +154,14 @@ lfs = [
     lf_area,
 ]
 
-applier = PandasLFApplier(lfs)
-L_train = applier.apply(df_train)
-# L_valid = applier.apply(df_valid)
-L_test = applier.apply(df_test)
+L_train = apply_lfs(df_train, lfs)
+L_test = apply_lfs(df_test, lfs)
+# -
 
-# +
 Y_train = np.array(df_train["y"])
 Y_test = np.array(df_test["y"])
 
-Y_true = Y_train.copy()
-# -
-
-LFAnalysis(L_train, lfs).lf_summary(Y_train)
+analyze_lfs(L_train, df_train["y"], lfs)
 
 # # **Initial fit label model**
 
@@ -252,13 +231,6 @@ pd.DataFrame.from_dict(lm_metrics, orient="index").std().values
 df_train
 
 plot_train_loss(lm.losses)
-
-# +
-# label_model = SnorkelLabelModel(cardinality=2)
-# label_model.fit(L_train, class_balance=class_balance)
-# _, Y_probs = label_model.predict(L_train, return_probs=True)
-# label_model.score(L_train, Y_train, metrics=["accuracy"])
-# -
 
 metrics = ["accuracy", "precision", "recall", "f1"]
 train_on = "probs" # probs or labels

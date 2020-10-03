@@ -53,4 +53,3 @@ class PerformanceMixin:
 
         for key, value in self.metric_dict.items():
             print(key, ': ', value)
-[]]
