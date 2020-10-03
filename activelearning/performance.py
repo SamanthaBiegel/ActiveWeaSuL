@@ -7,9 +7,9 @@ class PerformanceMixin:
 
     def analyze(self):
         """Get predictions and analyze performance"""
-        
+
         self.y = self.df["y"].values
-    
+
         self._analyze(self.preds, self.y)
 
     def _analyze(self, prob_labels, y):

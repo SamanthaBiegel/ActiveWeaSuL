@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: 'Python 3.7.6 64-bit (''thesis'': conda)'
+#     display_name: Python 3
 #     language: python
-#     name: python37664bitthesiscondab786fa2bf8ea4d8196bc19b4ba146cff
+#     name: python3
 # ---
 
 # +
@@ -147,13 +147,12 @@ Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_bala
 al.label_model.print_metrics()
 
 # +
-it = 10
+it = 30
 query_strategy = "margin"
-
 L = label_matrix[:, :-1]
-    
+
 al = ActiveLearningPipeline(it=it,
-                            final_model = DiscriminativeModel(df, **final_model_kwargs),
+#                             final_model = DiscriminativeModel(df, **final_model_kwargs),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
@@ -161,6 +160,30 @@ al = ActiveLearningPipeline(it=it,
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.label_model.print_metrics()
 # -
+
+plot_probs(df, Y_probs_al.detach().numpy())
+
+# +
+it = 1
+query_strategy = "margin"
+
+for i in range(12):
+    L = label_matrix[:, :-1]
+
+    al = ActiveLearningPipeline(it=it,
+    #                             final_model = DiscriminativeModel(df, **final_model_kwargs),
+                                **al_kwargs,
+                                query_strategy=query_strategy,
+                                randomness=0)
+
+    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, q=i)
+    fig = al.plot_iterations()
+    fig.show()
+    
+#     al.label_model.print_metrics()
+# -
+
+al.plot_iterations()
 
 al.plot_animation()
 
@@ -173,11 +196,6 @@ fm.print_metrics()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
-fm.analyze()
-fm.print_metrics()
-
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final_al = fm.fit(features=data.X, labels=Y_probs_al.detach().numpy()).predict()
 fm.analyze()
 fm.print_metrics()
 
@@ -200,15 +218,11 @@ plot_probs(df, lm.predict_true().detach().numpy())
 
 plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
 
-plot_probs(df, Y_probs_al.detach().numpy(), add_labeled_points=al.queried)
-
 plot_probs(df, Y_probs.detach().numpy())
 
-plot_probs(df, probs_final_al.detach().numpy())
-
-plot_probs(df, probs_final_al.detach().numpy())
-
 plot_probs(df, probs_final.detach().numpy())
+
+plot_probs(df, probs_final_al.detach().numpy())
 
 al.plot_iterations()
 

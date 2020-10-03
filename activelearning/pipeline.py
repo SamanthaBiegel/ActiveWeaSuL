@@ -117,7 +117,7 @@ class ActiveLearningPipeline(PlotMixin):
         pick = np.random.uniform()
 
         if pick < self.randomness:
-            indices = [i for i in range(self.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
+            indices = [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
 
         elif self.query_strategy == "margin":
             indices = self.margin_strategy(probs)

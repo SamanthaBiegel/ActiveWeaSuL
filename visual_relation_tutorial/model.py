@@ -12,9 +12,13 @@ from torchvision import transforms
 import sys
 import os
 
+sys.path.append(os.path.abspath("../snorkel/snorkel"))
+from classification.multitask_classifier import MultitaskClassifier
+from classification.task import Task
+
 from snorkel.analysis import Scorer
 from snorkel.classification.data import XDict, YDict
-from snorkel.classification import DictDataset, Operation, cross_entropy_with_probs, Task, MultitaskClassifier
+from snorkel.classification import DictDataset, Operation, cross_entropy_with_probs
 
 
 
@@ -129,7 +133,7 @@ class SceneGraphDataset(DictDataset):
 class WordEmb(nn.Module):
     """Extract and concat word embeddings for obj and sub categories."""
 
-    def __init__(self, glove_fn="data/glove/glove.6B.100d.txt"):
+    def __init__(self, glove_fn="../data/glove/glove.6B.100d.txt"):
         super(WordEmb, self).__init__()
 
         self.word_embs = pd.read_csv(

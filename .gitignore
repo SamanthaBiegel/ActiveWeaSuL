@@ -11,3 +11,5 @@ connect-s3.sh
 **/checkpoints/
 *.notebooks
 .Rhistory
+*core*
+*models/

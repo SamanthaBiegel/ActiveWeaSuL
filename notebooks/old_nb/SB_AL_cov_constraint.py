@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: 'Python 3.7.6 64-bit (''thesis'': conda)'
+#     display_name: Python 3
 #     language: python
-#     name: python37664bitthesiscondab786fa2bf8ea4d8196bc19b4ba146cff
+#     name: python3
 # ---
 
 # +
@@ -35,10 +35,10 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 
-sys.path.append(os.path.abspath("../activelearning"))
+sys.path.append(os.path.abspath("../../activelearning"))
 from data import SyntheticData
 from final_model import DiscriminativeModel
-from plot import plot_probs, plot_accuracies
+from plot import plot_probs
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 # -
@@ -69,17 +69,16 @@ final_model_kwargs = {'input_dim': 2,
                       'n_epochs': 250}
 
 class_balance = np.array([0.5,0.5])
-cliques=[[0],[1,2],[3]]
+cliques=[[0, 3],[1,2,3]]
 
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "cov",
-             'final_model_kwargs': final_model_kwargs,
              'df': df
             }
 
 # +
-it = 1000
+it = 100
 query_strategy = "margin"
 
 L = label_matrix[:, :-1]
@@ -91,14 +90,20 @@ al = ActiveLearningPipeline(it=it,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-print("Accuracy:", al._accuracy(Y_probs_al, data.y))
+# print("Accuracy:", al._accuracy(Y_probs_al, data.y))
 # -
 
-print(al.wl_idx)
+al.label_model.print_metrics()
+
+df.iloc[al.queried]
+
+al.label_matrix[al.queried]
 
 al.plot_iterations()
 
 al.plot_parameters()
+
+al.plot_metrics()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=False)
 probs_final_true = fm.fit(features=data.X, labels=data.y).predict()

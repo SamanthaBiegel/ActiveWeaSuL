@@ -78,6 +78,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
                  test_dataloader,
                  df,
                  data_path_prefix,
+                 word_embedding_size=100,
                  n_epochs=1,
                  lr=1e-3,
                  n_classes=2
@@ -87,7 +88,8 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_name = "Discriminative Model"
         self.pretrained_model = pretrained_model
-        self.text_module = WordEmb(glove_path=data_path_prefix + "data/glove/glove.6B.100d.txt").to(self.device)
+        self.word_embedding_size = word_embedding_size
+        self.text_module = WordEmb(emb_path=data_path_prefix + "data/word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
         self.concat_module = FlatConcat().to(self.device)
         self.test_dataloader = test_dataloader
         self.df = df
@@ -127,7 +129,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         """Initialize linear module"""
 
         in_features = self.pretrained_model.fc.in_features
-        self.linear = nn.Linear(in_features * 3 + 2 * 100, self.n_classes).to(self.device)
+        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
 
     def fit(self, train_dataloader):
         """Train classifier"""
@@ -196,11 +198,11 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 class WordEmb(nn.Module):
     """Extract and concat word embeddings for obj and sub categories."""
 
-    def __init__(self, glove_path):
+    def __init__(self, emb_path):
         super().__init__()
 
         self.word_embs = pd.read_csv(
-            glove_path, sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
+            emb_path, sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
         )
 
     def _get_wordvec(self, word):

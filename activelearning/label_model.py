@@ -3,7 +3,6 @@ import itertools
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 import plotly.graph_objects as go
@@ -56,11 +55,11 @@ class LabelModel(PerformanceMixin):
 
         return cov_OS
 
-    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 1e4):
+    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 1e3):
         """Compute loss from prior knowledge on part of covariance matrix"""
 
-        # cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
-        cov_OS_al = cov_OS[self.al_idx]
+        cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
+        # cov_OS_al = cov_OS[self.al_idx]
 
         return penalty_strength * torch.norm(cov_OS_al - self.cov_AL[:, None]) ** 2
 
@@ -68,12 +67,12 @@ class LabelModel(PerformanceMixin):
         """Compute probabilistic label loss for sampled data points"""
 
         # Label to probabilistic label (eg 1 to (0 1))
-        probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
+        # probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
 
         # Select points for which ground truth label is available
         mask = (self.ground_truth_labels != -1)
 
-        return penalty_strength * torch.norm((probs_al - probs)[mask, :]) ** 2
+        return penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
     
     def loss_probs(self, probs, penalty_strength: float = 1e6):
         """Compute loss for probabilities below 0 or above 1"""
@@ -241,32 +240,33 @@ class LabelModel(PerformanceMixin):
 
         if self.active_learning is not False:
             # Calculate known covariance for active learning weak label
-            self.al_idx = self.wl_idx[str(self.nr_wl-1)]
             self.ground_truth_labels = ground_truth_labels
             
-
             if self.active_learning == "cov":
+                self.al_idx = self.wl_idx[str(self.nr_wl-1)]
+                self.mask[self.al_idx, :] = 0
+                self.mask[:, self.al_idx] = 0
+
                 # self.cov_AL = torch.Tensor((self.psi[:, self.al_idx] * self.psi[:, self.al_idx]).mean(axis=0) / self.class_balance[:, None] * self.cov_Y)[:, 1]
                 E_AL_Y = self.E_O.copy()
                 # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
-                E_AL_Y[self.al_idx[0]] = 0
-                self.cov_AL = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
-                # self.mask[self.al_idx, :] = 0
-                # self.mask[:, self.al_idx] = 0
+                # E_AL_Y[self.al_idx[0]] = 0
 
-                # E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
-                # self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
+                self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
 
-                # E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
-                # self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
+                E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
+                self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
 
-                # E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
-                # self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
+                E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
+                self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
 
-                # E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
-                # self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
+                E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
+                self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
 
-                # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
+                E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
+                self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
+
+                self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
                 # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23))
 
         if self.z is None:

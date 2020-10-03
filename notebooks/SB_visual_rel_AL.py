@@ -34,8 +34,6 @@ else:
 import numpy as np
 import random
 import time
-import scipy as sp
-import cvxpy as cp
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -52,10 +50,8 @@ sys.path.append(os.path.abspath("../snorkel/snorkel"))
 from snorkel.labeling import LFAnalysis, labeling_function, PandasLFApplier
 from labeling.model.label_model import SnorkelLabelModel
 from snorkel.classification import DictDataLoader
-
-sys.path.append(os.path.abspath("../"))
-from visual_relation_tutorial.model import SceneGraphDataset, create_model
-from visual_relation_tutorial.utils import load_vrd_data
+from classification.multitask_classifier import MultitaskClassifier
+from classification.training.trainer import Trainer
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
@@ -63,7 +59,7 @@ from final_model import DiscriminativeModel
 from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
-
+from vr_utils import load_vr_data
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
 
 from torch.utils.data import DataLoader
@@ -74,10 +70,22 @@ torch.cuda.is_available()
 
 # +
 balance=True
-df_train, df_test = load_vrd_data(path_prefix=path_prefix, sample=False, drop_duplicates=True, balance=balance)
+semantic_predicates = [
+        "carry",
+        "cover",
+        "fly",
+        "look",
+        "lying on",
+        "park on",
+        "sit on",
+        "stand on",
+        "ride",
+    ]
+
+classify = ["sit on"]
+df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_predicates, path_prefix=path_prefix, drop_duplicates=True, balance=balance, validation=False)
 
 print("Train Relationships: ", len(df_train))
-# print("Dev Relationships: ", len(df_valid))
 print("Test Relationships: ", len(df_test))
 # -
 
@@ -169,7 +177,6 @@ L_test = applier.apply(df_test)
 
 # +
 Y_train = np.array(df_train["y"])
-# Y_valid = np.array(df_valid["y"])
 Y_test = np.array(df_test["y"])
 
 Y_true = Y_train.copy()
@@ -188,6 +195,42 @@ else:
 cliques=[[0,1],[2,3],[4]]
 
 
+# -
+
+
+lm_metrics = {}
+for i in range(1):
+    lm = LabelModel(df=df_train,
+                    active_learning=False,
+                    add_cliques=True,
+                    add_prob_loss=False,
+                    n_epochs=1000,
+                    lr=1e-1)
+
+    Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
+    lm.analyze()
+    lm_metrics[i] = lm.metric_dict
+#     lm.print_metrics()
+
+lm.get_true_cov_OS()
+
+lm.wl_idx
+
+mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
+
+mean_metrics["std"] = pd.DataFrame.from_dict(lm_metrics, orient="index").sem().values
+mean_metrics["Active Learning"] = "before"
+
+mean_metrics
+
+mean_al_metrics = pd.DataFrame.from_dict(al_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
+mean_al_metrics["std"] = pd.DataFrame.from_dict(al_metrics, orient="index").sem().values
+mean_al_metrics["Active Learning"] = "after"
+
+mean_al_metrics
+
+metrics_joined = pd.concat([mean_metrics, mean_al_metrics])
+
 # +
 lm = LabelModel(df=df_train,
                 active_learning=False,
@@ -200,6 +243,13 @@ Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_bala
 lm.analyze()
 lm.print_metrics()
 # -
+fig = px.bar(metrics_joined, x="Metric", y=0, error_y="std", color="Active Learning", barmode="group", color_discrete_sequence=px.colors.qualitative.Pastel)
+fig.update_layout(template="plotly_white", yaxis_title="", title_text="Label model performance before and after active learning")
+fig.show()
+
+pd.DataFrame.from_dict(lm_metrics, orient="index").std().values
+
+df_train
 
 plot_train_loss(lm.losses)
 
@@ -231,14 +281,16 @@ dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
 
 # +
-it = 50
-query_strategy = "margin"
-    
+# al_metrics = {}
+# for i in range(50):
+it = 20
+query_strategy = "test"
+
 al = ActiveLearningPipeline(it=it,
 #                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=0)
+                            randomness=1)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance)
 al.label_model.print_metrics()
@@ -246,11 +298,73 @@ al.label_model.print_metrics()
 
 plot_train_loss(al.final_model.average_losses, "Batches", "Discriminative")
 
+al.label_model.print_metrics()
+
+al.plot_metrics()
+
 al.final_metrics[0]
 
 al.final_metrics[20]
 
+
+# +
 lm._analyze(al.label_model.predict_true(), df_train["y"])
+
+fig = go.Figure(go.Scatter(x=lm.predict_true()[:,1], y=Y_probs.detach().numpy()[:,1], mode='markers', showlegend=False))
+fig.add_trace(go.Scatter(x=np.linspace(0,1,100), y=np.linspace(0,1,100), line=dict(dash="longdash"), showlegend=False))
+fig.update_yaxes(range=[0,1])
+fig.update_xaxes(range=[0,1])
+fig.update_layout(template="plotly_white", xaxis_title="True", yaxis_title="Predicted", width=700, height=700, title_text="True vs predicted posteriors before active learning")
+fig.show()
+# -
+
+
+fig = go.Figure(go.Scatter(x=lm.predict_true()[:,1], y=Y_probs_al.detach().numpy()[:,1], mode='markers', showlegend=False))
+fig.add_trace(go.Scatter(x=np.linspace(0,1,100), y=np.linspace(0,1,100), line=dict(dash="longdash"), showlegend=False))
+fig.update_yaxes(range=[0,1])
+fig.update_xaxes(range=[0,1])
+fig.update_layout(template="plotly_white", xaxis_title="True", yaxis_title="Predicted", width=700, height=700, title_text="True vs predicted posteriors after active learning")
+fig.show()
+
+df_train.iloc[al.queried[6]]
+
+L_train[al.queried[65:80]]
+
+df_train["queried"] = 0
+
+queried = np.zeros(364)
+
+queried[al.queried] = list(range(100))
+
+df_train.loc[:,"queried"] = queried
+
+len(df_train)
+
+L_train[al.queried[65:80]]
+
+df_train = df_train.drop(["wl0", "wl1", "wl2", "wl3", "wl4", "wl5"], axis=1)
+
+df_train[["wl0", "wl1", "wl2", "wl3", "wl4"]] = L_train
+
+tmp_df = df_train.iloc[al.queried[65:80]].drop(["subject_bbox", "object_bbox", "source_img"], axis=1)
+
+tmp_df.queried = tmp_df.queried.astype(int)
+
+tmp_df.reset_index(drop=True).set_index("queried")
+
+al.plot_iterations()
+
+al.plot_metrics()
+
+al.plot_parameters()
+
+al.plot_parameters()
+
+al.label_model.print_metrics()
+
+unique_cat, cat_idx = np.unique(df_train[["subject_category", "object_category"]].values, return_inverse=True)
+
+al.label_model.wl_idx
 
 lm.get_true_mu()
 
@@ -258,7 +372,27 @@ lm.mu
 
 al.label_model.mu
 
-df_train[][]
+w_c = df_train.iloc[np.where((al.first_labels != al.df["y"]) & (al.second_labels == al.df["y"]))]
+
+c_w = df_train.iloc[np.where((al.first_labels == al.df["y"]) & (al.second_labels != al.df["y"]))]
+
+w_c[w_c.y == 0]
+
+w_c[w_c.y == 1]
+
+c_w
+
+al.color_df()
+
+al.plot_metrics()
+
+al.plot_parameters()
+
+al.label_model.get_true_mu()[8:18,1]
+
+lm.cov_O
+
+al.color_cov()
 
 df_train[df_train.y == 1]
 
@@ -277,6 +411,21 @@ al.plot_parameters([1,3,5,7,9])
 
 # +
 # al.color_cov()
+
+# +
+# pretrained_model = torch.load("../models/resnet.pth")
+
+# +
+# torch.save(pretrained_model, "../models/resnet.pth")
+# -
+
+# # **Train discriminative model on probabilistic labels**
+
+metrics = ["accuracy", "precision", "recall", "f1"]
+train_on = "probs" # probs or labels
+batch_size = 20
+n_epochs = 3
+lr = 1e-3
 
 # +
 # cliques = [[0,1],[1,3],[2,3],[3,4],[0,5],[1,5],[2,5],[4,5]]
@@ -370,131 +519,6 @@ vc_true.print_metrics()
 # -
 
 al.label_model._analyze(Y_probs, al.y)
-
-al.label_model.metric_dict
-
-al.label_model.metric_dict
-
-al.label_model.metric_dict
-
-Y_probs_al[:30]
-
-# # Compare to Snorkel final model
-
-# +
-train_on="probs"
-first_probs = Y_probs.clone().detach().numpy()
-# first_probs = Y_probs
-
-if train_on == "probs":
-    Y = first_probs
-    with_prob = True
-if train_on == "labels":
-    Y = torch.LongTensor(first_labels)
-    with_prob = False
-
-dl_train = DictDataLoader(
-    SceneGraphDataset(name="train_dataset", 
-                      split="train", 
-                      image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
-                      df=df_train, 
-                      Y=Y),
-    batch_size=batch_size,
-    shuffle=True,
-)
-
-# initialize pretrained feature extractor
-cnn = models.resnet18(pretrained=True)
-model = create_model(cnn, with_prob=with_prob)
-
-trainer = Trainer(
-    n_epochs=n_epochs,  # increase for improved performance
-    lr=lr,
-    checkpointing=True,
-    checkpointer_config={"checkpoint_dir": "checkpoint"}
-)
-trainer.fit(model, [dl_train])
-# -
-trainer.running_losses
-
-# +
-dl_train_test = DictDataLoader(
-    SceneGraphDataset(name="train_dataset", 
-                      split="train", 
-                      image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
-                      df=df_train, 
-                      Y=df_train["y"].values),
-    batch_size=batch_size,
-    shuffle=False,
-)
-
-score = model.score([dl_train_test], as_dataframe=True)
-# -
-
-score
-
-# +
-train_on="probs"
-first_probs = Y_probs_al.clone().detach().numpy()
-
-if train_on == "probs":
-    Y = first_probs
-    with_prob = True
-if train_on == "labels":
-    Y = torch.LongTensor(first_labels)
-    with_prob = False
-
-dl_train = DictDataLoader(
-    SceneGraphDataset(name="train_dataset", 
-                      split="train", 
-                      image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
-                      df=df_train, 
-                      Y=Y),
-    batch_size=batch_size,
-    shuffle=True,
-)
-
-dl_train_test = DictDataLoader(
-    SceneGraphDataset(name="train_dataset", 
-                      split="train", 
-                      image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
-                      df=df_train, 
-                      Y=Y),
-    batch_size=batch_size,
-    shuffle=False,
-)
-
-# initialize pretrained feature extractor
-cnn = models.resnet18(pretrained=True)
-model = create_model(cnn, with_prob=with_prob)
-
-trainer = Trainer(
-    n_epochs=n_epochs,  # increase for improved performance
-    lr=lr,
-    checkpointing=True,
-    checkpointer_config={"checkpoint_dir": "checkpoint"}
-)
-trainer.fit(model, [dl_train])
-
-score = model.score([dl_train_test], as_dataframe=True)
-# -
-
-trainer.metrics
-
-preds = model.predict(dl_train)
-
-preds
-
-
-# +
-df_train_all, df_valid_all, df_test_all = load_vrd_data(path_prefix=path_prefix, sample=False)
-
-print("Train Relationships: ", len(df_train_all))
-print("Dev Relationships: ", len(df_valid_all))
-print("Test Relationships: ", len(df_test_all))
-# -
-
-df_train_all[df_train_all["source_img"] == "8538884882_02c6a81024_b.jpg"]
 
 
 

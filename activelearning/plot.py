@@ -40,10 +40,10 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
 
 def plot_train_loss(loss_list, x_axis="Epoch", model="Label"):
 
-        fig = go.Figure(go.Scatter(x=list(range(len(loss_list))), y=loss_list))
-        fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text=model + " model - Training Loss", template="plotly_white")
+    fig = go.Figure(go.Scatter(x=list(range(len(loss_list))), y=loss_list))
+    fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text=model + " model - Training Loss", template="plotly_white")
 
-        return fig
+    return fig
 
 
 class PlotMixin:
@@ -245,6 +245,7 @@ class PlotMixin:
         cliques = self.label_model.cliques.copy()
         cliques.append([full_lm.shape[1]-1])
         psi_y, _ = self.label_model._get_psi(full_lm, cliques, full_lm.shape[1])
+        print("Green = expected conditional independence")
         return pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(self._color_cov, axis=None)
 
     def _color_cov(self, df):
