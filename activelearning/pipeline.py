@@ -6,11 +6,13 @@ import random
 from scipy.spatial.distance import pdist, squareform
 from sklearn.neighbors import NearestNeighbors
 import torch
+from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
 from final_model import DiscriminativeModel
 from plot import PlotMixin
+from visualrelation import VisualRelationDataset
 
 
 class ActiveLearningPipeline(PlotMixin):
@@ -20,6 +22,7 @@ class ActiveLearningPipeline(PlotMixin):
                  it: int = 100,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
+                 batch_size: int=20,
                  active_learning: str = "probs",
                  query_strategy: str = "margin",
                  alpha: float = 0.01,
@@ -37,6 +40,7 @@ class ActiveLearningPipeline(PlotMixin):
         self.randomness = randomness
         self.df = df
         self.active_learning = active_learning
+        self.batch_size = batch_size
 
         self.label_model = LabelModel(df=df,
                                       n_epochs=n_epochs,
@@ -204,7 +208,16 @@ class ActiveLearningPipeline(PlotMixin):
 
         old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
         if not not self.final_model:
-            self.final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
+            if self.final_model.__class__.__name__ == "VisualRelationClassifier":
+                dataset = VisualRelationDataset(image_dir="/tmp/data/VRD/sg_dataset/sg_train_images", 
+                        df=self.df,
+                        Y=old_probs.clone().detach().numpy())
+
+                dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
+
+                self.final_probs = self.final_model.fit(dl).predict()
+            else:
+                self.final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 
@@ -229,10 +242,23 @@ class ActiveLearningPipeline(PlotMixin):
                 new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
             if not not self.final_model:
-                self.final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+                if self.final_model.__class__.__name__ == "VisualRelationClassifier":
+                    dataset = VisualRelationDataset(image_dir="/tmp/data/VRD/sg_dataset/sg_train_images", 
+                        df=self.df,
+                        Y=new_probs.clone().detach().numpy())
+
+                    dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
+
+                    self.final_probs = self.final_model.fit(dl).predict()
+                else:
+                    self.final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+
             self.logging(count=i+1, probs=new_probs, final_probs=self.final_probs, selected_point=sel_idx)
 
             old_probs = new_probs.clone()
+
+            # if i % 5 == 0:
+            #     self.plot_metrics()
 
             # if self.active_learning == "cov":
             #     if i == self.it - 1:

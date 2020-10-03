@@ -390,6 +390,10 @@ class LabelModel(PerformanceMixin):
 
         return cov_O_S[:-self.y_dim, -self.y_dim:]
 
+    # def get_weak_label_weights(self):
+
+
+
 
 
 
@@ -397,20 +401,7 @@ class LabelModel(PerformanceMixin):
 
 
 
-# def get_conditional_probabilities(label_matrix, mu):
-#     """Get conditional probabilities from label model parameters"""
 
-#     N_total, nr_wl, y_set, y_dim = get_properties(label_matrix)
-
-#     c_probs = np.zeros(((nr_wl) * (y_dim + 1), y_dim))
-#     for wl in range(nr_wl):
-#         # Conditional probabilities are label model parameters
-#         c_probs[(wl * y_dim) + wl + 1:y_dim + (wl * y_dim) + wl + 1, :] = mu[(wl * y_dim):y_dim + (wl * y_dim), :]
-
-#         # Probability for abstain
-#         c_probs[(wl * y_dim) + wl, :] = 1 - mu[(wl * y_dim):y_dim + (wl * y_dim), :].sum(axis=0)
-
-#     return c_probs
 
 
 # def get_accuracies(label_matrix, c_probs, class_balance):

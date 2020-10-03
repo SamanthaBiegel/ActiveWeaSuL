@@ -75,7 +75,6 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
     def __init__(self,
                  pretrained_model,
-                 train_dataloader,
                  test_dataloader,
                  df,
                  data_path_prefix,
@@ -90,7 +89,6 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         self.pretrained_model = pretrained_model
         self.text_module = WordEmb(glove_path=data_path_prefix + "data/glove/glove.6B.100d.txt").to(self.device)
         self.concat_module = FlatConcat().to(self.device)
-        self.train_dataloader = train_dataloader
         self.test_dataloader = test_dataloader
         self.df = df
         self.n_epochs = n_epochs
@@ -104,10 +102,10 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
             param.requires_grad = False
 
         feature_extractor = nn.Sequential(*list(self.pretrained_model.children())[:-1]).to(self.device)
-        sub_features = feature_extractor(features["sub_crop"])
-        obj_features = feature_extractor(features["obj_crop"])
-        union_features = feature_extractor(features["union_crop"])
-        word_embeddings = self.text_module(features["obj_category"], features["sub_category"])
+        sub_features = feature_extractor(features["sub_crop"].to(self.device))
+        obj_features = feature_extractor(features["obj_crop"].to(self.device))
+        union_features = feature_extractor(features["union_crop"].to(self.device))
+        word_embeddings = self.text_module(features["obj_category"], features["sub_category"]).to(self.device)
 
         concatenated_features = self.concat_module(sub_features, obj_features, union_features, word_embeddings)
 
@@ -117,7 +115,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         """Implement cross entropy loss for probabilistic labels"""
 
         y_dim = targets.shape[1]
-        loss = torch.zeros(predictions.shape[0])
+        loss = torch.zeros(predictions.shape[0]).to(self.device)
         for y in range(y_dim):
             loss_y = F.cross_entropy(predictions, predictions.new_full((predictions.shape[0],), y, dtype=torch.long),
                                      reduction="none")
@@ -131,7 +129,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         in_features = self.pretrained_model.fc.in_features
         self.linear = nn.Linear(in_features * 3 + 2 * 100, self.n_classes).to(self.device)
 
-    def fit(self):
+    def fit(self, train_dataloader):
         """Train classifier"""
 
         self.init_model()
@@ -145,13 +143,12 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 
-        n_batches = len(self.train_dataloader)
+        n_batches = len(train_dataloader)
 
         for epoch in range(self.n_epochs):
-            for i, (batch_features, batch_labels) in tqdm(enumerate(self.train_dataloader), total=n_batches):
+            for i, (batch_features, batch_labels) in tqdm(enumerate(train_dataloader), total=n_batches):
                 optimizer.zero_grad()
 
-                batch_features = {feature: value.to(self.device) if not isinstance(value, list) else value for feature, value in batch_features.items() }
                 batch_labels = {label: values.to(self.device) for label, values in batch_labels.items()}
 
                 processed_features = self.extract_concat_features(batch_features)
@@ -186,8 +183,9 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
         preds = []
 
-        for images, labels in dataloader:
-            processed_features = self.extract_concat_features(images)
+        for batch_features, batch_labels in dataloader:
+
+            processed_features = self.extract_concat_features(batch_features)
 
             logits = self.linear(processed_features)
             preds.extend(F.softmax(logits, dim=1))

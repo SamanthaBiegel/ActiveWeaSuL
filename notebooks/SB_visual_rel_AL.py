@@ -14,16 +14,18 @@
 # ---
 
 # +
-# # ! pip install -r ../../requirements.txt
-
-# +
-# # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-
-# +
-# path to use when running on DAP
-# path_prefix = "/tmp/"
-
-path_prefix = "../"
+DAP = True
+    
+if DAP:
+    # ! pip install -r requirements.txt
+    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    path_prefix = "/tmp/"
+    pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
+else:
+    pretrained_model = models.resnet18(pretrained=True)
+    path_prefix = "../"
 
 # +
 # %load_ext autoreload
@@ -58,7 +60,7 @@ from visual_relation_tutorial.utils import load_vrd_data
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
 from final_model import DiscriminativeModel
-from plot import plot_probs
+from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
 from pipeline import ActiveLearningPipeline
 
@@ -66,6 +68,9 @@ from visualrelation import VisualRelationDataset, VisualRelationClassifier, Word
 
 from torch.utils.data import DataLoader
 import torch.nn as nn
+# -
+
+torch.cuda.is_available()
 
 # +
 balance=True
@@ -188,15 +193,15 @@ lm = LabelModel(df=df_train,
                 active_learning=False,
                 add_cliques=True,
                 add_prob_loss=False,
-                n_epochs=500,
+                n_epochs=200,
                 lr=1e-1)
     
 Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
 lm.print_metrics()
+# -
 
-# +
-# lm.plot_train_loss()
+plot_train_loss(lm.losses)
 
 # +
 # label_model = SnorkelLabelModel(cardinality=2)
@@ -205,91 +210,120 @@ lm.print_metrics()
 # label_model.score(L_train, Y_train, metrics=["accuracy"])
 # -
 
+metrics = ["accuracy", "precision", "recall", "f1"]
+train_on = "probs" # probs or labels
+n_epochs = 3
+lr = 1e-3
+batch_size=20
+
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
              'df': df_train,
-             'n_epochs': 200
+             'n_epochs': 200,
+             'batch_size': batch_size
             }
 
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
+                      df=df_train,
+                      Y=Y_probs.clone().detach().numpy())
+dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+
+
 # +
-it = 20
+it = 50
 query_strategy = "margin"
     
 al = ActiveLearningPipeline(it=it,
+#                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance)
-al.label_model.analyze()
 al.label_model.print_metrics()
 # -
 
-al.plot_metrics()
+plot_train_loss(al.final_model.average_losses, "Batches", "Discriminative")
 
-al.plot_parameters()
+al.final_metrics[0]
 
-al.label_model.get_true_mu()[8:18,1]
+al.final_metrics[20]
 
-lm.cov_O
+lm._analyze(al.label_model.predict_true(), df_train["y"])
 
-al.color_cov()
+lm.get_true_mu()
 
-cliques = [[0,1],[1,3],[2,3],[3,4],[0,5],[1,5],[2,5],[4,5]]
+lm.mu
 
-2,3
-1,3
-3,4
-4,5
+al.label_model.mu
 
-6,7-8,9
-6,7-2,3
-10,11-4,5
-10,11-8,9
-12,13-6,7
-12,13-10,11
+df_train[][]
 
-psi_y
+df_train[df_train.y == 1]
 
-al.label_model.cliques
+lm.metric_dict
 
-cliques
-
-L_train[al.queried[10:19]]
-
-df_train.iloc[al.queried[10:19]]
-
-al.plot_parameters()
+lm.metric_dict
 
 al.plot_metrics()
+
+al.plot_parameters([1,3,5,7,9])
+
+
+
+# +
+# al.label_model.get_true_mu()[8:18,1]
+
+# +
+# al.color_cov()
+
+# +
+# cliques = [[0,1],[1,3],[2,3],[3,4],[0,5],[1,5],[2,5],[4,5]]
+
+# +
+# al.label_model.cliques
+
+# +
+# cliques
+
+# +
+# L_train[al.queried[10:19]]
+
+# +
+# df_train.iloc[al.queried[10:19]]
+
+# +
+# al.plot_parameters()
+
+# +
+# al.plot_metrics()
+# -
 
 # # **Train discriminative model on probabilistic labels**
 
 # +
-metrics = ["accuracy", "precision", "recall", "f1"]
-train_on = "probs" # probs or labels
-batch_size = 10
-n_epochs = 3
-lr = 1e-3
+n_epochs = 10
+lr=1e-2
 
-pretrained_model = models.resnet18(pretrained=True)
-
-# +
 dataset = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
-                      df=df_train, 
+                      df=df_train,
                       Y=Y_probs.clone().detach().numpy())
 
 dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
-vc = VisualRelationClassifier(pretrained_model, dl, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
+vc = VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
-probs_final = vc.fit().predict()
+probs_final = vc.fit(dl).predict()
 
 vc.analyze()
 
 vc.print_metrics()
+# -
+
+from plot import plot_train_loss
+plot_train_loss(vc.average_losses, "Batches", model="Discriminative")
 
 # +
 # dataset = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
@@ -306,7 +340,7 @@ dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/
 dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 
-vc_al = VisualRelationClassifier(pretrained_model, dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr)
+vc_al = VisualRelationClassifier(pretrained_model, dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
 probs_final_al = vc_al.fit().predict()
 

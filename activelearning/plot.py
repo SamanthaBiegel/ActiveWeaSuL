@@ -38,10 +38,10 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
     return fig
 
 
-def plot_train_loss(loss_list, x_axis, model):
+def plot_train_loss(loss_list, x_axis="Epoch", model="Label"):
 
         fig = go.Figure(go.Scatter(x=list(range(len(loss_list))), y=loss_list))
-        fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text="Label model - Training Loss", template="plotly_white")
+        fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text=model + " model - Training Loss", template="plotly_white")
 
         return fig
 
@@ -60,7 +60,7 @@ class PlotMixin:
 
         return fig
 
-    def plot_parameters(self):
+    def plot_parameters(self, true_values="max cliques"):
         """Plot each parameter against number of iterations"""
 
         class_list = []
@@ -81,7 +81,9 @@ class PlotMixin:
         true_mu_df = pd.DataFrame(np.repeat(self.label_model.get_true_mu().detach().numpy()[:, 1][None, :], self.it + 1, axis=0))
         
         for idx in range(len(idx_dict.keys())):
-            if idx in self.label_model.max_clique_idx:
+            if true_values == "max cliques":
+                true_values = self.label_model.max_clique_idx
+            if idx in true_values:
                 fig.add_trace(go.Scatter(x=true_mu_df.index,
                                          y=true_mu_df[idx],
                                         #  opacity=1,
@@ -156,6 +158,26 @@ class PlotMixin:
 
         for fig in figures:
             fig.show()
+        # categories = "Metric"
+        # y_axis=0
+
+        # input_df = pd.DataFrame.from_dict(self.metrics)
+        # input_df = input_df.stack().reset_index().rename(columns={"level_0": categories, "level_1": "Active Learning Iteration", 0: y_axis})
+        # input_df = input_df.loc[~input_df[y_axis].apply(lambda x: isinstance(x, str))]
+        # input_df["performance"] = "Label model performance"
+
+        # input_df2 = pd.DataFrame.from_dict(self.final_metrics)
+        # input_df2 = input_df2.stack().reset_index().rename(columns={"level_0": categories, "level_1": "Active Learning Iteration", 0: y_axis})
+        # input_df2 = input_df2.loc[~input_df2[y_axis].apply(lambda x: isinstance(x, str))]
+        # input_df2["performance"] = "Discriminative model performance"
+
+        # joined_df = pd.concat([input_df, input_df2])
+
+        # fig = px.line(joined_df, x="Active Learning Iteration", y=y_axis, color=categories, facet_col="performance", color_discrete_sequence=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold))
+        # fig.update_layout(height=700, template="plotly_white", yaxis_title="")
+        # fig.for_each_annotation(lambda a: a.update(text=a.text.replace("performance=", "")))
+
+        # return fig
 
     def plot_iterations(self):
         """Plot sampled weak label configurations, ground truth labels and resulting probabilistic labels over time"""

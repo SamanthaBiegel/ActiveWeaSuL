@@ -14,7 +14,7 @@ class PerformanceMixin:
 
     def _analyze(self, prob_labels, y):
 
-        predicted_labels = torch.argmax(prob_labels, dim=1).detach().numpy()
+        predicted_labels = torch.argmax(prob_labels, dim=1).cpu().detach().numpy()
 
         y_set = list(range(prob_labels.shape[1]))
         self.TN, self.FN, self.FP, self.TP = (((predicted_labels == i) & (y == j)).sum() for i in y_set for j in y_set)
@@ -28,7 +28,7 @@ class PerformanceMixin:
 
     def _accuracy(self, prob_labels, y):
 
-        return (torch.argmax(prob_labels, dim=1).detach().numpy() == y).sum() / len(y)
+        return (torch.argmax(prob_labels, dim=1).cpu().detach().numpy() == y).sum() / len(y)
 
     def MCC(self):
         """Matthews correlation coefficient"""
@@ -53,3 +53,4 @@ class PerformanceMixin:
 
         for key, value in self.metric_dict.items():
             print(key, ': ', value)
+[]]
