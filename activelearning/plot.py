@@ -257,6 +257,21 @@ class PlotMixin:
             df1.loc[(idx[0][i], idx[1][i])] = c2
         return df1
 
+    def plot_true_vs_predicted_posteriors(self):
+        true_probs = self.label_model.predict_true()[:, 1]
+        fig = make_subplots(rows=1, cols=2, subplot_titles=["True vs predicted posteriors before active learning", "True vs predicted posteriors after active learning"])
+
+        for i, probs in enumerate([self.prob_dict[self.it], self.prob_dict[0]]):
+            fig.add_trace(go.Scatter(x=true_probs, y=probs, mode='markers', showlegend=False, marker_color=np.array(px.colors.qualitative.Pastel)[0]), row=1, col=i+1)
+            fig.add_trace(go.Scatter(x=np.linspace(0, 1, 100), y=np.linspace(0, 1, 100), line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel)[1]), showlegend=False), row=1, col=i+1)
+
+        fig.update_yaxes(range=[0, 1], title_text="True")
+        fig.update_xaxes(range=[0, 1], title_text="Predicted")
+        fig.update_layout(template="plotly_white", width=1000, height=500)
+        fig.show()
+
+    
+
         
 
 

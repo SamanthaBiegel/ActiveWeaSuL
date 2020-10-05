@@ -58,6 +58,8 @@ plot_probs(df, probs=data.y, soft_labels=False)
 df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
+df.loc[:, "wl4"] = (df["x2"]<-0.5)*1
+df.loc[:, "wl5"] = (df["x1"]<0)*1
 
 
 # +
@@ -84,7 +86,7 @@ def random_LF(y, fp, fn, abstain):
 # df.loc[:, "wl3"] = [random_LF(y, fp=0.6, fn=0.8, abstain=0) for y in df["y"]]
 # -
 
-label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+label_matrix = np.array(df[["wl1", "wl2", "wl3","wl4", "wl5","y"]])
 
 _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
@@ -104,7 +106,7 @@ final_model_kwargs = {'input_dim': 2,
                       'n_epochs': 250}
 
 class_balance = np.array([1 - p_z, p_z])
-cliques=[[0],[1,2]]
+cliques=[[0,3],[1,2,4]]
 # cliques=[[0],[1],[2]]
 
 al_kwargs = {'add_prob_loss': False,
@@ -130,6 +132,48 @@ lm = LabelModel(df=df,
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
 lm.print_metrics()
+
+# +
+lambda_combs, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
+new_counts = lambda_counts.copy()
+rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
+for i, comb in enumerate(lambda_combs):
+    nr_non_abstain = (comb != -1).sum()
+    if nr_non_abstain < lm.nr_wl:
+        if nr_non_abstain == 0:
+            new_counts[i] = 0
+        else:
+            match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
+            new_counts[i] = lambda_counts[match_rows].sum()
+
+P_lambda = torch.Tensor((new_counts/lm.N)[lambda_index][:, None])
+
+# +
+lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([lm.label_matrix,df.y.values[:,None]],axis=1), axis=0, return_counts=True, return_inverse=True)
+
+P_Y_lambda = np.zeros((lm.N, 2))
+
+P_Y_lambda[df.y.values == 0, 0] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df.y.values == 0]
+P_Y_lambda[df.y.values == 0, 1] = 1 - P_Y_lambda[df.y.values == 0, 0]
+
+P_Y_lambda[df.y.values == 1, 1] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df.y.values == 1]
+P_Y_lambda[df.y.values == 1, 0] = 1 - P_Y_lambda[df.y.values == 1, 1]                                                               
+
+# +
+true_probs = lm.predict_true()[:, 1]
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=P_Y_lambda[:, 1], y=true_probs, mode='markers', showlegend=False, marker_color=np.array(px.colors.qualitative.Pastel)[0]))
+fig.add_trace(go.Scatter(x=np.linspace(0, 1, 100), y=np.linspace(0, 1, 100), line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel)[1]), showlegend=False))
+
+fig.update_yaxes(range=[0, 1], title_text="True from Junction Tree ")
+fig.update_xaxes(range=[0, 1], title_text="True from P(Y, lambda)")
+fig.update_layout(template="plotly_white", width=1000, height=500)
+fig.show()
+# -
+
+fig = go.Figure(go.Scatter(x=P_lambda.squeeze(), y=np.array(true_probs)-P_Y_lambda[:,1], mode="markers"))
+fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
+fig.show()
 
 # +
 it = 1

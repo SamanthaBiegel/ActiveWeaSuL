@@ -58,14 +58,14 @@ def vr_to_pandas(
 def df_drop_duplicates(df):
     """Drop duplicates for object pairs with multiple predicate labels"""
 
-    np.random.seed(456)
+    # np.random.seed(456)
     return df.sample(frac=1).drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True).sort_index()
 
 
 def balance_dataset(df):
     """Balance classes in dataset"""
 
-    np.random.seed(456)
+    # np.random.seed(456)
     df = df.sample(frac=1).groupby("y")
     return pd.DataFrame(df.apply(lambda x: x.sample(df.size().min()))).reset_index(drop=True)
 
