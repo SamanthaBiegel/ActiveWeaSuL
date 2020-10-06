@@ -14,14 +14,18 @@
 # ---
 
 # +
-DAP = False
+DAP = True
     
 if DAP:
-    # ! pip install -r requirements.txt
-    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
+    # ! pip install -r ../requirements.txt
+    # ! aws s3 cp s3://user/gc03ye/uploads/VRD/sg_dataset /tmp/data/images --recursive
+    # ! mv /tmp/data/images/sg_train_images /tmp/data/images/train_images
+    # ! mv /tmp/data/images/sg_test_images /tmp/data/images/test_images
+    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/annotations --recursive --exclude sg_dataset
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
     # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
     path_prefix = "/tmp/"
+    import torch
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
     import torchvision.models as models
@@ -202,10 +206,11 @@ dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 # al_metrics = {}
 # for i in range(50):
 it = 20
-query_strategy = "margin"
+query_strategy = "test2"
+
 
 al = ActiveLearningPipeline(it=it,
-#                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                            final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
@@ -214,9 +219,13 @@ Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, clas
 al.label_model.print_metrics()
 # -
 
+df_train.iloc[al.queried]
+
 al.plot_metrics()
 
 plot_train_loss(al.label_model.losses, "Epoch", "Label")
+
+al.plot_parameters()
 
 # +
 # mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
@@ -490,4 +499,5 @@ al.label_model._analyze(Y_probs, al.y)
 
 
 
-
+# + active=""
+#

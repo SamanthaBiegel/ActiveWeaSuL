@@ -13,8 +13,5 @@ skorch
 scikit-learn
 tensorflow==2.2.0
 dash
-<<<<<<< Updated upstream
 snorkel
-=======
 tqdm
->>>>>>> Stashed changes

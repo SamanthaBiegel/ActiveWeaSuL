@@ -111,6 +111,20 @@ class ActiveLearningPipeline(PlotMixin):
 
         return self.list_options(measure, maximum)[0]
 
+    def test_strategy(self, iteration):
+
+        if iteration == 0:
+            return [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
+        else:
+            diff_prob_labels = self.prob_dict[iteration] - self.prob_dict[iteration-1]
+            return np.where(self.unique_inverse == self.unique_inverse[np.argmax(diff_prob_labels)])[0]
+
+    def test2_strategy(self, iteration):
+        diff_labels = self.prob_dict[iteration] - self.final_prob_dict[iteration]
+        max_diff_idx = np.where((diff_labels == np.max(diff_labels[(self.ground_truth_labels == -1) &~ self.all_abstain])))[0]
+        pick_idx = np.random.choice(max_diff_idx)
+        return np.where((self.unique_inverse == self.unique_inverse[pick_idx]) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
+
     def query(self, probs, iteration):
         """Choose data point to label from label predictions"""
 
@@ -130,6 +144,9 @@ class ActiveLearningPipeline(PlotMixin):
 
         elif self.query_strategy == "test":
             indices = self.test_strategy(iteration)
+
+        elif self.query_strategy == "test2":
+            indices = self.test2_strategy(iteration)
 
         # Make really random
         random.seed(random.SystemRandom().random())
@@ -161,7 +178,7 @@ class ActiveLearningPipeline(PlotMixin):
         if not not self.final_model:
             self.final_model.analyze()
             self.final_metrics[count] = self.final_model.metric_dict
-            self.final_prob_dict[count] = final_probs[:, 1]
+            self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
 
         if selected_point is not None:
             self.queried.append(selected_point)
@@ -179,14 +196,6 @@ class ActiveLearningPipeline(PlotMixin):
         self.mu = self.mu_0*np.exp(-self.alpha*n_queried) + mu_samples*(1 - np.exp(-self.alpha*n_queried))
 
         return self.predict(self)
-
-    def test_strategy(self, iteration):
-
-        if iteration == 0:
-            return [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
-        else:
-            diff_prob_labels = self.prob_dict[iteration] - self.prob_dict[iteration-1]
-            return np.where(self.unique_inverse == self.unique_inverse[np.argmax(diff_prob_labels)])[0]
 
     def refine_probabilities(self, label_matrix, cliques, class_balance):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
@@ -209,7 +218,7 @@ class ActiveLearningPipeline(PlotMixin):
         old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
         if not not self.final_model:
             if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                dataset = VisualRelationDataset(image_dir="/tmp/data/VRD/sg_dataset/sg_train_images", 
+                dataset = VisualRelationDataset(image_dir="/tmp/data/images/train_images", 
                         df=self.df,
                         Y=old_probs.clone().detach().numpy())
 
@@ -243,7 +252,7 @@ class ActiveLearningPipeline(PlotMixin):
 
             if not not self.final_model:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                    dataset = VisualRelationDataset(image_dir="/tmp/data/VRD/sg_dataset/sg_train_images", 
+                    dataset = VisualRelationDataset(image_dir="/tmp/data/images/train_images", 
                         df=self.df,
                         Y=new_probs.clone().detach().numpy())
 
