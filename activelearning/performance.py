@@ -10,16 +10,20 @@ class PerformanceMixin:
 
         self.y = self.df["y"].values
 
-        self._analyze(self.preds, self.y)
+        self.metric_dict = self._analyze(self.preds, self.y)
+        self.metric_dict["Labels"] = self.model_name
 
     def _analyze(self, prob_labels, y):
 
         predicted_labels = torch.argmax(prob_labels, dim=1).cpu().detach().numpy()
 
         y_set = list(range(prob_labels.shape[1]))
-        self.TN, self.FN, self.FP, self.TP = (((predicted_labels == i) & (y == j)).sum() for i in y_set for j in y_set)
+        TN, FN, FP, TP = (((predicted_labels == i) & (y == j)).sum() for i in y_set for j in y_set)
 
-        self.metric_dict = {"Labels:": self.model_name, "MCC": self.MCC(), "Precision": self.precision(), "Recall": self.recall(), "Accuracy": self.accuracy()}
+        return {"MCC": self.MCC(TP, TN, FP, FN),
+                "Precision": self.precision(TP, FP),
+                "Recall": self.recall(TP, FN),
+                "Accuracy": self._accuracy(prob_labels, y)}
 
     def accuracy(self):
         """Compute overall accuracy from label predictions"""
@@ -30,23 +34,23 @@ class PerformanceMixin:
 
         return (torch.argmax(prob_labels, dim=1).cpu().detach().numpy() == y).sum() / len(y)
 
-    def MCC(self):
+    def MCC(self, TP, TN, FP, FN):
         """Matthews correlation coefficient"""
 
-        nominator = self.TP * self.TN - self.FP * self.FN
-        denominator_squared = (self.TP + self.FP) * (self.TP + self.FN) * (self.TN + self.FP) * (self.TN + self.FN)
+        nominator = TP * TN - FP * FN
+        denominator_squared = (TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)
 
         return nominator / np.sqrt(denominator_squared)
 
-    def recall(self):
+    def recall(self, TP, FN):
         """Fraction of true class 1 and all class 1"""
 
-        return self.TP / (self.TP + self.FN)
+        return TP / (TP + FN)
 
-    def precision(self):
+    def precision(self, TP, FP):
         """Fraction of true class 1 and predicted class 1"""
 
-        return self.TP / (self.TP + self.FP)
+        return TP / (TP + FP)
 
     def print_metrics(self):
         """Pretty print metric dict"""

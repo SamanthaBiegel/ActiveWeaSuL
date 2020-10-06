@@ -50,12 +50,16 @@ class PlotMixin:
     def plot_dict(self, input_dict, categories, y_axis, label_dict=None):
         input_df = pd.DataFrame.from_dict(input_dict)
         input_df = input_df.stack().reset_index().rename(columns={"level_0": categories, "level_1": "Active Learning Iteration", 0: y_axis})
+        # Filter out strings
         input_df = input_df.loc[~input_df[y_axis].apply(lambda x: isinstance(x, str))]
 
         if label_dict:
             input_df[categories] = input_df[categories].map(label_dict)
 
-        fig = px.line(input_df, x="Active Learning Iteration", y=y_axis, color=categories, color_discrete_sequence=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold))
+        grouped_df = input_df.groupby(categories)
+        fig = go.Figure()
+        for i, (name, group) in enumerate(grouped_df):
+            fig.add_trace(go.Scatter(x=group["Active Learning Iteration"], y=group[y_axis], name=str(name), line=dict(color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i], shape="spline", smoothing=0.8)))
         fig.update_layout(height=700, template="plotly_white")
 
         return fig
@@ -144,14 +148,20 @@ class PlotMixin:
 
         return fig
 
-    def plot_metrics(self):
+    def plot_metrics(self, true_label_counts=True):
         """Plot metrics per iteration"""
 
         figures = []
 
         figures.append(self.plot_dict(self.metrics, "Metric", 0))
         figures[0].update_layout(title_text="Label model performance", yaxis_title="")
-
+        if true_label_counts:
+            metric_dict = self.label_model._analyze(self.label_model.predict_true_counts(), self.df["y"].values)
+        else:
+            metric_dict = self.label_model._analyze(self.label_model.predict_true(), self.df["y"].values)
+        for i, (key, value) in enumerate(metric_dict.items()):
+            figures[0].add_trace(go.Scatter(x=np.arange(0,self.it+1), y=np.repeat(value, self.it+1), line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel)[i]), name=key + "*"))
+        
         if self.final_model:
             figures.append(self.plot_dict(self.final_metrics, "Metric", 0))
             figures[1].update_layout(title_text="Discriminative model performance", yaxis_title="")

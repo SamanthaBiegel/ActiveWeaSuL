@@ -357,10 +357,10 @@ class LabelModel(PerformanceMixin):
                     match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
                     new_counts[i] = lambda_counts[match_rows].sum()
 
-        P_lambda = torch.Tensor((new_counts/self.N)[lambda_index][:, None])
+        self.P_lambda = torch.Tensor((new_counts/self.N)[lambda_index][:, None])
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / P_lambda)#.clamp(0,1)
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
 
         preds = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
@@ -370,6 +370,17 @@ class LabelModel(PerformanceMixin):
         """Obtain optimal training labels from ground truth labels"""
         
         return self._predict(self.get_true_mu()[:, 1][:, None], self.df["y"].mean())
+
+    def predict_true_counts(self):
+        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix, self.df.y.values[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+
+        P_Y_lambda = np.zeros((self.N, 2))
+
+        for i, j in zip([0, 1],[1, 0]):
+            P_Y_lambda[self.df.y.values == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[self.df.y.values == i]
+            P_Y_lambda[self.df.y.values == i, j] = 1 - P_Y_lambda[self.df.y.values == i, i]
+
+        return torch.Tensor(P_Y_lambda)
 
     def get_true_mu(self):
         """Obtain actual label model parameters from data and ground truth labels"""
