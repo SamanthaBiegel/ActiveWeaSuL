@@ -56,11 +56,11 @@ class PlotMixin:
         if label_dict:
             input_df[categories] = input_df[categories].map(label_dict)
 
-        grouped_df = input_df.groupby(categories)
+        grouped_df = input_df.groupby(categories, sort=False)
         fig = go.Figure()
         for i, (name, group) in enumerate(grouped_df):
             fig.add_trace(go.Scatter(x=group["Active Learning Iteration"], y=group[y_axis], name=str(name), line=dict(color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i], shape="spline", smoothing=0.8)))
-        fig.update_layout(height=700, template="plotly_white")
+        fig.update_layout(height=700, template="plotly_white", xaxis_title="Active Learning Iteration")
 
         return fig
 

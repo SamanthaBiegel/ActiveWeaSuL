@@ -77,38 +77,83 @@ semantic_predicates = [
         "sit on",
         "stand on",
         "ride",
-#         "wear"
+        "wear"
     ]
 
-classify = ["sit on"]
+classify = ["wear"]
 df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_predicates, path_prefix=path_prefix, drop_duplicates=True, balance=balance, validation=False)
 
 print("Train Relationships: ", len(df_train))
 print("Test Relationships: ", len(df_test))
+
+# +
+import json
+with open(path_prefix + '/data/visual_genome/objects.json') as f:
+  visgen_objects = json.load(f)
+
+with open(path_prefix + '/data/visual_genome/relationships.json') as f:
+  visgen_rels = json.load(f)
 # -
 
-df_train.y.mean()
+rels_dict = {im["image_id"]: im["relationships"] for im in visgen_rels}
 
-df_train
+visgen_df = pd.json_normalize(visgen_rels, record_path=["relationships"], meta="image_id")
+
+df_vis = visgen_df.loc[:,["image_id", "predicate", "object.name", "object.h", "object.w", "object.y", "object.x", "subject.name", "subject.h", "subject.w", "subject.y", "subject.x"]]
+
+len(np.unique(visgen_df["predicate"]))
+
+visgen_df = visgen_df.dropna()
+
+visgen_df["synsets"]
+
+visgen_df.columns
+
+visgen_df[visgen_df["predicate"] == "wear"]
+
+visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)[:30]
+
+# +
+# pd.set_option('display.max_rows',70)
+# pd.DataFrame(df_train.groupby("y")["source_img"].count())
+# -
 
 # # **Define labeling functions**
 
 SITON = 1
+WEAR = 1
 OTHER = 0
 ABSTAIN = -1
 
 
 # +
-def lf_siton_object(x):
+# def lf_siton_object(x):
+#     if x.subject_category == "person":
+#         if x.object_category in ["bench", "chair", "floor", "horse", "grass", "table"]:
+#             return SITON
+#     return OTHER
+
+# def lf_not_person(x):
+#     if x.subject_category != "person":
+#         return OTHER
+#     return SITON
+
+# +
+def lf_wear_object(x):
     if x.subject_category == "person":
-        if x.object_category in ["bench", "chair", "floor", "horse", "grass", "table"]:
-            return SITON
+        if x.object_category in ["t-shirt", "jeans", "glasses", "skirt"]:
+            return WEAR
     return OTHER
 
-def lf_not_person(x):
-    if x.subject_category != "person":
+def lf_area(x):
+    if area(x.subject_bbox) / area(x.object_bbox) > 1:
+        return WEAR
+    return OTHER
+
+def lf_dist(x):
+    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
         return OTHER
-    return SITON
+    return WEAR
 
 
 # -
@@ -120,33 +165,34 @@ XMAX = 3
 
 
 # +
-def lf_ydist(x):
-    if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
-        return SITON
-    return OTHER
+# def lf_ydist(x):
+#     if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
+#         return SITON
+#     return OTHER
 
-def lf_xdist(x):
-    if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]:
-        return OTHER
-    return SITON
+# def lf_xdist(x):
+#     if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]:
+#         return OTHER
+#     return SITON
 
-def lf_dist(x):
-    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 500:
-        return OTHER
-    return SITON
+# def lf_dist(x):
+#     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 500:
+#         return OTHER
+#     return SITON
 
 def area(bbox):
     return (bbox[YMAX] - bbox[YMIN]) * (bbox[XMAX] - bbox[XMIN])
 
-def lf_area(x):
-    if area(x.subject_bbox) / area(x.object_bbox) < 0.8:
-        return SITON
-    return OTHER
+# def lf_area(x):
+#     if area(x.subject_bbox) / area(x.object_bbox) < 0.8:
+#         return SITON
+#     return OTHER
 
 
 # +
-lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
+# lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
 # lfs = [lf_siton_object, lf_dist, lf_area]
+lfs = [lf_wear_object, lf_dist, lf_area]
 
 L_train = apply_lfs(df_train, lfs)
 L_test = apply_lfs(df_test, lfs)
@@ -159,8 +205,8 @@ analyze_lfs(L_train, df_train["y"], lfs)
 # +
 class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
 
-cliques=[[0,1],[2,3],[4]]
-# cliques=[[0],[1],[2]]
+# cliques=[[0,1],[2,3],[4]]
+cliques=[[0],[1,2]]
 
 
 # -
@@ -179,6 +225,15 @@ for i in range(1):
     lm.analyze()
     lm_metrics[i] = lm.metric_dict
     lm.print_metrics()
+
+# +
+# # %%time
+# np.where((Y_probs_al[:,1].detach().numpy() == np.max(Y_probs_al[:,1].detach().numpy())) & (al.ground_truth_labels == -1) &~ al.all_abstain)[0]
+
+# +
+# # %%time
+# [i for i, j in enumerate(Y_probs_al[:,1].detach().numpy()) if (j == np.max(Y_probs_al[:,1].detach().numpy())) and (al.ground_truth_labels[i] == -1) and not (al.all_abstain[i])]
+# -
 
 plot_train_loss(lm.losses)
 
@@ -206,11 +261,10 @@ dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 # al_metrics = {}
 # for i in range(50):
 it = 20
-query_strategy = "test2"
-
+query_strategy = "margin"
 
 al = ActiveLearningPipeline(it=it,
-                            final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
@@ -219,13 +273,11 @@ Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, clas
 al.label_model.print_metrics()
 # -
 
-df_train.iloc[al.queried]
+al.plot_metrics(true_label_counts=False)
 
-al.plot_metrics()
+al.plot_iterations()
 
 plot_train_loss(al.label_model.losses, "Epoch", "Label")
-
-al.plot_parameters()
 
 # +
 # mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
@@ -278,6 +330,9 @@ inv[0]
 0.2717391304347826*0.15489130434782608*0.057065217391304345/0.25/0.0571
 
 0.3179347826086957*0.10869565217391304*0.22010869565217392/0.25/0.0571
+
+import scipy
+scipy.stats.binom_test(6,11,0.8)
 
 L_train[0,:]
 
@@ -432,9 +487,9 @@ lr = 1e-3
 n_epochs = 10
 lr=1e-2
 
-dataset = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
                       df=df_train,
-                      Y=Y_probs.clone().detach().numpy())
+                      Y=Y_probs.clone().clamp(0,1).detach().numpy())
 
 dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
@@ -459,9 +514,9 @@ plot_train_loss(vc.average_losses, "Batches", model="Discriminative")
 # dl_test = DataLoader(dataset, shuffle=False, batch_size=20)
 
 # +
-dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/VRD/sg_dataset/sg_train_images", 
+dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
                       df=df_train, 
-                      Y=Y_probs_al.clone().detach().numpy())
+                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy())
 
 dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
@@ -499,5 +554,4 @@ al.label_model._analyze(Y_probs, al.y)
 
 
 
-# + active=""
-#
+
