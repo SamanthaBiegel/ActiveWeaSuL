@@ -59,7 +59,7 @@ def df_drop_duplicates(df):
     """Drop duplicates for object pairs with multiple predicate labels"""
 
     # np.random.seed(456)
-    return df.sample(frac=1).drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True).sort_index()
+    return df.sample(frac=1).sort_values("y").drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True, keep="first").sort_index()
 
 
 def balance_dataset(df):

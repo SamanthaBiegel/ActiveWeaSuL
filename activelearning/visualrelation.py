@@ -147,7 +147,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
         n_batches = len(train_dataloader)
 
-        for epoch in tqdm(range(self.n_epochs):
+        for epoch in tqdm(range(self.n_epochs)):
             for i, (batch_features, batch_labels) in enumerate(train_dataloader):
                 optimizer.zero_grad()
 
