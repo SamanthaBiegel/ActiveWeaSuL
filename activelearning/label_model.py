@@ -76,7 +76,7 @@ class LabelModel(PerformanceMixin):
 
         return penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
     
-    def loss_probs(self, probs, penalty_strength: float = 1e6):
+    def loss_probs(self, probs, penalty_strength: float = 1e3):
         """Compute loss for probabilities below 0 or above 1"""
 
         loss_0 = torch.norm(probs[probs < 0])

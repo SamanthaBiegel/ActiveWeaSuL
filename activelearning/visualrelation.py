@@ -29,7 +29,7 @@ class VisualRelationDataset(Dataset):
         self.X = df.loc[:, ["source_img", "object_bbox", "subject_bbox", "object_category", "subject_category"]]
         self.Y = Y
 
-        # standard image transforms
+        # Standard image transforms
         self.transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
@@ -49,12 +49,12 @@ class VisualRelationDataset(Dataset):
         obj_category = self.X.loc[:, "object_category"][index]
         sub_category = self.X.loc[:, "subject_category"][index]
 
-        # compute crops
+        # Compute crops
         obj_crop = crop_img_arr(img_arr, obj_bbox)
         sub_crop = crop_img_arr(img_arr, sub_bbox)
         union_crop = crop_img_arr(img_arr, union(obj_bbox, sub_bbox))
 
-        # transform each crop
+        # Transform each crop
         image = {
             "obj_crop": self.transform(Image.fromarray(obj_crop)),
             "sub_crop": self.transform(Image.fromarray(sub_crop)),
@@ -224,6 +224,10 @@ class FlatConcat(nn.Module):
 
 def crop_img_arr(img_arr, bbox):
     """Crop bounding box from image."""
+
+    # Add dimension for black and white images without RGB colorspace
+    if len(img_arr.shape) == 2:
+        img_arr = img_arr[:, :, None]
 
     return img_arr[bbox[0] : bbox[1], bbox[2] : bbox[3], :]
 

@@ -453,6 +453,8 @@ lr = 1e-3
 
 # # **Train discriminative model on probabilistic labels**
 
+df_train[df_train["object_category"] == "cake piece"]
+
 # +
 n_epochs = 10
 lr=1e-2

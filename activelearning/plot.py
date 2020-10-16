@@ -103,13 +103,21 @@ class PlotMixin:
 
         fig = self.plot_dict(self.unique_prob_dict, "WL Configuration", "P(Y = 1|...)", self.confs)
 
-        fig.add_trace(go.Scatter(x=list(range(self.it + 1)),
-                                 y=np.repeat(0.5, self.it + 1),
-                                 opacity=0.4,
-                                 showlegend=False,
-                                 hoverinfo="none",
-                                 mode="lines",
-                                 line=dict(color="black", dash="dash")))
+        # fig.add_trace(go.Scatter(x=list(range(self.it + 1)),
+        #                          y=np.repeat(0.5, self.it + 1),
+        #                          opacity=0.4,
+        #                          showlegend=False,
+        #                          hoverinfo="none",
+        #                          mode="lines",
+        #                          line=dict(color="black", dash="dash")))
+        true_posteriors = self.label_model.predict_true_counts()[self.unique_idx, 1]
+
+        for i in range(len(self.unique_idx)):
+            fig.add_trace(go.Scatter(x=list(range(self.it + 1)),
+                                     y=np.repeat(true_posteriors[i], self.it + 1),
+                                     name=self.confs[i] + "*",
+                                     line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel + px.colors.qualitative.Bold)[i]),
+                                     hoverinfo="none"))
 
         fig.update_yaxes(range=[-0.2, 1.2])
 
@@ -197,7 +205,7 @@ class PlotMixin:
         fig.add_trace(self.plot_sampled_points().data[0], row=1, col=1)
         for i in range(self.label_model.y_dim):
             fig.add_trace(self.plot_sampled_classes().data[i], row=2, col=1)
-        for i in range(len(self.unique_idx) + 1):
+        for i in range(len(self.unique_idx)*2):
             fig.add_trace(self.plot_probabilistic_labels().data[i], row=3, col=1)
             
         fig.update_layout(height=1200, template="plotly_white")

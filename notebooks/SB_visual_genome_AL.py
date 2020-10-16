@@ -110,13 +110,17 @@ df_vis["object_y_max"] = df_vis["object_y"] + df_vis["object_h"]
 df_vis["subject_x_max"] = df_vis["subject_x"] + df_vis["subject_w"]
 df_vis["subject_y_max"] = df_vis["subject_y"] + df_vis["subject_h"]
 
-df_vis["object_bbox"] = df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values.tolist()
-df_vis["subject_bbox"] = df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values.tolist()
+df_vis["object_bbox"] = tuple(df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values)
+df_vis["subject_bbox"] = tuple(df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values)
 
-df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category"})
+df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category", "image_id": "source_img"})
+
+df_vis.source_img = df_vis.source_img.astype(str) + ".jpg"
 # -
 
 df_vis
+
+df_vis.iloc[0]["object_category"]
 
 # +
 # predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
@@ -161,13 +165,13 @@ cliques=[[0],[1,2]]
 SITON = 1
 
 def lf_siton_object(x):
-    if x.subject_name in ["person", "woman", "man", "child", "dog", "cat"]:
-        if x.object_name in ["bench", "chair", "floor", "horse", "grass", "table", "sofa"]:
+    if x.subject_category in ["person", "woman", "man", "child", "dog", "cat"]:
+        if x.object_category in ["bench", "chair", "floor", "horse", "grass", "table", "sofa"]:
             return SITON
     return OTHER
 
 def lf_not_person(x):
-    if x.subject_name != "person":
+    if x.subject_category != "person":
         return OTHER
     return SITON
 
@@ -182,7 +186,7 @@ def lf_xdist(x):
     return SITON
 
 def lf_dist(x):
-    if np.linalg.norm(np.array(x.subject_bounding_box) - np.array(x.object_bounding_box)) > 100:
+    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) > 100:
         return SITON
     return OTHER
 
@@ -191,9 +195,9 @@ def lf_area(x):
         return SITON
     return OTHER
 
-lfs = [lf_area, lf_ydist, lf_dist, lf_siton_object]
+lfs = [lf_area, lf_dist, lf_siton_object]
 
-cliques = [[0],[1,2],[3]]
+cliques = [[0,1],[2]]
 # cliques=[[0],[1,2,3],[4]]
 # -
 
@@ -205,18 +209,21 @@ class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 
 
 
-# +
-lm = LabelModel(df=df_vis,
-                    active_learning=False,
-                    add_cliques=True,
-                    add_prob_loss=False,
-                    n_epochs=500,
-                    lr=1e-1)
 
-Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.analyze()
-lm.print_metrics()
-# -
+lm_metrics = {}
+for i in range(50):
+    
+    lm = LabelModel(df=df_vis,
+                        active_learning=False,
+                        add_cliques=True,
+                        add_prob_loss=False,
+                        n_epochs=200,
+                        lr=1e-1)
+
+    Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+    lm.analyze()
+#     lm.print_metrics()
+    lm_metrics[i] = lm.metric_dict
 
 plot_train_loss(lm.losses)
 
@@ -235,20 +242,43 @@ al_kwargs = {'add_prob_loss': False,
              'lr': 1e-1
             }
 
+al_metrics = {}
+for i in range(50):
+    it = 30
+    query_strategy = "margin"
+
+    al = ActiveLearningPipeline(it=it,
+                                **al_kwargs,
+                                query_strategy=query_strategy,
+                                randomness=0)
+
+    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+    al.label_model.print_metrics()
+    al_metrics[i] = al.label_model.metric_dict
+
 # +
-it = 50
-query_strategy = "margin"
+mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
+mean_metrics["std"] = pd.DataFrame.from_dict(lm_metrics, orient="index").sem().values
+mean_metrics["Active Learning"] = "before"
 
-al = ActiveLearningPipeline(it=it,
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=0.5)
+mean_al_metrics = pd.DataFrame.from_dict(al_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
+mean_al_metrics["std"] = pd.DataFrame.from_dict(al_metrics, orient="index").sem().values
+mean_al_metrics["Active Learning"] = "after"
 
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.label_model.print_metrics()
+metrics_joined = pd.concat([mean_metrics, mean_al_metrics])
 # -
 
+fig = px.bar(metrics_joined, x="Metric", y=0, error_y="std", color="Active Learning", barmode="group", color_discrete_sequence=px.colors.qualitative.Pastel)
+fig.update_layout(template="plotly_white", yaxis_title="", title_text="Label model performance before and after active learning (error bar = standard error)")
+fig.show()
+
 al.plot_metrics()
+
+al.color_cov()
+
+
+
+df_vis
 
 plot_train_loss(al.label_model.losses)
 
@@ -256,11 +286,46 @@ al.plot_parameters()
 
 al.plot_iterations()
 
-df_vis.iloc[al.queried]
+np.unique(L, axis=0, return_counts=True)
 
 df_vis.groupby("predicate").count()
 
 plot_train_loss(al.label_model.losses)
+
+import csv
+word_embs = pd.read_csv(
+            "../data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
+        ).T
+word_embs = list(word_embs.columns)
+
+# +
+n_epochs = 10
+lr=1e-2
+
+valid_embeddings = df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
+
+df_vis_final = df_vis[valid_embeddings]
+df_vis_final.index = list(range(len(df_vis_final)))
+
+dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_vis_final, 
+                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy()[valid_embeddings])
+
+dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
+dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
+
+vc_al = VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
+
+probs_final_al = vc_al.fit(dl_al).predict()
+
+vc_al.analyze()
+
+vc_al.print_metrics()
+# -
+
+df_vis_final
+
+(df_vis.subject_x % 1 == 0).sum()
 
 
 
