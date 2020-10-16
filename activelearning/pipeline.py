@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -148,6 +149,11 @@ class ActiveLearningPipeline(PlotMixin):
         elif self.query_strategy == "test2":
             indices = self.test2_strategy(iteration)
 
+        else:
+            logging.warning("Provided active learning strategy not valid, setting to margin")
+            self.query_strategy = "margin"
+            return self.query(probs, iteration)
+
         # Make really random
         random.seed(random.SystemRandom().random())
 
@@ -157,7 +163,7 @@ class ActiveLearningPipeline(PlotMixin):
         else:
             return random.choice(indices)
 
-    def logging(self, count, probs, final_probs=None, selected_point=None):
+    def log(self, count, probs, final_probs=None, selected_point=None):
         """Keep track of accuracy and other metrics"""
 
         if count == 0:
@@ -230,7 +236,7 @@ class ActiveLearningPipeline(PlotMixin):
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 
-        self.logging(count=0, final_probs=self.final_probs, probs=old_probs)
+        self.log(count=0, final_probs=self.final_probs, probs=old_probs)
 
         for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs, i)
@@ -262,7 +268,7 @@ class ActiveLearningPipeline(PlotMixin):
                 else:
                     self.final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
 
-            self.logging(count=i+1, probs=new_probs, final_probs=self.final_probs, selected_point=sel_idx)
+            self.log(count=i+1, probs=new_probs, final_probs=self.final_probs, selected_point=sel_idx)
 
             old_probs = new_probs.clone()
 

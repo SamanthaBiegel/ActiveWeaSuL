@@ -63,7 +63,7 @@ from visualrelation import VisualRelationDataset, VisualRelationClassifier, Word
 torch.cuda.is_available()
 
 # +
-balance=True
+balance=False
 semantic_predicates = [
         "carry",
         "cover",
@@ -87,6 +87,8 @@ print("Test Relationships: ", len(df_test))
 # pd.set_option('display.max_rows',102)
 # pd.DataFrame(df_train.groupby("y")["source_img"].count())
 # -
+
+df_train
 
 # # **Define labeling functions**
 
@@ -236,14 +238,11 @@ al = ActiveLearningPipeline(it=it,
 #                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=0)
+                            randomness=0.2)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance)
 al.label_model.print_metrics()
 # -
-
-
-
 al.plot_metrics(true_label_counts=False)
 
 al.plot_iterations()
@@ -492,9 +491,9 @@ dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/images/train_im
 dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 
-vc_al = VisualRelationClassifier(pretrained_model, dl_al, dl_al_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
+vc_al = VisualRelationClassifier(pretrained_model, dl_al_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
-probs_final_al = vc_al.fit().predict()
+probs_final_al = vc_al.fit(dl_al).predict()
 
 vc_al.analyze()
 

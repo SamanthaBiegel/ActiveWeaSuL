@@ -110,8 +110,13 @@ df_vis["object_y_max"] = df_vis["object_y"] + df_vis["object_h"]
 df_vis["subject_x_max"] = df_vis["subject_x"] + df_vis["subject_w"]
 df_vis["subject_y_max"] = df_vis["subject_y"] + df_vis["subject_h"]
 
-df_vis["object_bounding_box"] = df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values.tolist()
-df_vis["subject_bounding_box"] = df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values.tolist()
+df_vis["object_bbox"] = df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values.tolist()
+df_vis["subject_bbox"] = df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values.tolist()
+
+df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category"})
+# -
+
+df_vis
 
 # +
 # predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
@@ -151,9 +156,6 @@ def lf_ydist(x):
 lfs = [lf_wear_object, lf_dist, lf_area]
 
 cliques=[[0],[1,2]]
-# -
-
-df_vis[-100:]
 
 # +
 SITON = 1
@@ -189,7 +191,7 @@ def lf_area(x):
         return SITON
     return OTHER
 
-lfs = [lf_siton_object, lf_ydist, lf_dist, lf_area]
+lfs = [lf_area, lf_ydist, lf_dist, lf_siton_object]
 
 cliques = [[0],[1,2],[3]]
 # cliques=[[0],[1,2,3],[4]]
@@ -198,8 +200,6 @@ cliques = [[0],[1,2],[3]]
 L = apply_lfs(df_vis, lfs)
 
 analyze_lfs(L, df_vis["y"], lfs)
-
-L.mean(axis=0)
 
 class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 
@@ -220,8 +220,6 @@ lm.print_metrics()
 
 plot_train_loss(lm.losses)
 
-Y_probs
-
 metrics = ["accuracy", "precision", "recall", "f1"]
 train_on = "probs" # probs or labels
 n_epochs = 3
@@ -233,17 +231,18 @@ al_kwargs = {'add_prob_loss': False,
              'active_learning': "probs",
              'df': df_vis,
              'n_epochs': 200,
-             'batch_size': batch_size
+             'batch_size': batch_size,
+             'lr': 1e-1
             }
 
 # +
-it = 10
+it = 50
 query_strategy = "margin"
 
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=0)
+                            randomness=0.5)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 al.label_model.print_metrics()
@@ -251,9 +250,15 @@ al.label_model.print_metrics()
 
 al.plot_metrics()
 
+plot_train_loss(al.label_model.losses)
+
 al.plot_parameters()
 
 al.plot_iterations()
+
+df_vis.iloc[al.queried]
+
+df_vis.groupby("predicate").count()
 
 plot_train_loss(al.label_model.losses)
 

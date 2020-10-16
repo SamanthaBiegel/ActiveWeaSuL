@@ -72,13 +72,15 @@ class LabelModel(PerformanceMixin):
         # Select points for which ground truth label is available
         mask = (self.ground_truth_labels != -1)
 
+        # return penalty_strength * torch.sum(torch.norm((probs_al - probs)[mask, :], dim=1) ** 2)
+
         return penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
     
     def loss_probs(self, probs, penalty_strength: float = 1e6):
         """Compute loss for probabilities below 0 or above 1"""
 
-        loss_0 = torch.norm(torch.Tensor(probs[probs < 0]))
-        loss_1 = torch.norm(torch.Tensor(probs[probs > 1] - 1))
+        loss_0 = torch.norm(probs[probs < 0])
+        loss_1 = torch.norm(probs[probs > 1] - 1)
 
         return penalty_strength * (loss_0 + loss_1)
 
@@ -91,7 +93,7 @@ class LabelModel(PerformanceMixin):
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
             tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
-            loss += self.loss_probs(tmp_probs)
+            loss += self.loss_probs(tmp_probs[:, 1])
 
         if self.active_learning == "cov":
             # Add loss for current covariance if taking active learning weak label into account
