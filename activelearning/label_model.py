@@ -105,6 +105,9 @@ class LabelModel(PerformanceMixin):
             tmp_mu = self.calculate_mu(tmp_cov)
             tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
             loss += self.loss_prior_knowledge_probs(tmp_probs)
+            # if self.last_posteriors is not None:
+            #     # print(torch.max((torch.norm(tmp_probs[self.bucket_idx, 1] - torch.Tensor(self.last_posteriors)) - 0.3), 0).values)
+            #     loss += 1e3 * torch.max((torch.norm(tmp_probs[self.bucket_idx, 1] - torch.Tensor(self.last_posteriors)) - 0.4), 0).values
 
         return loss
 
@@ -223,7 +226,9 @@ class LabelModel(PerformanceMixin):
             label_matrix,
             cliques,
             class_balance,
-            ground_truth_labels: Optional[np.array] = None):
+            ground_truth_labels: Optional[np.array] = None,
+            last_posteriors: Optional[np.array] = None,
+            bucket_idx: Optional[np.array] = None):
         """Fit label model"""
         
         self.label_matrix = label_matrix
@@ -243,6 +248,8 @@ class LabelModel(PerformanceMixin):
         if self.active_learning is not False:
             # Calculate known covariance for active learning weak label
             self.ground_truth_labels = ground_truth_labels
+            self.last_posteriors = last_posteriors
+            self.bucket_idx = bucket_idx
             
             if self.active_learning == "cov":
                 self.al_idx = self.wl_idx[str(self.nr_wl-1)]

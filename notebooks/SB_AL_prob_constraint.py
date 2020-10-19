@@ -86,7 +86,7 @@ def random_LF(y, fp, fn, abstain):
 # df.loc[:, "wl3"] = [random_LF(y, fp=0.6, fn=0.8, abstain=0) for y in df["y"]]
 # -
 
-label_matrix = np.array(df[["wl1", "wl2", "wl3","wl4", "wl5","y"]])
+label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 
 _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
@@ -106,7 +106,7 @@ final_model_kwargs = {'input_dim': 2,
                       'n_epochs': 250}
 
 class_balance = np.array([1 - p_z, p_z])
-cliques=[[0,3],[1,2,4]]
+cliques=[[0],[1,2]]
 # cliques=[[0],[1],[2]]
 
 al_kwargs = {'add_prob_loss': False,
@@ -176,23 +176,8 @@ fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="
 fig.show()
 
 # +
-it = 1
-query_strategy = "test"
-
-L = label_matrix[:, :-1]
-    
-al = ActiveLearningPipeline(it=it,
-#                             final_model = DiscriminativeModel(df, **final_model_kwargs),
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=0)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.label_model.print_metrics()
-
-# +
-it = 30
-query_strategy = "margin"
+it = 20
+query_strategy = "relative_entropy"
 L = label_matrix[:, :-1]
 
 al = ActiveLearningPipeline(it=it,
@@ -207,31 +192,11 @@ al.label_model.print_metrics()
 
 plot_probs(df, Y_probs_al.detach().numpy())
 
-# +
-it = 1
-query_strategy = "margin"
-
-for i in range(12):
-    L = label_matrix[:, :-1]
-
-    al = ActiveLearningPipeline(it=it,
-    #                             final_model = DiscriminativeModel(df, **final_model_kwargs),
-                                **al_kwargs,
-                                query_strategy=query_strategy,
-                                randomness=0)
-
-    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, q=i)
-    fig = al.plot_iterations()
-    fig.show()
-    
-#     al.label_model.print_metrics()
-# -
-
 al.plot_iterations()
 
-al.plot_animation()
-
 al.plot_metrics()
+
+al.plot_animation()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()

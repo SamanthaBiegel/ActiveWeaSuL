@@ -91,36 +91,44 @@ pred_list = ['carrying',
 # visgen_df["predicate"] = visgen_df["predicate"].str.lower()
 # visgen_df_actions = visgen_df[visgen_df["predicate"].isin(pred_list)]
 # visgen_df_actions.to_csv(path_prefix + "data/action_dataset.csv", index=False)
-# -
-
-pred_action = "sitting on"
-
-visgen_df_actions = pd.read_csv(path_prefix + "data/action_dataset.csv")
-
-visgen_df_actions["y"] = visgen_df_actions["predicate"]
-visgen_df_actions["y"] = visgen_df_actions["y"].apply(lambda x: 1 if x == pred_action else 0)
-df_vis = visgen_df_actions.loc[:,["image_id", "predicate", "object_name", "object_h", "object_w", "object_y", "object_x", "subject_name", "subject_h", "subject_w", "subject_y", "subject_x", "y"]]
-df_vis = df_vis.dropna()
-df_vis = df_drop_duplicates(df_vis)
-df_vis = balance_dataset(df_vis)
 
 # +
-df_vis["object_x_max"] = df_vis["object_x"] + df_vis["object_w"]
-df_vis["object_y_max"] = df_vis["object_y"] + df_vis["object_h"]
-df_vis["subject_x_max"] = df_vis["subject_x"] + df_vis["subject_w"]
-df_vis["subject_y_max"] = df_vis["subject_y"] + df_vis["subject_h"]
+# pred_action = "sitting on"
 
-df_vis["object_bbox"] = tuple(df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values)
-df_vis["subject_bbox"] = tuple(df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values)
+# +
+# visgen_df_actions = pd.read_csv(path_prefix + "data/action_dataset.csv")
 
-df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category", "image_id": "source_img"})
+# +
+# visgen_df_actions["y"] = visgen_df_actions["predicate"]
+# visgen_df_actions["y"] = visgen_df_actions["y"].apply(lambda x: 1 if x == pred_action else 0)
+# df_vis = visgen_df_actions.loc[:,["image_id", "predicate", "object_name", "object_h", "object_w", "object_y", "object_x", "subject_name", "subject_h", "subject_w", "subject_y", "subject_x", "y"]]
+# df_vis = df_vis.dropna()
+# df_vis = df_drop_duplicates(df_vis)
+# df_vis = balance_dataset(df_vis)
 
-df_vis.source_img = df_vis.source_img.astype(str) + ".jpg"
+# +
+# df_vis["object_x_max"] = df_vis["object_x"] + df_vis["object_w"]
+# df_vis["object_y_max"] = df_vis["object_y"] + df_vis["object_h"]
+# df_vis["subject_x_max"] = df_vis["subject_x"] + df_vis["subject_w"]
+# df_vis["subject_y_max"] = df_vis["subject_y"] + df_vis["subject_h"]
+
+# df_vis["object_bbox"] = tuple(df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values)
+# df_vis["subject_bbox"] = tuple(df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values)
+
+# df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category", "image_id": "source_img"})
+
+# df_vis.source_img = df_vis.source_img.astype(str) + ".jpg"
+
+# +
+# from PIL import Image
+# df_vis["channels"] = df_vis["source_img"].apply(lambda x: len(np.array(Image.open(path_prefix + "data/visual_genome/VG_100K" + "/" + x)).shape))
+
+# +
+# df_vis.to_csv(path_prefix + "data/siton_dataset.csv", index=False)
 # -
 
-df_vis
-
-df_vis.iloc[0]["object_category"]
+import ast
+df_vis = pd.read_csv(path_prefix + "data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
 # +
 # predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
@@ -222,7 +230,7 @@ for i in range(50):
 
     Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
     lm.analyze()
-#     lm.print_metrics()
+    lm.print_metrics()
     lm_metrics[i] = lm.metric_dict
 
 plot_train_loss(lm.losses)
@@ -242,10 +250,14 @@ al_kwargs = {'add_prob_loss': False,
              'lr': 1e-1
             }
 
+torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
+
+al.unique_prob_dict[1]
+
 al_metrics = {}
-for i in range(50):
-    it = 30
-    query_strategy = "margin"
+for i in range(1):
+    it = 20
+    query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
                                 **al_kwargs,
@@ -272,13 +284,9 @@ fig = px.bar(metrics_joined, x="Metric", y=0, error_y="std", color="Active Learn
 fig.update_layout(template="plotly_white", yaxis_title="", title_text="Label model performance before and after active learning (error bar = standard error)")
 fig.show()
 
+al.ground_truth_labels[al.queried]
+
 al.plot_metrics()
-
-al.color_cov()
-
-
-
-df_vis
 
 plot_train_loss(al.label_model.losses)
 
@@ -286,9 +294,7 @@ al.plot_parameters()
 
 al.plot_iterations()
 
-np.unique(L, axis=0, return_counts=True)
-
-df_vis.groupby("predicate").count()
+al.queried
 
 plot_train_loss(al.label_model.losses)
 
@@ -298,11 +304,14 @@ word_embs = pd.read_csv(
         ).T
 word_embs = list(word_embs.columns)
 
+
+
 # +
 n_epochs = 10
 lr=1e-2
+batch_size = 256
 
-valid_embeddings = df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
+valid_embeddings = (df_vis["channels"] == 3) & df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
 
 df_vis_final = df_vis[valid_embeddings]
 df_vis_final.index = list(range(len(df_vis_final)))
@@ -323,9 +332,32 @@ vc_al.analyze()
 vc_al.print_metrics()
 # -
 
-df_vis_final
+for image in df_vis_final["source_img"]:
+    # ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/subset_VG/$image
 
-(df_vis.subject_x % 1 == 0).sum()
+from scipy.stats import entropy
+entropy([1/2, 1/2], qk=[0.99, 0.01])
+
+entropy(pk=[0.55, 0.45], qk=[0.5, 0.5])
+
+entropy(pk=[1-1e-4, 1e-4], qk=[1-1e-5, 1e-5])
+
+entropy(qk=[0.5, 0.5], pk=[0.6,0.4])
+
+lm_posteriors = al.unique_prob_dict[0]
+lm_posteriors = np.concatenate([1-lm_posteriors[:, None], lm_posteriors[:, None]], axis=1).clip(1e-6, 1-1e-6)
+
+len(lm_posteriors)
+
+bucket_gt = al.ground_truth_labels[np.where(al.unique_inverse == 1)]
+
+bucket_gt[bucket_gt != -1].size
+
+
+
+al.unique_inverse
+
+df_vis_final
 
 
 

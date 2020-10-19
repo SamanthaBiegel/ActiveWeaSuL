@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import random
 from scipy.spatial.distance import pdist, squareform
+from scipy.stats import entropy
 from sklearn.neighbors import NearestNeighbors
 import torch
 from torch.utils.data import DataLoader
@@ -126,6 +127,39 @@ class ActiveLearningPipeline(PlotMixin):
         pick_idx = np.random.choice(max_diff_idx)
         return np.where((self.unique_inverse == self.unique_inverse[pick_idx]) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
 
+    def relative_entropy(self, iteration):
+        
+        lm_posteriors = self.unique_prob_dict[iteration]
+        lm_posteriors = np.concatenate([1-lm_posteriors[:, None], lm_posteriors[:, None]], axis=1).clip(1e-5, 1-1e-5)
+
+        rel_entropy = np.zeros(len(lm_posteriors))
+        sample_posteriors = np.zeros(lm_posteriors.shape)
+
+        for i in range(len(lm_posteriors)):
+            bucket_items = self.ground_truth_labels[np.where(self.unique_inverse == i)[0]]
+            bucket_gt = bucket_items[bucket_items != -1]
+            bucket_gt = np.array(list(bucket_gt) + [np.round(self.unique_prob_dict[0][i])])
+            # if bucket_gt.size == 0:
+            #     eps = 1e-2
+            #     sample_posteriors[i, 1] = np.argmax(lm_posteriors[i, :]).clip(eps, 1-eps)
+                
+            # else:
+            eps = 1e-2/(len(bucket_gt))
+            sample_posteriors[i, 1] = bucket_gt.mean().clip(eps, 1-eps)
+
+            sample_posteriors[i, 0] = 1 - sample_posteriors[i, 1]
+            
+            rel_entropy[i] = entropy(lm_posteriors[i, :], sample_posteriors[i, :])#/len(bucket_gt)
+
+        max_buckets = np.where(rel_entropy == np.max(rel_entropy))[0]
+        print(lm_posteriors)
+        print(sample_posteriors)
+        print(rel_entropy)
+        print(max_buckets)
+        pick_bucket = np.random.choice(max_buckets)
+
+        return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
+
     def query(self, probs, iteration):
         """Choose data point to label from label predictions"""
 
@@ -148,6 +182,10 @@ class ActiveLearningPipeline(PlotMixin):
 
         elif self.query_strategy == "test2":
             indices = self.test2_strategy(iteration)
+
+        elif self.query_strategy == "relative_entropy":
+            indices = self.relative_entropy(iteration)
+
 
         else:
             logging.warning("Provided active learning strategy not valid, setting to margin")
@@ -254,7 +292,7 @@ class ActiveLearningPipeline(PlotMixin):
                 new_probs = self.update_parameters(n_queried=i+1, alpha=self.alpha)
             else:
                 # Fit label model
-                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels, last_posteriors=self.unique_prob_dict[i], bucket_idx=self.unique_idx).predict()
 
             if not not self.final_model:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
