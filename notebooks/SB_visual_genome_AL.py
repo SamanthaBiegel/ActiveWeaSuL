@@ -13,14 +13,28 @@
 #     name: python3
 # ---
 
+# !dir
+
+from os import listdir
+from os.path import isfile, join
+path = "../../../s3_home/uploads"
+files = [f for f in listdir(path) if isfile(join(path, f))]
+
+with open("image_files.txt", "w") as f:
+    for item in files:
+        f.write("%s\n" % item)
+
+len(files)
+
 # +
-DAP = False
+DAP = True
     
 if DAP:
-    # ! pip install -r requirements.txt
-    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    # ! pip install -r ../requirements.txt
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/subset_VG --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
     path_prefix = "/tmp/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
