@@ -26,15 +26,30 @@ with open("image_files.txt", "w") as f:
 
 len(files)
 
+# # ! aws s3 mv s3://project/vis_trans_net/SB/data/visual_genome/VG_100K/glove s3://project/vis_trans_net/SB/data/word_embeddings --recursive
+    
+
+# +
+# # ! aws s3 ls s3://project/vis_trans_net/SB/data/word_embeddings --recursive
+
+# +
+# # !aws s3 ls s3://project/vis_trans_net/SB/data --recursive
+
+# +
+# # ! aws s3 ls s3://user/gc03ye/uploads --recursive
+
+# +
+# # ! aws s3 cp s3://user/gc03ye/uploads s3://project/vis_trans_net/SB/data/ --recursive --exclude "*.jpg" --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "train.zip" --exclude "VRD/*" --exclude "VRD" --exclude ".ipynb_checkpoints*"
+
 # +
 DAP = True
     
 if DAP:
-    # ! pip install -r ../requirements.txt
+# #     ! pip install -r ../requirements.txt
 # #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/subset_VG --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
-# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
+    import torch
     path_prefix = "/tmp/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
@@ -142,7 +157,12 @@ pred_list = ['carrying',
 # -
 
 import ast
-df_vis = pd.read_csv(path_prefix + "data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+
+all_img = list(df_vis.source_img.drop_duplicates())
+
+# +
+# [img for img in all_img if img not in files]
 
 # +
 # predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
@@ -223,7 +243,7 @@ cliques = [[0,1],[2]]
 # cliques=[[0],[1,2,3],[4]]
 # -
 
-L = apply_lfs(df_vis, lfs)
+L = apply_lfs(df_vis, lfs)[]
 
 analyze_lfs(L, df_vis["y"], lfs)
 
@@ -258,7 +278,7 @@ batch_size=20
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
-             'df': df_vis,
+             'df': df_vis_final,
              'n_epochs': 200,
              'batch_size': batch_size,
              'lr': 1e-1
@@ -268,19 +288,43 @@ torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_di
 
 al.unique_prob_dict[1]
 
+# +
+n_epochs = 10
+lr=1e-2
+batch_size = 256
+
+valid_embeddings = (df_vis["channels"] == 3) & df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
+
+df_vis_final = df_vis[valid_embeddings]
+df_vis_final.index = list(range(len(df_vis_final)))
+
+dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_vis_final, 
+                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy())
+
+dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
+# -
+
+len(valid_embeddings)
+
+df_vis[valid_embeddings].y.mean()
+
 al_metrics = {}
-for i in range(1):
+for i in range(20):
     it = 20
     query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
+#                                 final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                 **al_kwargs,
                                 query_strategy=query_strategy,
                                 randomness=0)
 
-    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+    Y_probs_al = al.refine_probabilities(label_matrix=L[valid_embeddings], cliques=cliques, class_balance=class_balance)
     al.label_model.print_metrics()
     al_metrics[i] = al.label_model.metric_dict
+
+al.final_model.losses
 
 # +
 mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
@@ -298,8 +342,6 @@ fig = px.bar(metrics_joined, x="Metric", y=0, error_y="std", color="Active Learn
 fig.update_layout(template="plotly_white", yaxis_title="", title_text="Label model performance before and after active learning (error bar = standard error)")
 fig.show()
 
-al.ground_truth_labels[al.queried]
-
 al.plot_metrics()
 
 plot_train_loss(al.label_model.losses)
@@ -314,14 +356,14 @@ plot_train_loss(al.label_model.losses)
 
 import csv
 word_embs = pd.read_csv(
-            "../data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
+            path_prefix + "data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
         ).T
 word_embs = list(word_embs.columns)
 
 
 
 # +
-n_epochs = 10
+n_epochs = 3
 lr=1e-2
 batch_size = 256
 
@@ -332,7 +374,7 @@ df_vis_final.index = list(range(len(df_vis_final)))
 
 dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
                       df=df_vis_final, 
-                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy()[valid_embeddings])
+                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy())
 
 dl_al = DataLoader(dataset_al, shuffle=True, batch_size=batch_size)
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
@@ -346,8 +388,19 @@ vc_al.analyze()
 vc_al.print_metrics()
 # -
 
-for image in df_vis_final["source_img"]:
-    # ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/subset_VG/$image
+vc_al.losses[0].cpu().detach().numpy()
+
+vc_al_losses = [t.cpu().item() for t in vc_al.losses]
+
+import pickle
+pickle.dump(vc_al_losses, open("results/discriminative_loss.p", "wb"))
+
+plot_train_loss(vc_al_losses)
+
+# +
+# for image in df_vis_final["source_img"]:
+# #     ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/subset_VG/$image
+# -
 
 from scipy.stats import entropy
 entropy([1/2, 1/2], qk=[0.99, 0.01])

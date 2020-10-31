@@ -152,10 +152,10 @@ class ActiveLearningPipeline(PlotMixin):
             rel_entropy[i] = entropy(lm_posteriors[i, :], sample_posteriors[i, :])#/len(bucket_gt)
 
         max_buckets = np.where(rel_entropy == np.max(rel_entropy))[0]
-        print(lm_posteriors)
-        print(sample_posteriors)
-        print(rel_entropy)
-        print(max_buckets)
+        # print(lm_posteriors)
+        # print(sample_posteriors)
+        # print(rel_entropy)
+        # print(max_buckets)
         pick_bucket = np.random.choice(max_buckets)
 
         return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
@@ -224,6 +224,9 @@ class ActiveLearningPipeline(PlotMixin):
             self.final_metrics[count] = self.final_model.metric_dict
             self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
 
+        # self.label_model.print_metrics()
+        # self.final_model.print_metrics()
+
         if selected_point is not None:
             self.queried.append(selected_point)
 
@@ -262,7 +265,7 @@ class ActiveLearningPipeline(PlotMixin):
         old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
         if not not self.final_model:
             if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                dataset = VisualRelationDataset(image_dir="/tmp/data/images/train_images", 
+                dataset = VisualRelationDataset(image_dir="/tmp/data/visual_genome/VG_100K", 
                         df=self.df,
                         Y=old_probs.clone().detach().numpy())
 
