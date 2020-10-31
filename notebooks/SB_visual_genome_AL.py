@@ -27,7 +27,7 @@ with open("image_files.txt", "w") as f:
 len(files)
 
 # # ! aws s3 mv s3://project/vis_trans_net/SB/data/visual_genome/VG_100K/glove s3://project/vis_trans_net/SB/data/word_embeddings --recursive
-    
+
 
 # +
 # # ! aws s3 ls s3://project/vis_trans_net/SB/data/word_embeddings --recursive
@@ -40,6 +40,11 @@ len(files)
 
 # +
 # # ! aws s3 cp s3://user/gc03ye/uploads s3://project/vis_trans_net/SB/data/ --recursive --exclude "*.jpg" --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "train.zip" --exclude "VRD/*" --exclude "VRD" --exclude ".ipynb_checkpoints*"
+# -
+
+# ! aws s3 ls s3://project/vis_trans_net/SB/models/
+
+# ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --dryrun --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD/*"
 
 # +
 DAP = True
@@ -48,9 +53,10 @@ if DAP:
 # #     ! pip install -r ../requirements.txt
 # #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
 # #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
 # #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
     import torch
-    path_prefix = "/tmp/"
+    path_prefix = "s3://project/vis_trans_net/SB/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
     import torchvision.models as models
@@ -243,7 +249,7 @@ cliques = [[0,1],[2]]
 # cliques=[[0],[1,2,3],[4]]
 # -
 
-L = apply_lfs(df_vis, lfs)[]
+L = apply_lfs(df_vis, lfs)
 
 analyze_lfs(L, df_vis["y"], lfs)
 
@@ -253,7 +259,7 @@ class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 
 
 lm_metrics = {}
-for i in range(50):
+for i in range(20):
     
     lm = LabelModel(df=df_vis,
                         active_learning=False,
@@ -275,21 +281,14 @@ n_epochs = 3
 lr = 1e-3
 batch_size=20
 
-al_kwargs = {'add_prob_loss': False,
-             'add_cliques': True,
-             'active_learning': "probs",
-             'df': df_vis_final,
-             'n_epochs': 200,
-             'batch_size': batch_size,
-             'lr': 1e-1
-            }
-
-torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
-
-al.unique_prob_dict[1]
+import csv
+word_embs = pd.read_csv(
+            path_prefix + "data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
+        ).T
+word_embs = list(word_embs.columns)
 
 # +
-n_epochs = 10
+n_epochs = 3
 lr=1e-2
 batch_size = 256
 
@@ -300,29 +299,54 @@ df_vis_final.index = list(range(len(df_vis_final)))
 
 dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
                       df=df_vis_final, 
-                      Y=Y_probs_al.clone().clamp(0,1).detach().numpy())
+                      Y=Y_probs.clone().clamp(0,1).detach().numpy())
 
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 # -
+
+al_kwargs = {'add_prob_loss': False,
+             'add_cliques': True,
+             'active_learning': "probs",
+             'df': df_vis_final,
+             'n_epochs': 200,
+             'batch_size': batch_size,
+             'lr': 1e-1
+            }
+
+# +
+# torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
+
+# +
+# al.unique_prob_dict[1]
+# -
+
+
 
 len(valid_embeddings)
 
 df_vis[valid_embeddings].y.mean()
 
+# +
 al_metrics = {}
-for i in range(20):
+al_metrics["lm_metrics"] = {}
+al_metrics["fm_metrics"] = {}
+
+for i in range(10):
     it = 20
     query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
-#                                 final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                                final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                 **al_kwargs,
                                 query_strategy=query_strategy,
                                 randomness=0)
 
     Y_probs_al = al.refine_probabilities(label_matrix=L[valid_embeddings], cliques=cliques, class_balance=class_balance)
     al.label_model.print_metrics()
-    al_metrics[i] = al.label_model.metric_dict
+    al.final_model.print_metrics()
+    al_metrics["lm_metrics"][i] = al.metrics
+    al_metrics["fm_metrics"][i] = al.final_metrics
+# -
 
 al.final_model.losses
 
@@ -354,11 +378,7 @@ al.queried
 
 plot_train_loss(al.label_model.losses)
 
-import csv
-word_embs = pd.read_csv(
-            path_prefix + "data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
-        ).T
-word_embs = list(word_embs.columns)
+
 
 
 
