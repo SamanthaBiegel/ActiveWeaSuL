@@ -21,6 +21,7 @@ class ActiveLearningPipeline(PlotMixin):
     def __init__(self,
                  df,
                  final_model=False,
+                 image_dir: str = "/tmp/data/visual_genome/VG_100K",
                  it: int = 100,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
@@ -53,6 +54,7 @@ class ActiveLearningPipeline(PlotMixin):
                                       hide_progress_bar=True)
         
         self.final_model = final_model
+        self.image_dir = image_dir
         self.final_probs = None
 
     def entropy(self, probs):
@@ -265,7 +267,7 @@ class ActiveLearningPipeline(PlotMixin):
         old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
         if not not self.final_model:
             if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                dataset = VisualRelationDataset(image_dir="/tmp/data/visual_genome/VG_100K", 
+                dataset = VisualRelationDataset(image_dir=self.image_dir, 
                         df=self.df,
                         Y=old_probs.clone().detach().numpy())
 
@@ -277,6 +279,7 @@ class ActiveLearningPipeline(PlotMixin):
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 
+        test_probs = self.label_model.
         self.log(count=0, final_probs=self.final_probs, probs=old_probs)
 
         for i in tqdm(range(self.it)):
@@ -299,7 +302,7 @@ class ActiveLearningPipeline(PlotMixin):
 
             if not not self.final_model:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                    dataset = VisualRelationDataset(image_dir="/tmp/data/images/train_images", 
+                    dataset = VisualRelationDataset(image_dir=self.image_dir, 
                         df=self.df,
                         Y=new_probs.clone().detach().numpy())
 

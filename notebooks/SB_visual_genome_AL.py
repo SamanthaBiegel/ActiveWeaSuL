@@ -13,8 +13,6 @@
 #     name: python3
 # ---
 
-# !dir
-
 from os import listdir
 from os.path import isfile, join
 path = "../../../s3_home/uploads"
@@ -26,8 +24,8 @@ with open("image_files.txt", "w") as f:
 
 len(files)
 
+# +
 # # ! aws s3 mv s3://project/vis_trans_net/SB/data/visual_genome/VG_100K/glove s3://project/vis_trans_net/SB/data/word_embeddings --recursive
-
 
 # +
 # # ! aws s3 ls s3://project/vis_trans_net/SB/data/word_embeddings --recursive
@@ -44,19 +42,17 @@ len(files)
 
 # ! aws s3 ls s3://project/vis_trans_net/SB/models/
 
-# ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --dryrun --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD/*"
-
 # +
 DAP = True
     
 if DAP:
-# #     ! pip install -r ../requirements.txt
+    # ! pip install -r ../requirements.txt
 # #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
-# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    # ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
+    path_prefix = "/tmp/"
     import torch
-    path_prefix = "s3://project/vis_trans_net/SB/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
     import torchvision.models as models
@@ -336,9 +332,10 @@ for i in range(10):
     query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
-                                final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                                 final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                 **al_kwargs,
                                 query_strategy=query_strategy,
+                                image_dir = "/tmp/data/visual_genome/VG_100K",
                                 randomness=0)
 
     Y_probs_al = al.refine_probabilities(label_matrix=L[valid_embeddings], cliques=cliques, class_balance=class_balance)
