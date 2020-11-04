@@ -14,11 +14,11 @@
 # ---
 
 # +
-DAP = False
+DAP = True
     
 if DAP:
-    # ! pip install -r requirements.txt
-    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
+    # ! pip install -r ../requirements.txt
+    # ! aws s3 cp s3://user/gc03ye/uploads/VRD/ /tmp/data/annotations --recursive --exclude "sg_dataset*"
     # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
     # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
     path_prefix = "/tmp/"
@@ -211,7 +211,6 @@ for i in range(1):
 
 plot_train_loss(lm.losses)
 
-metrics = ["accuracy", "precision", "recall", "f1"]
 train_on = "probs" # probs or labels
 n_epochs = 3
 lr = 1e-3
@@ -225,9 +224,9 @@ al_kwargs = {'add_prob_loss': False,
              'batch_size': batch_size
             }
 
-dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
-                      df=df_train,
-                      Y=Y_probs.clone().detach().numpy())
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
+                      df=df_test,
+                      Y=df_test["y"].values)
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
 
@@ -240,7 +239,7 @@ it = 20
 query_strategy = "relative_entropy"
 
 al = ActiveLearningPipeline(it=it,
-#                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                            final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
                             randomness=0)
