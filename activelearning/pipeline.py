@@ -188,7 +188,7 @@ class ActiveLearningPipeline(PlotMixin):
 
         return self.predict(self)
 
-    def refine_probabilities(self, label_matrix, cliques, class_balance):
+    def refine_probabilities(self, label_matrix, cliques, class_balance, label_matrix_test, y_test):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
 
         self.label_matrix = label_matrix
@@ -223,6 +223,9 @@ class ActiveLearningPipeline(PlotMixin):
 
         test_probs = self.label_model.
         self.log(count=0, final_probs=self.final_probs, probs=old_probs)
+        psi_test, _ = self.label_model._get_psi(label_matrix_test, cliques, nr_wl)
+        probs_test = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
+        self.test_performance["before"] = self.label_model._analyze(probs_test, y_test)
 
         for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs, i)
@@ -268,6 +271,9 @@ class ActiveLearningPipeline(PlotMixin):
 
             #     self.label_matrix = np.concatenate([self.label_matrix, np.full_like(self.df["y"].values, -1)[:,None]], axis=1)
             #     cliques.append([nr_wl + i + 1])
+
+        probs_test = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
+        self.test_performance["after"] = self.label_model._analyze(probs_test, y_test)
 
         self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 

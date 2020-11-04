@@ -187,11 +187,15 @@ al = ActiveLearningPipeline(it=it,
                             query_strategy=query_strategy,
                             randomness=0)
 
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L_test, y_test=df_test["y"].values)
 al.label_model.print_metrics()
 # -
 
-al.plot_metrics()
+al.test_performance
+
+al.label_model.predict()
+
+plot_probs(df, Y_probs_al.detach().numpy())
 
 entropy_df = pd.DataFrame.from_dict(al.bucket_AL_values).stack().reset_index().rename(columns={"level_0": "WL bucket", "level_1": "Active Learning Iteration", 0: "KL divergence"})
 
@@ -357,6 +361,37 @@ al.plot_iterations()
 al.plot_metrics()
 
 al.plot_animation()
+
+data_test = SyntheticData(5000, p_z, centroids)
+df_test = data_test.sample_data_set().create_df()
+
+df_test.loc[:, "wl1"] = (df_test["x2"]<0.4)*1
+df_test.loc[:, "wl2"] = (df_test["x1"]<-0.3)*1
+df_test.loc[:, "wl3"] = (df_test["x1"]<-1)*1
+df_test.loc[:, "wl4"] = (df_test["x2"]<-0.5)*1
+df_test.loc[:, "wl5"] = (df_test["x1"]<0)*1
+
+label_matrix_test = np.array(df_test[["wl1", "wl2", "wl3","y"]])
+L_test = label_matrix_test[:, :-1]
+
+# +
+psi_test, _ = al.label_model._get_psi(L_test, cliques, al.label_model.nr_wl)
+
+probs_test = al.label_model._predict(L_test, psi_test, al.label_model.mu, torch.tensor(al.label_model.E_S))
+# -
+
+al.label_model._analyze(probs_test, df_test['y'].values)
+
+probs_test_lm = lm._predict(L_test, psi_test, lm.mu, torch.tensor(lm.E_S))
+lm._analyze(probs_test_lm, df_test['y'].values)
+
+lm.mu
+
+al.label_model.mu
+
+al.label_model.wl_idx
+
+plot_probs(df_test, probs_test.detach().numpy())
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=data.X, labels=lm.predict_true().detach().numpy()).predict()
