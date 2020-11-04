@@ -19,18 +19,18 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
     df["label"] = probs
 
     fig = go.Figure(go.Scattergl(x=df["x1"],
-                                y=df["x2"],
-                                mode="markers",
-                                hovertext=df["label"],
-                                hoverinfo="text",
-                                marker=dict(size=8, color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"), cmid=midpoint),
-                                showlegend=False))
+                                 y=df["x2"],
+                                 mode="markers",
+                                 hovertext=df["label"],
+                                 hoverinfo="text",
+                                 marker=dict(size=6, color=df["label"], colorscale=px.colors.diverging.Geyser, colorbar=dict(title="Labels"), cmid=midpoint),
+                                 showlegend=False))
 
     if add_labeled_points is not None:
         fig.add_trace(go.Scattergl(x=df["x1"].values[add_labeled_points],
                                 y=df["x2"].values[add_labeled_points],
                                 mode="markers",
-                                marker=dict(size=6.5, color=df["y"].values[add_labeled_points], colorscale=px.colors.diverging.Geyser, line=dict(width=1.5), opacity=1, cmid=midpoint),
+                                marker=dict(size=6, color=df["y"].values[add_labeled_points], colorscale=px.colors.diverging.Geyser, line=dict(width=1.5), opacity=1, cmid=midpoint),
                                 showlegend=False))
 
     fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),

@@ -71,8 +71,16 @@ class LabelModel(PerformanceMixin):
 
         # Select points for which ground truth label is available
         mask = (self.ground_truth_labels != -1)
+        # nr_iterations = mask.sum()
+        # discount_factor = torch.tensor(0.97).repeat(nr_iterations) ** torch.arange(nr_iterations-1, -1, -1)
 
-        # return penalty_strength * torch.sum(torch.norm((probs_al - probs)[mask, :], dim=1) ** 2)
+        # loss = nn.CrossEntropyLoss(reduction="sum")
+        # return penalty_strength * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask]))
+
+        # loss = nn.CrossEntropyLoss(reduction="none")
+        # return penalty_strength * torch.sum(1/torch.Tensor(self.bucket_counts[self.bucket_inverse][mask]) * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask])))
+
+        # return penalty_strength * torch.sum(discount_factor * ((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask] ** 2))
 
         return penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
     
@@ -227,8 +235,7 @@ class LabelModel(PerformanceMixin):
             cliques,
             class_balance,
             ground_truth_labels: Optional[np.array] = None,
-            last_posteriors: Optional[np.array] = None,
-            bucket_idx: Optional[np.array] = None):
+            last_posteriors: Optional[np.array] = None):
         """Fit label model"""
         
         self.label_matrix = label_matrix
@@ -249,7 +256,8 @@ class LabelModel(PerformanceMixin):
             # Calculate known covariance for active learning weak label
             self.ground_truth_labels = ground_truth_labels
             self.last_posteriors = last_posteriors
-            self.bucket_idx = bucket_idx
+            _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)
+
             
             if self.active_learning == "cov":
                 self.al_idx = self.wl_idx[str(self.nr_wl-1)]
@@ -296,11 +304,6 @@ class LabelModel(PerformanceMixin):
             optimizer.step()
             # scheduler.step()
             self.losses.append(loss.clone().detach().numpy())
-
-            # tmp_cov_OS = self.calculate_cov_OS()
-            # tmp_mu = self.calculate_mu(tmp_cov_OS)
-            # tmp_probs = self._predict(tmp_mu, torch.tensor(self.E_S))
-            # writer.add_scalar('label model accuracy', self._accuracy(tmp_probs, self.df["y"].values), epoch)
 
         # Determine the sign of z
         # Assuming cov_OS corresponds to Y=1, then cov(wl1=0,Y=1) should be negative

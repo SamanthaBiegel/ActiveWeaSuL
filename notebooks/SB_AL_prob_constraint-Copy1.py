@@ -175,21 +175,63 @@ fig = go.Figure(go.Scatter(x=P_lambda.squeeze(), y=np.array(true_probs)-P_Y_lamb
 fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
 fig.show()
 
+final_model_kwargs
+
+al_kwargs
+
+entropies_random = {}
+for i in range(10):
+    it = 30
+    query_strategy = "margin"
+    L = label_matrix[:, :-1]
+    al_kwargs["active_learning"] = "probs"
+
+    al = ActiveLearningPipeline(it=it,
+    #                             final_model = DiscriminativeModel(df, **final_model_kwargs),
+                                **al_kwargs,
+                                query_strategy=query_strategy,
+                                randomness=1)
+
+    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+    al.label_model.print_metrics()
+    
+    entropy_sampled_buckets = []
+
+    for j in range(it):
+        bucket_list = al.unique_inverse[al.queried[:j+1]]
+        entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
+        
+    entropies_random[i] = entropy_sampled_buckets
+
+entropies_marg[0]
+
+entropies_marg_df = pd.DataFrame.from_dict(entropies_marg).stack().reset_index().rename(columns={"level_0": "Number of points acquired", "level_1": "Run", 0: "Entropy"})
+entropies_marg_df["Strategy"] = "Margin"
+
+entropies_re_df = pd.DataFrame.from_dict(entropies_re).stack().reset_index().rename(columns={"level_0": "Number of points acquired", "level_1": "Run", 0: "Entropy"})
+entropies_re_df["Strategy"] = "Relative Entropy"
+
+entropies_random_df = pd.DataFrame.from_dict(entropies_random).stack().reset_index().rename(columns={"level_0": "Number of points acquired", "level_1": "Run", 0: "Entropy"})
+entropies_random_df["Strategy"] = "Random"
+
+entropies_joined = pd.concat([entropies_re_df, entropies_marg_df, entropies_random_df])
+
+entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+
+entropies_joined["Number of points acquired"] = entropies_joined["Number of points acquired"].apply(lambda x: x+1)
+
 # +
-it = 20
-query_strategy = "relative_entropy"
-L = label_matrix[:, :-1]
-al_kwargs["active_learning"] = "probs"
+# sns.set_theme(style="white")
+colors = ["#d88c9a",  "#086788",  "#e3b505","#ef7b45",  "#739e82"]
 
-al = ActiveLearningPipeline(it=it,
-#                             final_model = DiscriminativeModel(df, **final_model_kwargs),
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=0)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.label_model.print_metrics()
+sns.set(rc={'figure.figsize':(15, 10)}, style="whitegrid", palette=sns.color_palette(colors))
+ax = sns.lineplot(data=entropies_joined, x="Number of points acquired", y="Entropy", hue="Strategy", ci=68, n_boot=10000, hue_order=["Random", "Relative Entropy", "Margin"])
+plt.gca().legend().set_title('')
+fig = ax.get_figure()
+fig.savefig("plots/entropies.png")
 # -
+
+entropies_joined
 
 al.plot_metrics()
 
@@ -212,7 +254,7 @@ def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, r
     al_metrics["fm_metrics"] = {}
     al_kwargs["active_learning"] = al_approach
 
-    for i in tqdm(range(nr_runs)):
+    for i in range(nr_runs):
         L = label_matrix[:, :-1]
 
         al = ActiveLearningPipeline(it=nr_al_it,
@@ -222,10 +264,10 @@ def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, r
                                     randomness=randomness)
 
         Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-#         al.label_model.print_metrics()
+        al.label_model.print_metrics()
         al_metrics["lm_metrics"][i] = al.metrics
         al_metrics["fm_metrics"][i] = al.final_metrics
-#         al.plot_metrics()
+        al.plot_metrics()
         
     return al_metrics, Y_probs_al, al
 
@@ -235,14 +277,10 @@ it=30
 
 al_metrics_re, Y_probs_al_re, al_re = active_learning_experiment(it, runs, "probs", "relative_entropy", 0)
 
-al_metrics_marg, Y_probs_al_marg, al_marg = active_learning_experiment(it, runs, "probs", "margin", 0)
-
 al_metrics_random, Y_probs_al_random, al_random = active_learning_experiment(it, runs, "probs", "relative_entropy", 1)
 
+al_metrics_hybrid, Y_probs_al_hybrid, al_hybrid = active_learning_experiment(it, runs, None, "hybrid", 0)
 
-# +
-# al_metrics_hybrid, Y_probs_al_hybrid, al_hybrid = active_learning_experiment(it, runs, None, "hybrid", 0)
-# -
 
 def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
     joined_metrics = pd.DataFrame()
@@ -262,72 +300,43 @@ def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
 
 # +
 metric_df_re_lm = create_metric_df(al_metrics_re, runs, "lm_metrics", "Relative Entropy")
-metric_df_re_fm = create_metric_df(al_metrics_re, runs, "fm_metrics", "Relative Entropy")
+# metric_df_re_fm = create_metric_df(al_metrics_re, runs, "fm_metrics", "Relative Entropy")
+metric_df_re_lm = metric_df_re_lm[metric_df_re_lm["Run"] != "7"]
+# metric_df_re_fm = metric_df_re_fm[metric_df_re_fm["Run"] != "7"]
 
-# metric_df_marg_lm = create_metric_df(al_metrics_marg, runs, "lm_metrics", "Margin")
-# metric_df_marg_fm = create_metric_df(al_metrics_marg, runs, "fm_metrics", "Margin")
+metric_df_random_lm = create_metric_df(al_metrics_random, runs, "lm_metrics", "Random")
+metric_df_random_fm = create_metric_df(al_metrics_random, runs, "fm_metrics", "Random")
 
-# metric_df_random_lm = create_metric_df(al_metrics_random, runs, "lm_metrics", "Random")
-# metric_df_random_fm = create_metric_df(al_metrics_random, runs, "fm_metrics", "Random")
+metric_df_marg_hybrid = create_metric_df(al_metrics_re, runs, "lm_metrics", "Relative Entropy")
+# metric_df_re_fm = create_metric_df(al_metrics_re, runs, "fm_metrics", "Relative Entropy")
 
-# # metric_df_marg_hybrid_lm = create_metric_df(al_metrics_hybrid, runs, "lm_metrics", "Hybrid")
-# # metric_df_marg_hybrid_fm = create_metric_df(al_metrics_hybrid, runs, "fm_metrics", "Hybrid")
-
-# # joined_df_lm = pd.concat([metric_df_re_lm, metric_df_random_lm, metric_df_marg_hybrid_lm])
-# # joined_df_fm = pd.concat([metric_df_re_fm, metric_df_random_fm, metric_df_marg_hybrid_fm])
-
-# joined_df_lm = pd.concat([metric_df_re_lm, metric_df_marg_lm, metric_df_random_lm])
-# joined_df_fm = pd.concat([metric_df_re_fm, metric_df_marg_fm, metric_df_random_fm])
+joined_df_lm = pd.concat([metric_df_re_lm, metric_df_random_lm])
+# joined_df_fm = pd.concat([metric_df_re_fm, metric_df_random_fm])
 # -
+
+metric_df_re_fm = metric_df_re_fm[metric_df_re_fm["Run"] != "7"]
+metric_df_re_fm
+
+joined_df_lm[joined_df_lm["Run"] == "7"]
 
 sns.set_theme(style="white")
 
 ax = sns.relplot(data=metric_df_re_lm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, hue="Metric",legend=False)
 (ax.set_titles("{col_name}"))
 
-ax = sns.relplot(data=metric_df_re_fm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, hue="Metric",legend=False)
-(ax.set_titles("{col_name}"))
-
-joined_df_lm.to_csv("results/lm_re_random_2.csv")
-joined_df_fm.to_csv("results/fm_re_random_2.csv")
-
 # +
-# joined_df_fm = pd.read_csv("results/fm_re_random.csv", index_col=0)
+# joined_df_fm.to_csv("results/fm_re_random.csv")
 # -
-
-ax = sns.relplot(data=joined_df_lm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci="sd", estimator="mean", hue="Strategy", palette="deep", style="Strategy", legend=True)
-(ax.set_titles("{col_name}"))
 
 ax = sns.relplot(data=joined_df_lm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, estimator="mean", hue="Strategy", palette="deep", style="Strategy", legend=True)
 (ax.set_titles("{col_name}"))
 
-colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
-sns.set(style="whitegrid", palette=sns.color_palette(colors))
-
-ax = sns.relplot(data=joined_df_fm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=1000, hue="Strategy", legend=True)
+ax = sns.relplot(data=joined_df_fm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, hue="Strategy", palette="deep", style="Strategy", legend=True)
 (ax.set_titles("{col_name}"))
 
-ax = sns.relplot(data=joined_df_fm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci="sd", hue="Strategy", style="Strategy", legend=True)
+ax = sns.relplot(data=joined_df_lm[joined_df_lm["Strategy"] == "Relative Entropy"], x="Active Learning Iteration", y="Value", estimator=None, hue="Run", col="Metric", kind="line", palette="deep", style="Strategy", legend=True)
 (ax.set_titles("{col_name}"))
 
-ax = sns.relplot(data=joined_df_fm[joined_df_fm["Strategy"] == "Relative Entropy"], x="Active Learning Iteration", y="Value", estimator=None, hue="Run", col="Metric", kind="line", palette="deep", style="Strategy", legend=True)
-(ax.set_titles("{col_name}"))
-
-
-joined_df_lm["Model"] = "Generative"
-joined_df_fm["Model"] = "Discriminative"
-joined_df_models = pd.concat([joined_df_lm, joined_df_fm])
-joined_df_models = joined_df_models[joined_df_models["Metric"] == "Accuracy"].rename(columns={"Value": "Accuracy"})
-
-joined_df_models
-
-sns.set_context("paper")
-colors = ["#086788",  "#ef7b45", "#e3b505", "#739e82", "#d88c9a"]
-sns.set(style="whitegrid", palette=sns.color_palette(colors))
-ax = sns.relplot(data=joined_df_models, x="Active Learning Iteration", y="Accuracy", col="Model", hue="Strategy", ci=68, n_boot=1000, kind="line", facet_kws={"despine": False})
-# plt.grid(figure=ax.axes[0], alpha=0.2)
-# plt.grid(figure=ax.fig, alpha=0.2)
-(ax.set_titles("{col_name}"))
 
 joined_df_lm[joined_df_lm["Strategy"] == "Random"]
 
@@ -500,8 +509,11 @@ app.run_server(debug=True, use_reloader=False)
 
 # # Class balance
 
-p_z = 0.01
-centroids = np.array([[0.1, 1.3], [-1, -1]])
+# +
+p_z = 0.5
+# centroids = np.array([[0.1, 1.3], [-1, -1]])
+centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
+
 data = SyntheticData(N, p_z, centroids)
 df = data.sample_data_set().create_df()
 
@@ -529,7 +541,6 @@ cliques=[[0],[1,2]]
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
-             'final_model_kwargs': final_model_kwargs,
              'df': df,
              'n_epochs': 200
             }
@@ -537,8 +548,7 @@ al_kwargs = {'add_prob_loss': False,
 # +
 L = label_matrix[:, :-1]
 
-lm = LabelModel(final_model_kwargs=final_model_kwargs,
-                df=df,
+lm = LabelModel(df=df,
                 active_learning=False,
                 add_cliques=True,
                 add_prob_loss=False,
@@ -551,7 +561,7 @@ lm.print_metrics()
 
 # +
 it = 10
-query_strategy = "margin"
+query_strategy = "relative_entropy"
 
 L = label_matrix[:, :-1]
     
@@ -562,8 +572,8 @@ al = ActiveLearningPipeline(it=it,
                             randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-al.analyze()
-al.print_metrics()
+al.label_model.analyze()
+al.label_model.print_metrics()
 # -
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)

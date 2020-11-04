@@ -55,13 +55,6 @@ class ActiveLearningPipeline(PlotMixin):
         self.final_model = final_model
         self.final_probs = None
 
-    def entropy(self, probs):
-
-        prod = probs * torch.log(probs)
-        prod[torch.isnan(prod)] = 0
-
-        return - prod.sum(axis=1)
-
     def list_options(self, values, criterium):
         """Return options with equal informativeness according to criterium"""
 
@@ -81,21 +74,9 @@ class ActiveLearningPipeline(PlotMixin):
 
         minimum = min(j for i, j in enumerate(abs_diff) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i])
 
+        self.bucket_values = abs_diff[self.unique_idx].detach().numpy()
+
         return self.list_options(abs_diff, minimum)
-
-    def uncertainty(self, probs):
-        """1 - P(Y=1|...)"""
-
-        return 1 - torch.max(probs, dim=1, keepdim=True).values
-
-    def entropy_strategy(self, probs):
-        """List query options based on maximum entropy strategy"""
-
-        H = self.entropy(probs)
-
-        maximum = max(j for i, j in enumerate(H) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i])
-
-        return self.list_options(H, maximum)
 
     def information_density(self):
         """Compute information density of each point"""
@@ -113,19 +94,15 @@ class ActiveLearningPipeline(PlotMixin):
 
         return self.list_options(measure, maximum)[0]
 
-    def test_strategy(self, iteration):
+    def hybrid_strategy(self, probs):
 
-        if iteration == 0:
-            return [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
-        else:
-            diff_prob_labels = self.prob_dict[iteration] - self.prob_dict[iteration-1]
-            return np.where(self.unique_inverse == self.unique_inverse[np.argmax(diff_prob_labels)])[0]
+        disagreement_factor = ~((self.label_matrix.sum(axis=1) == 0) | (self.label_matrix.sum(axis=1) == self.label_matrix.shape[1]))
 
-    def test2_strategy(self, iteration):
-        diff_labels = self.prob_dict[iteration] - self.final_prob_dict[iteration]
-        max_diff_idx = np.where((diff_labels == np.max(diff_labels[(self.ground_truth_labels == -1) &~ self.all_abstain])))[0]
-        pick_idx = np.random.choice(max_diff_idx)
-        return np.where((self.unique_inverse == self.unique_inverse[pick_idx]) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
+        abs_diff = self.margin(probs)
+
+        minimum = min(j for i, j in enumerate(abs_diff) if disagreement_factor[i] and self.ground_truth_labels[i] == -1 and not self.all_abstain[i])
+
+        return [j for j, v in enumerate(abs_diff) if v == minimum and disagreement_factor[j] and self.ground_truth_labels[j] == -1 and not self.all_abstain[j]]
 
     def relative_entropy(self, iteration):
         
@@ -152,11 +129,14 @@ class ActiveLearningPipeline(PlotMixin):
             rel_entropy[i] = entropy(lm_posteriors[i, :], sample_posteriors[i, :])#/len(bucket_gt)
 
         max_buckets = np.where(rel_entropy == np.max(rel_entropy))[0]
-        print(lm_posteriors)
-        print(sample_posteriors)
-        print(rel_entropy)
-        print(max_buckets)
-        pick_bucket = np.random.choice(max_buckets)
+        # print(lm_posteriors)
+        # print(sample_posteriors)
+        # print(rel_entropy)
+        # print(max_buckets)
+        random.seed(random.SystemRandom().random())
+        pick_bucket = random.choice(max_buckets)
+
+        self.bucket_values = rel_entropy
 
         return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) &~ self.all_abstain)[0]
 
@@ -170,22 +150,15 @@ class ActiveLearningPipeline(PlotMixin):
 
         elif self.query_strategy == "margin":
             indices = self.margin_strategy(probs)
-
-        elif self.query_strategy == "entropy":
-            indices = self.entropy_strategy(probs)
         
         elif self.query_strategy == "margin_density":
             return self.margin_density(probs)
 
-        elif self.query_strategy == "test":
-            indices = self.test_strategy(iteration)
-
-        elif self.query_strategy == "test2":
-            indices = self.test2_strategy(iteration)
-
         elif self.query_strategy == "relative_entropy":
             indices = self.relative_entropy(iteration)
 
+        elif self.query_strategy == "hybrid":
+            indices = self.hybrid_strategy(probs)
 
         else:
             logging.warning("Provided active learning strategy not valid, setting to margin")
@@ -200,34 +173,6 @@ class ActiveLearningPipeline(PlotMixin):
             return random.sample(indices, self.add_neighbors)
         else:
             return random.choice(indices)
-
-    def log(self, count, probs, final_probs=None, selected_point=None):
-        """Keep track of accuracy and other metrics"""
-
-        if count == 0:
-            self.metrics = {}
-            self.final_metrics = {}
-            self.queried = []
-            self.prob_dict = {}
-            self.final_prob_dict = {}
-            self.unique_prob_dict = {}
-            self.mu_dict = {}
-
-        self.label_model.analyze()
-        self.metrics[count] = self.label_model.metric_dict
-        self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
-        self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
-        self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
-
-        if not not self.final_model:
-            self.final_model.analyze()
-            self.final_metrics[count] = self.final_model.metric_dict
-            self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
-
-        if selected_point is not None:
-            self.queried.append(selected_point)
-
-        return self
 
     def update_parameters(self, n_queried, alpha):
         """Use update rule to adjust parameters based on sampled data points"""
@@ -246,7 +191,7 @@ class ActiveLearningPipeline(PlotMixin):
 
         self.label_matrix = label_matrix
         self.ground_truth_labels = np.full_like(self.df["y"].values, -1) 
-        # self.X = self.df[["x1", "x2"]].values
+        self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
         nr_wl = label_matrix.shape[1]
         self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
@@ -288,17 +233,18 @@ class ActiveLearningPipeline(PlotMixin):
                 else:
                     self.label_matrix[sel_idx, nr_wl] = self.y[sel_idx]
 
+            if not self.active_learning:
+                self.label_matrix[sel_idx, :] = self.y[sel_idx]
+
             if self.active_learning == "update_params":
                 new_probs = self.update_parameters(n_queried=i+1, alpha=self.alpha)
             else:
                 # Fit label model
-                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels, last_posteriors=self.unique_prob_dict[i], bucket_idx=self.unique_idx).predict()
+                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels, last_posteriors=self.unique_prob_dict[i]).predict()
 
             if not not self.final_model:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                    dataset = VisualRelationDataset(image_dir="/tmp/data/images/train_images", 
-                        df=self.df,
-                        Y=new_probs.clone().detach().numpy())
+                    dataset.Y = new_probs.clone().detach().numpy()
 
                     dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
 
@@ -323,3 +269,34 @@ class ActiveLearningPipeline(PlotMixin):
         self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
         return new_probs
+
+    def log(self, count, probs, final_probs=None, selected_point=None):
+        """Keep track of accuracy and other metrics"""
+
+        if count == 0:
+            self.metrics = {}
+            self.final_metrics = {}
+            self.queried = []
+            self.prob_dict = {}
+            self.final_prob_dict = {}
+            self.unique_prob_dict = {}
+            self.mu_dict = {}
+            self.bucket_AL_values = {}
+
+        self.label_model.analyze()
+        self.metrics[count] = self.label_model.metric_dict
+        self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
+        self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
+        self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
+
+        if not not self.final_model:
+            self.final_model.analyze()
+            self.final_metrics[count] = self.final_model.metric_dict
+            self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
+
+        if selected_point is not None:
+            self.queried.append(selected_point)
+            if self.query_strategy in ["relative_entropy", "margin"] and self.randomness == 0 :
+                self.bucket_AL_values[count] = self.bucket_values
+
+        return self

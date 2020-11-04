@@ -1,0 +1,2481 @@
+,Active Learning Iteration,Metric,Value,Run,Strategy
+0,0,MCC,0.8091768772853987,0,Relative Entropy
+1,0,Precision,0.9759615384615384,0,Relative Entropy
+2,0,Recall,0.8175594039468385,0,Relative Entropy
+3,0,Accuracy,0.8994,0,Relative Entropy
+4,1,MCC,0.935801329590151,0,Relative Entropy
+5,1,Precision,0.9664591283390239,0,Relative Entropy
+6,1,Recall,0.9689891260571889,0,Relative Entropy
+7,1,Accuracy,0.9679,0,Relative Entropy
+8,2,MCC,0.8091768772853987,0,Relative Entropy
+9,2,Precision,0.9759615384615384,0,Relative Entropy
+10,2,Recall,0.8175594039468385,0,Relative Entropy
+11,2,Accuracy,0.8994,0,Relative Entropy
+12,3,MCC,0.8091768772853987,0,Relative Entropy
+13,3,Precision,0.9759615384615384,0,Relative Entropy
+14,3,Recall,0.8175594039468385,0,Relative Entropy
+15,3,Accuracy,0.8994,0,Relative Entropy
+16,4,MCC,0.9336721089980077,0,Relative Entropy
+17,4,Precision,0.9555555555555556,0,Relative Entropy
+18,4,Recall,0.9784534836890858,0,Relative Entropy
+19,4,Accuracy,0.9667,0,Relative Entropy
+20,5,MCC,0.935801329590151,0,Relative Entropy
+21,5,Precision,0.9664591283390239,0,Relative Entropy
+22,5,Recall,0.9689891260571889,0,Relative Entropy
+23,5,Accuracy,0.9679,0,Relative Entropy
+24,6,MCC,0.935801329590151,0,Relative Entropy
+25,6,Precision,0.9664591283390239,0,Relative Entropy
+26,6,Recall,0.9689891260571889,0,Relative Entropy
+27,6,Accuracy,0.9679,0,Relative Entropy
+28,7,MCC,0.935801329590151,0,Relative Entropy
+29,7,Precision,0.9664591283390239,0,Relative Entropy
+30,7,Recall,0.9689891260571889,0,Relative Entropy
+31,7,Accuracy,0.9679,0,Relative Entropy
+32,8,MCC,0.9336721089980077,0,Relative Entropy
+33,8,Precision,0.9555555555555556,0,Relative Entropy
+34,8,Recall,0.9784534836890858,0,Relative Entropy
+35,8,Accuracy,0.9667,0,Relative Entropy
+36,9,MCC,0.935801329590151,0,Relative Entropy
+37,9,Precision,0.9664591283390239,0,Relative Entropy
+38,9,Recall,0.9689891260571889,0,Relative Entropy
+39,9,Accuracy,0.9679,0,Relative Entropy
+40,10,MCC,0.9336721089980077,0,Relative Entropy
+41,10,Precision,0.9555555555555556,0,Relative Entropy
+42,10,Recall,0.9784534836890858,0,Relative Entropy
+43,10,Accuracy,0.9667,0,Relative Entropy
+44,11,MCC,0.935801329590151,0,Relative Entropy
+45,11,Precision,0.9664591283390239,0,Relative Entropy
+46,11,Recall,0.9689891260571889,0,Relative Entropy
+47,11,Accuracy,0.9679,0,Relative Entropy
+48,12,MCC,0.935801329590151,0,Relative Entropy
+49,12,Precision,0.9664591283390239,0,Relative Entropy
+50,12,Recall,0.9689891260571889,0,Relative Entropy
+51,12,Accuracy,0.9679,0,Relative Entropy
+52,13,MCC,0.935801329590151,0,Relative Entropy
+53,13,Precision,0.9664591283390239,0,Relative Entropy
+54,13,Recall,0.9689891260571889,0,Relative Entropy
+55,13,Accuracy,0.9679,0,Relative Entropy
+56,14,MCC,0.935801329590151,0,Relative Entropy
+57,14,Precision,0.9664591283390239,0,Relative Entropy
+58,14,Recall,0.9689891260571889,0,Relative Entropy
+59,14,Accuracy,0.9679,0,Relative Entropy
+60,15,MCC,0.935801329590151,0,Relative Entropy
+61,15,Precision,0.9664591283390239,0,Relative Entropy
+62,15,Recall,0.9689891260571889,0,Relative Entropy
+63,15,Accuracy,0.9679,0,Relative Entropy
+64,16,MCC,0.935801329590151,0,Relative Entropy
+65,16,Precision,0.9664591283390239,0,Relative Entropy
+66,16,Recall,0.9689891260571889,0,Relative Entropy
+67,16,Accuracy,0.9679,0,Relative Entropy
+68,17,MCC,0.935801329590151,0,Relative Entropy
+69,17,Precision,0.9664591283390239,0,Relative Entropy
+70,17,Recall,0.9689891260571889,0,Relative Entropy
+71,17,Accuracy,0.9679,0,Relative Entropy
+72,18,MCC,0.935801329590151,0,Relative Entropy
+73,18,Precision,0.9664591283390239,0,Relative Entropy
+74,18,Recall,0.9689891260571889,0,Relative Entropy
+75,18,Accuracy,0.9679,0,Relative Entropy
+76,19,MCC,0.935801329590151,0,Relative Entropy
+77,19,Precision,0.9664591283390239,0,Relative Entropy
+78,19,Recall,0.9689891260571889,0,Relative Entropy
+79,19,Accuracy,0.9679,0,Relative Entropy
+80,20,MCC,0.935801329590151,0,Relative Entropy
+81,20,Precision,0.9664591283390239,0,Relative Entropy
+82,20,Recall,0.9689891260571889,0,Relative Entropy
+83,20,Accuracy,0.9679,0,Relative Entropy
+84,21,MCC,0.935801329590151,0,Relative Entropy
+85,21,Precision,0.9664591283390239,0,Relative Entropy
+86,21,Recall,0.9689891260571889,0,Relative Entropy
+87,21,Accuracy,0.9679,0,Relative Entropy
+88,22,MCC,0.935801329590151,0,Relative Entropy
+89,22,Precision,0.9664591283390239,0,Relative Entropy
+90,22,Recall,0.9689891260571889,0,Relative Entropy
+91,22,Accuracy,0.9679,0,Relative Entropy
+92,23,MCC,0.935801329590151,0,Relative Entropy
+93,23,Precision,0.9664591283390239,0,Relative Entropy
+94,23,Recall,0.9689891260571889,0,Relative Entropy
+95,23,Accuracy,0.9679,0,Relative Entropy
+96,24,MCC,0.935801329590151,0,Relative Entropy
+97,24,Precision,0.9664591283390239,0,Relative Entropy
+98,24,Recall,0.9689891260571889,0,Relative Entropy
+99,24,Accuracy,0.9679,0,Relative Entropy
+100,25,MCC,0.935801329590151,0,Relative Entropy
+101,25,Precision,0.9664591283390239,0,Relative Entropy
+102,25,Recall,0.9689891260571889,0,Relative Entropy
+103,25,Accuracy,0.9679,0,Relative Entropy
+104,26,MCC,0.935801329590151,0,Relative Entropy
+105,26,Precision,0.9664591283390239,0,Relative Entropy
+106,26,Recall,0.9689891260571889,0,Relative Entropy
+107,26,Accuracy,0.9679,0,Relative Entropy
+108,27,MCC,0.935801329590151,0,Relative Entropy
+109,27,Precision,0.9664591283390239,0,Relative Entropy
+110,27,Recall,0.9689891260571889,0,Relative Entropy
+111,27,Accuracy,0.9679,0,Relative Entropy
+112,28,MCC,0.935801329590151,0,Relative Entropy
+113,28,Precision,0.9664591283390239,0,Relative Entropy
+114,28,Recall,0.9689891260571889,0,Relative Entropy
+115,28,Accuracy,0.9679,0,Relative Entropy
+116,29,MCC,0.935801329590151,0,Relative Entropy
+117,29,Precision,0.9664591283390239,0,Relative Entropy
+118,29,Recall,0.9689891260571889,0,Relative Entropy
+119,29,Accuracy,0.9679,0,Relative Entropy
+120,30,MCC,0.935801329590151,0,Relative Entropy
+121,30,Precision,0.9664591283390239,0,Relative Entropy
+122,30,Recall,0.9689891260571889,0,Relative Entropy
+123,30,Accuracy,0.9679,0,Relative Entropy
+0,0,MCC,0.6302214820927101,1,Relative Entropy
+1,0,Precision,0.8010440835266821,1,Relative Entropy
+2,0,Recall,0.8342730567861458,1,Relative Entropy
+3,0,Accuracy,0.8148,1,Relative Entropy
+4,1,MCC,0.4328739399209846,1,Relative Entropy
+5,1,Precision,0.7393857271906052,1,Relative Entropy
+6,1,Recall,0.6592831252517116,1,Relative Entropy
+7,1,Accuracy,0.7154,1,Relative Entropy
+8,2,MCC,0.9336721089980077,1,Relative Entropy
+9,2,Precision,0.9555555555555556,1,Relative Entropy
+10,2,Recall,0.9784534836890858,1,Relative Entropy
+11,2,Accuracy,0.9667,1,Relative Entropy
+12,3,MCC,0.935801329590151,1,Relative Entropy
+13,3,Precision,0.9664591283390239,1,Relative Entropy
+14,3,Recall,0.9689891260571889,1,Relative Entropy
+15,3,Accuracy,0.9679,1,Relative Entropy
+16,4,MCC,0.935801329590151,1,Relative Entropy
+17,4,Precision,0.9664591283390239,1,Relative Entropy
+18,4,Recall,0.9689891260571889,1,Relative Entropy
+19,4,Accuracy,0.9679,1,Relative Entropy
+20,5,MCC,0.935801329590151,1,Relative Entropy
+21,5,Precision,0.9664591283390239,1,Relative Entropy
+22,5,Recall,0.9689891260571889,1,Relative Entropy
+23,5,Accuracy,0.9679,1,Relative Entropy
+24,6,MCC,0.935801329590151,1,Relative Entropy
+25,6,Precision,0.9664591283390239,1,Relative Entropy
+26,6,Recall,0.9689891260571889,1,Relative Entropy
+27,6,Accuracy,0.9679,1,Relative Entropy
+28,7,MCC,0.935801329590151,1,Relative Entropy
+29,7,Precision,0.9664591283390239,1,Relative Entropy
+30,7,Recall,0.9689891260571889,1,Relative Entropy
+31,7,Accuracy,0.9679,1,Relative Entropy
+32,8,MCC,0.935801329590151,1,Relative Entropy
+33,8,Precision,0.9664591283390239,1,Relative Entropy
+34,8,Recall,0.9689891260571889,1,Relative Entropy
+35,8,Accuracy,0.9679,1,Relative Entropy
+36,9,MCC,0.935801329590151,1,Relative Entropy
+37,9,Precision,0.9664591283390239,1,Relative Entropy
+38,9,Recall,0.9689891260571889,1,Relative Entropy
+39,9,Accuracy,0.9679,1,Relative Entropy
+40,10,MCC,0.935801329590151,1,Relative Entropy
+41,10,Precision,0.9664591283390239,1,Relative Entropy
+42,10,Recall,0.9689891260571889,1,Relative Entropy
+43,10,Accuracy,0.9679,1,Relative Entropy
+44,11,MCC,0.935801329590151,1,Relative Entropy
+45,11,Precision,0.9664591283390239,1,Relative Entropy
+46,11,Recall,0.9689891260571889,1,Relative Entropy
+47,11,Accuracy,0.9679,1,Relative Entropy
+48,12,MCC,0.935801329590151,1,Relative Entropy
+49,12,Precision,0.9664591283390239,1,Relative Entropy
+50,12,Recall,0.9689891260571889,1,Relative Entropy
+51,12,Accuracy,0.9679,1,Relative Entropy
+52,13,MCC,0.935801329590151,1,Relative Entropy
+53,13,Precision,0.9664591283390239,1,Relative Entropy
+54,13,Recall,0.9689891260571889,1,Relative Entropy
+55,13,Accuracy,0.9679,1,Relative Entropy
+56,14,MCC,0.935801329590151,1,Relative Entropy
+57,14,Precision,0.9664591283390239,1,Relative Entropy
+58,14,Recall,0.9689891260571889,1,Relative Entropy
+59,14,Accuracy,0.9679,1,Relative Entropy
+60,15,MCC,0.935801329590151,1,Relative Entropy
+61,15,Precision,0.9664591283390239,1,Relative Entropy
+62,15,Recall,0.9689891260571889,1,Relative Entropy
+63,15,Accuracy,0.9679,1,Relative Entropy
+64,16,MCC,0.935801329590151,1,Relative Entropy
+65,16,Precision,0.9664591283390239,1,Relative Entropy
+66,16,Recall,0.9689891260571889,1,Relative Entropy
+67,16,Accuracy,0.9679,1,Relative Entropy
+68,17,MCC,0.935801329590151,1,Relative Entropy
+69,17,Precision,0.9664591283390239,1,Relative Entropy
+70,17,Recall,0.9689891260571889,1,Relative Entropy
+71,17,Accuracy,0.9679,1,Relative Entropy
+72,18,MCC,0.935801329590151,1,Relative Entropy
+73,18,Precision,0.9664591283390239,1,Relative Entropy
+74,18,Recall,0.9689891260571889,1,Relative Entropy
+75,18,Accuracy,0.9679,1,Relative Entropy
+76,19,MCC,0.935801329590151,1,Relative Entropy
+77,19,Precision,0.9664591283390239,1,Relative Entropy
+78,19,Recall,0.9689891260571889,1,Relative Entropy
+79,19,Accuracy,0.9679,1,Relative Entropy
+80,20,MCC,0.935801329590151,1,Relative Entropy
+81,20,Precision,0.9664591283390239,1,Relative Entropy
+82,20,Recall,0.9689891260571889,1,Relative Entropy
+83,20,Accuracy,0.9679,1,Relative Entropy
+84,21,MCC,0.935801329590151,1,Relative Entropy
+85,21,Precision,0.9664591283390239,1,Relative Entropy
+86,21,Recall,0.9689891260571889,1,Relative Entropy
+87,21,Accuracy,0.9679,1,Relative Entropy
+88,22,MCC,0.935801329590151,1,Relative Entropy
+89,22,Precision,0.9664591283390239,1,Relative Entropy
+90,22,Recall,0.9689891260571889,1,Relative Entropy
+91,22,Accuracy,0.9679,1,Relative Entropy
+92,23,MCC,0.935801329590151,1,Relative Entropy
+93,23,Precision,0.9664591283390239,1,Relative Entropy
+94,23,Recall,0.9689891260571889,1,Relative Entropy
+95,23,Accuracy,0.9679,1,Relative Entropy
+96,24,MCC,0.935801329590151,1,Relative Entropy
+97,24,Precision,0.9664591283390239,1,Relative Entropy
+98,24,Recall,0.9689891260571889,1,Relative Entropy
+99,24,Accuracy,0.9679,1,Relative Entropy
+100,25,MCC,0.935801329590151,1,Relative Entropy
+101,25,Precision,0.9664591283390239,1,Relative Entropy
+102,25,Recall,0.9689891260571889,1,Relative Entropy
+103,25,Accuracy,0.9679,1,Relative Entropy
+104,26,MCC,0.935801329590151,1,Relative Entropy
+105,26,Precision,0.9664591283390239,1,Relative Entropy
+106,26,Recall,0.9689891260571889,1,Relative Entropy
+107,26,Accuracy,0.9679,1,Relative Entropy
+108,27,MCC,0.935801329590151,1,Relative Entropy
+109,27,Precision,0.9664591283390239,1,Relative Entropy
+110,27,Recall,0.9689891260571889,1,Relative Entropy
+111,27,Accuracy,0.9679,1,Relative Entropy
+112,28,MCC,0.935801329590151,1,Relative Entropy
+113,28,Precision,0.9664591283390239,1,Relative Entropy
+114,28,Recall,0.9689891260571889,1,Relative Entropy
+115,28,Accuracy,0.9679,1,Relative Entropy
+116,29,MCC,0.935801329590151,1,Relative Entropy
+117,29,Precision,0.9664591283390239,1,Relative Entropy
+118,29,Recall,0.9689891260571889,1,Relative Entropy
+119,29,Accuracy,0.9679,1,Relative Entropy
+120,30,MCC,0.935801329590151,1,Relative Entropy
+121,30,Precision,0.9664591283390239,1,Relative Entropy
+122,30,Recall,0.9689891260571889,1,Relative Entropy
+123,30,Accuracy,0.9679,1,Relative Entropy
+0,0,MCC,0.6302214820927101,2,Relative Entropy
+1,0,Precision,0.8010440835266821,2,Relative Entropy
+2,0,Recall,0.8342730567861458,2,Relative Entropy
+3,0,Accuracy,0.8148,2,Relative Entropy
+4,1,MCC,0.935801329590151,2,Relative Entropy
+5,1,Precision,0.9664591283390239,2,Relative Entropy
+6,1,Recall,0.9689891260571889,2,Relative Entropy
+7,1,Accuracy,0.9679,2,Relative Entropy
+8,2,MCC,0.935801329590151,2,Relative Entropy
+9,2,Precision,0.9664591283390239,2,Relative Entropy
+10,2,Recall,0.9689891260571889,2,Relative Entropy
+11,2,Accuracy,0.9679,2,Relative Entropy
+12,3,MCC,0.935801329590151,2,Relative Entropy
+13,3,Precision,0.9664591283390239,2,Relative Entropy
+14,3,Recall,0.9689891260571889,2,Relative Entropy
+15,3,Accuracy,0.9679,2,Relative Entropy
+16,4,MCC,0.935801329590151,2,Relative Entropy
+17,4,Precision,0.9664591283390239,2,Relative Entropy
+18,4,Recall,0.9689891260571889,2,Relative Entropy
+19,4,Accuracy,0.9679,2,Relative Entropy
+20,5,MCC,0.935801329590151,2,Relative Entropy
+21,5,Precision,0.9664591283390239,2,Relative Entropy
+22,5,Recall,0.9689891260571889,2,Relative Entropy
+23,5,Accuracy,0.9679,2,Relative Entropy
+24,6,MCC,0.935801329590151,2,Relative Entropy
+25,6,Precision,0.9664591283390239,2,Relative Entropy
+26,6,Recall,0.9689891260571889,2,Relative Entropy
+27,6,Accuracy,0.9679,2,Relative Entropy
+28,7,MCC,0.9336721089980077,2,Relative Entropy
+29,7,Precision,0.9555555555555556,2,Relative Entropy
+30,7,Recall,0.9784534836890858,2,Relative Entropy
+31,7,Accuracy,0.9667,2,Relative Entropy
+32,8,MCC,0.935801329590151,2,Relative Entropy
+33,8,Precision,0.9664591283390239,2,Relative Entropy
+34,8,Recall,0.9689891260571889,2,Relative Entropy
+35,8,Accuracy,0.9679,2,Relative Entropy
+36,9,MCC,0.9336721089980077,2,Relative Entropy
+37,9,Precision,0.9555555555555556,2,Relative Entropy
+38,9,Recall,0.9784534836890858,2,Relative Entropy
+39,9,Accuracy,0.9667,2,Relative Entropy
+40,10,MCC,0.935801329590151,2,Relative Entropy
+41,10,Precision,0.9664591283390239,2,Relative Entropy
+42,10,Recall,0.9689891260571889,2,Relative Entropy
+43,10,Accuracy,0.9679,2,Relative Entropy
+44,11,MCC,0.935801329590151,2,Relative Entropy
+45,11,Precision,0.9664591283390239,2,Relative Entropy
+46,11,Recall,0.9689891260571889,2,Relative Entropy
+47,11,Accuracy,0.9679,2,Relative Entropy
+48,12,MCC,0.935801329590151,2,Relative Entropy
+49,12,Precision,0.9664591283390239,2,Relative Entropy
+50,12,Recall,0.9689891260571889,2,Relative Entropy
+51,12,Accuracy,0.9679,2,Relative Entropy
+52,13,MCC,0.935801329590151,2,Relative Entropy
+53,13,Precision,0.9664591283390239,2,Relative Entropy
+54,13,Recall,0.9689891260571889,2,Relative Entropy
+55,13,Accuracy,0.9679,2,Relative Entropy
+56,14,MCC,0.935801329590151,2,Relative Entropy
+57,14,Precision,0.9664591283390239,2,Relative Entropy
+58,14,Recall,0.9689891260571889,2,Relative Entropy
+59,14,Accuracy,0.9679,2,Relative Entropy
+60,15,MCC,0.935801329590151,2,Relative Entropy
+61,15,Precision,0.9664591283390239,2,Relative Entropy
+62,15,Recall,0.9689891260571889,2,Relative Entropy
+63,15,Accuracy,0.9679,2,Relative Entropy
+64,16,MCC,0.935801329590151,2,Relative Entropy
+65,16,Precision,0.9664591283390239,2,Relative Entropy
+66,16,Recall,0.9689891260571889,2,Relative Entropy
+67,16,Accuracy,0.9679,2,Relative Entropy
+68,17,MCC,0.935801329590151,2,Relative Entropy
+69,17,Precision,0.9664591283390239,2,Relative Entropy
+70,17,Recall,0.9689891260571889,2,Relative Entropy
+71,17,Accuracy,0.9679,2,Relative Entropy
+72,18,MCC,0.935801329590151,2,Relative Entropy
+73,18,Precision,0.9664591283390239,2,Relative Entropy
+74,18,Recall,0.9689891260571889,2,Relative Entropy
+75,18,Accuracy,0.9679,2,Relative Entropy
+76,19,MCC,0.935801329590151,2,Relative Entropy
+77,19,Precision,0.9664591283390239,2,Relative Entropy
+78,19,Recall,0.9689891260571889,2,Relative Entropy
+79,19,Accuracy,0.9679,2,Relative Entropy
+80,20,MCC,0.935801329590151,2,Relative Entropy
+81,20,Precision,0.9664591283390239,2,Relative Entropy
+82,20,Recall,0.9689891260571889,2,Relative Entropy
+83,20,Accuracy,0.9679,2,Relative Entropy
+84,21,MCC,0.935801329590151,2,Relative Entropy
+85,21,Precision,0.9664591283390239,2,Relative Entropy
+86,21,Recall,0.9689891260571889,2,Relative Entropy
+87,21,Accuracy,0.9679,2,Relative Entropy
+88,22,MCC,0.935801329590151,2,Relative Entropy
+89,22,Precision,0.9664591283390239,2,Relative Entropy
+90,22,Recall,0.9689891260571889,2,Relative Entropy
+91,22,Accuracy,0.9679,2,Relative Entropy
+92,23,MCC,0.935801329590151,2,Relative Entropy
+93,23,Precision,0.9664591283390239,2,Relative Entropy
+94,23,Recall,0.9689891260571889,2,Relative Entropy
+95,23,Accuracy,0.9679,2,Relative Entropy
+96,24,MCC,0.935801329590151,2,Relative Entropy
+97,24,Precision,0.9664591283390239,2,Relative Entropy
+98,24,Recall,0.9689891260571889,2,Relative Entropy
+99,24,Accuracy,0.9679,2,Relative Entropy
+100,25,MCC,0.935801329590151,2,Relative Entropy
+101,25,Precision,0.9664591283390239,2,Relative Entropy
+102,25,Recall,0.9689891260571889,2,Relative Entropy
+103,25,Accuracy,0.9679,2,Relative Entropy
+104,26,MCC,0.935801329590151,2,Relative Entropy
+105,26,Precision,0.9664591283390239,2,Relative Entropy
+106,26,Recall,0.9689891260571889,2,Relative Entropy
+107,26,Accuracy,0.9679,2,Relative Entropy
+108,27,MCC,0.935801329590151,2,Relative Entropy
+109,27,Precision,0.9664591283390239,2,Relative Entropy
+110,27,Recall,0.9689891260571889,2,Relative Entropy
+111,27,Accuracy,0.9679,2,Relative Entropy
+112,28,MCC,0.935801329590151,2,Relative Entropy
+113,28,Precision,0.9664591283390239,2,Relative Entropy
+114,28,Recall,0.9689891260571889,2,Relative Entropy
+115,28,Accuracy,0.9679,2,Relative Entropy
+116,29,MCC,0.935801329590151,2,Relative Entropy
+117,29,Precision,0.9664591283390239,2,Relative Entropy
+118,29,Recall,0.9689891260571889,2,Relative Entropy
+119,29,Accuracy,0.9679,2,Relative Entropy
+120,30,MCC,0.935801329590151,2,Relative Entropy
+121,30,Precision,0.9664591283390239,2,Relative Entropy
+122,30,Recall,0.9689891260571889,2,Relative Entropy
+123,30,Accuracy,0.9679,2,Relative Entropy
+0,0,MCC,0.8091768772853987,3,Relative Entropy
+1,0,Precision,0.9759615384615384,3,Relative Entropy
+2,0,Recall,0.8175594039468385,3,Relative Entropy
+3,0,Accuracy,0.8994,3,Relative Entropy
+4,1,MCC,0.30831395610706913,3,Relative Entropy
+5,1,Precision,0.7065372537824721,3,Relative Entropy
+6,1,Recall,0.49838904550946433,3,Relative Entropy
+7,1,Accuracy,0.6481,3,Relative Entropy
+8,2,MCC,0.6302214820927101,3,Relative Entropy
+9,2,Precision,0.8010440835266821,3,Relative Entropy
+10,2,Recall,0.8342730567861458,3,Relative Entropy
+11,2,Accuracy,0.8148,3,Relative Entropy
+12,3,MCC,0.31198424501871147,3,Relative Entropy
+13,3,Precision,0.6996228448275862,3,Relative Entropy
+14,3,Recall,0.5229561014901329,3,Relative Entropy
+15,3,Accuracy,0.6516,3,Relative Entropy
+16,4,MCC,0.7848320619191133,3,Relative Entropy
+17,4,Precision,0.8105625717566016,3,Relative Entropy
+18,4,Recall,0.9951671365283931,3,Relative Entropy
+19,4,Accuracy,0.8821,3,Relative Entropy
+20,5,MCC,0.7848320619191133,3,Relative Entropy
+21,5,Precision,0.8105625717566016,3,Relative Entropy
+22,5,Recall,0.9951671365283931,3,Relative Entropy
+23,5,Accuracy,0.8821,3,Relative Entropy
+24,6,MCC,0.7848320619191133,3,Relative Entropy
+25,6,Precision,0.8105625717566016,3,Relative Entropy
+26,6,Recall,0.9951671365283931,3,Relative Entropy
+27,6,Accuracy,0.8821,3,Relative Entropy
+28,7,MCC,0.9336721089980077,3,Relative Entropy
+29,7,Precision,0.9555555555555556,3,Relative Entropy
+30,7,Recall,0.9784534836890858,3,Relative Entropy
+31,7,Accuracy,0.9667,3,Relative Entropy
+32,8,MCC,0.9336721089980077,3,Relative Entropy
+33,8,Precision,0.9555555555555556,3,Relative Entropy
+34,8,Recall,0.9784534836890858,3,Relative Entropy
+35,8,Accuracy,0.9667,3,Relative Entropy
+36,9,MCC,0.9336721089980077,3,Relative Entropy
+37,9,Precision,0.9555555555555556,3,Relative Entropy
+38,9,Recall,0.9784534836890858,3,Relative Entropy
+39,9,Accuracy,0.9667,3,Relative Entropy
+40,10,MCC,0.9336721089980077,3,Relative Entropy
+41,10,Precision,0.9555555555555556,3,Relative Entropy
+42,10,Recall,0.9784534836890858,3,Relative Entropy
+43,10,Accuracy,0.9667,3,Relative Entropy
+44,11,MCC,0.9336721089980077,3,Relative Entropy
+45,11,Precision,0.9555555555555556,3,Relative Entropy
+46,11,Recall,0.9784534836890858,3,Relative Entropy
+47,11,Accuracy,0.9667,3,Relative Entropy
+48,12,MCC,0.9336721089980077,3,Relative Entropy
+49,12,Precision,0.9555555555555556,3,Relative Entropy
+50,12,Recall,0.9784534836890858,3,Relative Entropy
+51,12,Accuracy,0.9667,3,Relative Entropy
+52,13,MCC,0.9336721089980077,3,Relative Entropy
+53,13,Precision,0.9555555555555556,3,Relative Entropy
+54,13,Recall,0.9784534836890858,3,Relative Entropy
+55,13,Accuracy,0.9667,3,Relative Entropy
+56,14,MCC,0.9336721089980077,3,Relative Entropy
+57,14,Precision,0.9555555555555556,3,Relative Entropy
+58,14,Recall,0.9784534836890858,3,Relative Entropy
+59,14,Accuracy,0.9667,3,Relative Entropy
+60,15,MCC,0.9336721089980077,3,Relative Entropy
+61,15,Precision,0.9555555555555556,3,Relative Entropy
+62,15,Recall,0.9784534836890858,3,Relative Entropy
+63,15,Accuracy,0.9667,3,Relative Entropy
+64,16,MCC,0.9336721089980077,3,Relative Entropy
+65,16,Precision,0.9555555555555556,3,Relative Entropy
+66,16,Recall,0.9784534836890858,3,Relative Entropy
+67,16,Accuracy,0.9667,3,Relative Entropy
+68,17,MCC,0.9336721089980077,3,Relative Entropy
+69,17,Precision,0.9555555555555556,3,Relative Entropy
+70,17,Recall,0.9784534836890858,3,Relative Entropy
+71,17,Accuracy,0.9667,3,Relative Entropy
+72,18,MCC,0.9336721089980077,3,Relative Entropy
+73,18,Precision,0.9555555555555556,3,Relative Entropy
+74,18,Recall,0.9784534836890858,3,Relative Entropy
+75,18,Accuracy,0.9667,3,Relative Entropy
+76,19,MCC,0.9336721089980077,3,Relative Entropy
+77,19,Precision,0.9555555555555556,3,Relative Entropy
+78,19,Recall,0.9784534836890858,3,Relative Entropy
+79,19,Accuracy,0.9667,3,Relative Entropy
+80,20,MCC,0.9336721089980077,3,Relative Entropy
+81,20,Precision,0.9555555555555556,3,Relative Entropy
+82,20,Recall,0.9784534836890858,3,Relative Entropy
+83,20,Accuracy,0.9667,3,Relative Entropy
+84,21,MCC,0.9336721089980077,3,Relative Entropy
+85,21,Precision,0.9555555555555556,3,Relative Entropy
+86,21,Recall,0.9784534836890858,3,Relative Entropy
+87,21,Accuracy,0.9667,3,Relative Entropy
+88,22,MCC,0.9336721089980077,3,Relative Entropy
+89,22,Precision,0.9555555555555556,3,Relative Entropy
+90,22,Recall,0.9784534836890858,3,Relative Entropy
+91,22,Accuracy,0.9667,3,Relative Entropy
+92,23,MCC,0.9336721089980077,3,Relative Entropy
+93,23,Precision,0.9555555555555556,3,Relative Entropy
+94,23,Recall,0.9784534836890858,3,Relative Entropy
+95,23,Accuracy,0.9667,3,Relative Entropy
+96,24,MCC,0.9336721089980077,3,Relative Entropy
+97,24,Precision,0.9555555555555556,3,Relative Entropy
+98,24,Recall,0.9784534836890858,3,Relative Entropy
+99,24,Accuracy,0.9667,3,Relative Entropy
+100,25,MCC,0.9336721089980077,3,Relative Entropy
+101,25,Precision,0.9555555555555556,3,Relative Entropy
+102,25,Recall,0.9784534836890858,3,Relative Entropy
+103,25,Accuracy,0.9667,3,Relative Entropy
+104,26,MCC,0.9336721089980077,3,Relative Entropy
+105,26,Precision,0.9555555555555556,3,Relative Entropy
+106,26,Recall,0.9784534836890858,3,Relative Entropy
+107,26,Accuracy,0.9667,3,Relative Entropy
+108,27,MCC,0.9336721089980077,3,Relative Entropy
+109,27,Precision,0.9555555555555556,3,Relative Entropy
+110,27,Recall,0.9784534836890858,3,Relative Entropy
+111,27,Accuracy,0.9667,3,Relative Entropy
+112,28,MCC,0.9336721089980077,3,Relative Entropy
+113,28,Precision,0.9555555555555556,3,Relative Entropy
+114,28,Recall,0.9784534836890858,3,Relative Entropy
+115,28,Accuracy,0.9667,3,Relative Entropy
+116,29,MCC,0.9336721089980077,3,Relative Entropy
+117,29,Precision,0.9555555555555556,3,Relative Entropy
+118,29,Recall,0.9784534836890858,3,Relative Entropy
+119,29,Accuracy,0.9667,3,Relative Entropy
+120,30,MCC,0.9336721089980077,3,Relative Entropy
+121,30,Precision,0.9555555555555556,3,Relative Entropy
+122,30,Recall,0.9784534836890858,3,Relative Entropy
+123,30,Accuracy,0.9667,3,Relative Entropy
+0,0,MCC,0.8091768772853987,4,Relative Entropy
+1,0,Precision,0.9759615384615384,4,Relative Entropy
+2,0,Recall,0.8175594039468385,4,Relative Entropy
+3,0,Accuracy,0.8994,4,Relative Entropy
+4,1,MCC,0.935801329590151,4,Relative Entropy
+5,1,Precision,0.9664591283390239,4,Relative Entropy
+6,1,Recall,0.9689891260571889,4,Relative Entropy
+7,1,Accuracy,0.9679,4,Relative Entropy
+8,2,MCC,0.935801329590151,4,Relative Entropy
+9,2,Precision,0.9664591283390239,4,Relative Entropy
+10,2,Recall,0.9689891260571889,4,Relative Entropy
+11,2,Accuracy,0.9679,4,Relative Entropy
+12,3,MCC,0.935801329590151,4,Relative Entropy
+13,3,Precision,0.9664591283390239,4,Relative Entropy
+14,3,Recall,0.9689891260571889,4,Relative Entropy
+15,3,Accuracy,0.9679,4,Relative Entropy
+16,4,MCC,0.935801329590151,4,Relative Entropy
+17,4,Precision,0.9664591283390239,4,Relative Entropy
+18,4,Recall,0.9689891260571889,4,Relative Entropy
+19,4,Accuracy,0.9679,4,Relative Entropy
+20,5,MCC,0.935801329590151,4,Relative Entropy
+21,5,Precision,0.9664591283390239,4,Relative Entropy
+22,5,Recall,0.9689891260571889,4,Relative Entropy
+23,5,Accuracy,0.9679,4,Relative Entropy
+24,6,MCC,0.935801329590151,4,Relative Entropy
+25,6,Precision,0.9664591283390239,4,Relative Entropy
+26,6,Recall,0.9689891260571889,4,Relative Entropy
+27,6,Accuracy,0.9679,4,Relative Entropy
+28,7,MCC,0.935801329590151,4,Relative Entropy
+29,7,Precision,0.9664591283390239,4,Relative Entropy
+30,7,Recall,0.9689891260571889,4,Relative Entropy
+31,7,Accuracy,0.9679,4,Relative Entropy
+32,8,MCC,0.935801329590151,4,Relative Entropy
+33,8,Precision,0.9664591283390239,4,Relative Entropy
+34,8,Recall,0.9689891260571889,4,Relative Entropy
+35,8,Accuracy,0.9679,4,Relative Entropy
+36,9,MCC,0.935801329590151,4,Relative Entropy
+37,9,Precision,0.9664591283390239,4,Relative Entropy
+38,9,Recall,0.9689891260571889,4,Relative Entropy
+39,9,Accuracy,0.9679,4,Relative Entropy
+40,10,MCC,0.935801329590151,4,Relative Entropy
+41,10,Precision,0.9664591283390239,4,Relative Entropy
+42,10,Recall,0.9689891260571889,4,Relative Entropy
+43,10,Accuracy,0.9679,4,Relative Entropy
+44,11,MCC,0.935801329590151,4,Relative Entropy
+45,11,Precision,0.9664591283390239,4,Relative Entropy
+46,11,Recall,0.9689891260571889,4,Relative Entropy
+47,11,Accuracy,0.9679,4,Relative Entropy
+48,12,MCC,0.935801329590151,4,Relative Entropy
+49,12,Precision,0.9664591283390239,4,Relative Entropy
+50,12,Recall,0.9689891260571889,4,Relative Entropy
+51,12,Accuracy,0.9679,4,Relative Entropy
+52,13,MCC,0.935801329590151,4,Relative Entropy
+53,13,Precision,0.9664591283390239,4,Relative Entropy
+54,13,Recall,0.9689891260571889,4,Relative Entropy
+55,13,Accuracy,0.9679,4,Relative Entropy
+56,14,MCC,0.935801329590151,4,Relative Entropy
+57,14,Precision,0.9664591283390239,4,Relative Entropy
+58,14,Recall,0.9689891260571889,4,Relative Entropy
+59,14,Accuracy,0.9679,4,Relative Entropy
+60,15,MCC,0.935801329590151,4,Relative Entropy
+61,15,Precision,0.9664591283390239,4,Relative Entropy
+62,15,Recall,0.9689891260571889,4,Relative Entropy
+63,15,Accuracy,0.9679,4,Relative Entropy
+64,16,MCC,0.935801329590151,4,Relative Entropy
+65,16,Precision,0.9664591283390239,4,Relative Entropy
+66,16,Recall,0.9689891260571889,4,Relative Entropy
+67,16,Accuracy,0.9679,4,Relative Entropy
+68,17,MCC,0.935801329590151,4,Relative Entropy
+69,17,Precision,0.9664591283390239,4,Relative Entropy
+70,17,Recall,0.9689891260571889,4,Relative Entropy
+71,17,Accuracy,0.9679,4,Relative Entropy
+72,18,MCC,0.935801329590151,4,Relative Entropy
+73,18,Precision,0.9664591283390239,4,Relative Entropy
+74,18,Recall,0.9689891260571889,4,Relative Entropy
+75,18,Accuracy,0.9679,4,Relative Entropy
+76,19,MCC,0.935801329590151,4,Relative Entropy
+77,19,Precision,0.9664591283390239,4,Relative Entropy
+78,19,Recall,0.9689891260571889,4,Relative Entropy
+79,19,Accuracy,0.9679,4,Relative Entropy
+80,20,MCC,0.935801329590151,4,Relative Entropy
+81,20,Precision,0.9664591283390239,4,Relative Entropy
+82,20,Recall,0.9689891260571889,4,Relative Entropy
+83,20,Accuracy,0.9679,4,Relative Entropy
+84,21,MCC,0.935801329590151,4,Relative Entropy
+85,21,Precision,0.9664591283390239,4,Relative Entropy
+86,21,Recall,0.9689891260571889,4,Relative Entropy
+87,21,Accuracy,0.9679,4,Relative Entropy
+88,22,MCC,0.935801329590151,4,Relative Entropy
+89,22,Precision,0.9664591283390239,4,Relative Entropy
+90,22,Recall,0.9689891260571889,4,Relative Entropy
+91,22,Accuracy,0.9679,4,Relative Entropy
+92,23,MCC,0.935801329590151,4,Relative Entropy
+93,23,Precision,0.9664591283390239,4,Relative Entropy
+94,23,Recall,0.9689891260571889,4,Relative Entropy
+95,23,Accuracy,0.9679,4,Relative Entropy
+96,24,MCC,0.935801329590151,4,Relative Entropy
+97,24,Precision,0.9664591283390239,4,Relative Entropy
+98,24,Recall,0.9689891260571889,4,Relative Entropy
+99,24,Accuracy,0.9679,4,Relative Entropy
+100,25,MCC,0.935801329590151,4,Relative Entropy
+101,25,Precision,0.9664591283390239,4,Relative Entropy
+102,25,Recall,0.9689891260571889,4,Relative Entropy
+103,25,Accuracy,0.9679,4,Relative Entropy
+104,26,MCC,0.935801329590151,4,Relative Entropy
+105,26,Precision,0.9664591283390239,4,Relative Entropy
+106,26,Recall,0.9689891260571889,4,Relative Entropy
+107,26,Accuracy,0.9679,4,Relative Entropy
+108,27,MCC,0.935801329590151,4,Relative Entropy
+109,27,Precision,0.9664591283390239,4,Relative Entropy
+110,27,Recall,0.9689891260571889,4,Relative Entropy
+111,27,Accuracy,0.9679,4,Relative Entropy
+112,28,MCC,0.935801329590151,4,Relative Entropy
+113,28,Precision,0.9664591283390239,4,Relative Entropy
+114,28,Recall,0.9689891260571889,4,Relative Entropy
+115,28,Accuracy,0.9679,4,Relative Entropy
+116,29,MCC,0.935801329590151,4,Relative Entropy
+117,29,Precision,0.9664591283390239,4,Relative Entropy
+118,29,Recall,0.9689891260571889,4,Relative Entropy
+119,29,Accuracy,0.9679,4,Relative Entropy
+120,30,MCC,0.935801329590151,4,Relative Entropy
+121,30,Precision,0.9664591283390239,4,Relative Entropy
+122,30,Recall,0.9689891260571889,4,Relative Entropy
+123,30,Accuracy,0.9679,4,Relative Entropy
+0,0,MCC,0.8091768772853987,5,Relative Entropy
+1,0,Precision,0.9759615384615384,5,Relative Entropy
+2,0,Recall,0.8175594039468385,5,Relative Entropy
+3,0,Accuracy,0.8994,5,Relative Entropy
+4,1,MCC,0.935801329590151,5,Relative Entropy
+5,1,Precision,0.9664591283390239,5,Relative Entropy
+6,1,Recall,0.9689891260571889,5,Relative Entropy
+7,1,Accuracy,0.9679,5,Relative Entropy
+8,2,MCC,0.935801329590151,5,Relative Entropy
+9,2,Precision,0.9664591283390239,5,Relative Entropy
+10,2,Recall,0.9689891260571889,5,Relative Entropy
+11,2,Accuracy,0.9679,5,Relative Entropy
+12,3,MCC,0.9336721089980077,5,Relative Entropy
+13,3,Precision,0.9555555555555556,5,Relative Entropy
+14,3,Recall,0.9784534836890858,5,Relative Entropy
+15,3,Accuracy,0.9667,5,Relative Entropy
+16,4,MCC,0.9336721089980077,5,Relative Entropy
+17,4,Precision,0.9555555555555556,5,Relative Entropy
+18,4,Recall,0.9784534836890858,5,Relative Entropy
+19,4,Accuracy,0.9667,5,Relative Entropy
+20,5,MCC,0.9336721089980077,5,Relative Entropy
+21,5,Precision,0.9555555555555556,5,Relative Entropy
+22,5,Recall,0.9784534836890858,5,Relative Entropy
+23,5,Accuracy,0.9667,5,Relative Entropy
+24,6,MCC,0.9336721089980077,5,Relative Entropy
+25,6,Precision,0.9555555555555556,5,Relative Entropy
+26,6,Recall,0.9784534836890858,5,Relative Entropy
+27,6,Accuracy,0.9667,5,Relative Entropy
+28,7,MCC,0.9336721089980077,5,Relative Entropy
+29,7,Precision,0.9555555555555556,5,Relative Entropy
+30,7,Recall,0.9784534836890858,5,Relative Entropy
+31,7,Accuracy,0.9667,5,Relative Entropy
+32,8,MCC,0.9336721089980077,5,Relative Entropy
+33,8,Precision,0.9555555555555556,5,Relative Entropy
+34,8,Recall,0.9784534836890858,5,Relative Entropy
+35,8,Accuracy,0.9667,5,Relative Entropy
+36,9,MCC,0.9336721089980077,5,Relative Entropy
+37,9,Precision,0.9555555555555556,5,Relative Entropy
+38,9,Recall,0.9784534836890858,5,Relative Entropy
+39,9,Accuracy,0.9667,5,Relative Entropy
+40,10,MCC,0.9336721089980077,5,Relative Entropy
+41,10,Precision,0.9555555555555556,5,Relative Entropy
+42,10,Recall,0.9784534836890858,5,Relative Entropy
+43,10,Accuracy,0.9667,5,Relative Entropy
+44,11,MCC,0.9336721089980077,5,Relative Entropy
+45,11,Precision,0.9555555555555556,5,Relative Entropy
+46,11,Recall,0.9784534836890858,5,Relative Entropy
+47,11,Accuracy,0.9667,5,Relative Entropy
+48,12,MCC,0.9336721089980077,5,Relative Entropy
+49,12,Precision,0.9555555555555556,5,Relative Entropy
+50,12,Recall,0.9784534836890858,5,Relative Entropy
+51,12,Accuracy,0.9667,5,Relative Entropy
+52,13,MCC,0.9336721089980077,5,Relative Entropy
+53,13,Precision,0.9555555555555556,5,Relative Entropy
+54,13,Recall,0.9784534836890858,5,Relative Entropy
+55,13,Accuracy,0.9667,5,Relative Entropy
+56,14,MCC,0.9336721089980077,5,Relative Entropy
+57,14,Precision,0.9555555555555556,5,Relative Entropy
+58,14,Recall,0.9784534836890858,5,Relative Entropy
+59,14,Accuracy,0.9667,5,Relative Entropy
+60,15,MCC,0.9336721089980077,5,Relative Entropy
+61,15,Precision,0.9555555555555556,5,Relative Entropy
+62,15,Recall,0.9784534836890858,5,Relative Entropy
+63,15,Accuracy,0.9667,5,Relative Entropy
+64,16,MCC,0.9336721089980077,5,Relative Entropy
+65,16,Precision,0.9555555555555556,5,Relative Entropy
+66,16,Recall,0.9784534836890858,5,Relative Entropy
+67,16,Accuracy,0.9667,5,Relative Entropy
+68,17,MCC,0.9336721089980077,5,Relative Entropy
+69,17,Precision,0.9555555555555556,5,Relative Entropy
+70,17,Recall,0.9784534836890858,5,Relative Entropy
+71,17,Accuracy,0.9667,5,Relative Entropy
+72,18,MCC,0.9336721089980077,5,Relative Entropy
+73,18,Precision,0.9555555555555556,5,Relative Entropy
+74,18,Recall,0.9784534836890858,5,Relative Entropy
+75,18,Accuracy,0.9667,5,Relative Entropy
+76,19,MCC,0.9336721089980077,5,Relative Entropy
+77,19,Precision,0.9555555555555556,5,Relative Entropy
+78,19,Recall,0.9784534836890858,5,Relative Entropy
+79,19,Accuracy,0.9667,5,Relative Entropy
+80,20,MCC,0.935801329590151,5,Relative Entropy
+81,20,Precision,0.9664591283390239,5,Relative Entropy
+82,20,Recall,0.9689891260571889,5,Relative Entropy
+83,20,Accuracy,0.9679,5,Relative Entropy
+84,21,MCC,0.935801329590151,5,Relative Entropy
+85,21,Precision,0.9664591283390239,5,Relative Entropy
+86,21,Recall,0.9689891260571889,5,Relative Entropy
+87,21,Accuracy,0.9679,5,Relative Entropy
+88,22,MCC,0.935801329590151,5,Relative Entropy
+89,22,Precision,0.9664591283390239,5,Relative Entropy
+90,22,Recall,0.9689891260571889,5,Relative Entropy
+91,22,Accuracy,0.9679,5,Relative Entropy
+92,23,MCC,0.935801329590151,5,Relative Entropy
+93,23,Precision,0.9664591283390239,5,Relative Entropy
+94,23,Recall,0.9689891260571889,5,Relative Entropy
+95,23,Accuracy,0.9679,5,Relative Entropy
+96,24,MCC,0.935801329590151,5,Relative Entropy
+97,24,Precision,0.9664591283390239,5,Relative Entropy
+98,24,Recall,0.9689891260571889,5,Relative Entropy
+99,24,Accuracy,0.9679,5,Relative Entropy
+100,25,MCC,0.935801329590151,5,Relative Entropy
+101,25,Precision,0.9664591283390239,5,Relative Entropy
+102,25,Recall,0.9689891260571889,5,Relative Entropy
+103,25,Accuracy,0.9679,5,Relative Entropy
+104,26,MCC,0.935801329590151,5,Relative Entropy
+105,26,Precision,0.9664591283390239,5,Relative Entropy
+106,26,Recall,0.9689891260571889,5,Relative Entropy
+107,26,Accuracy,0.9679,5,Relative Entropy
+108,27,MCC,0.935801329590151,5,Relative Entropy
+109,27,Precision,0.9664591283390239,5,Relative Entropy
+110,27,Recall,0.9689891260571889,5,Relative Entropy
+111,27,Accuracy,0.9679,5,Relative Entropy
+112,28,MCC,0.935801329590151,5,Relative Entropy
+113,28,Precision,0.9664591283390239,5,Relative Entropy
+114,28,Recall,0.9689891260571889,5,Relative Entropy
+115,28,Accuracy,0.9679,5,Relative Entropy
+116,29,MCC,0.935801329590151,5,Relative Entropy
+117,29,Precision,0.9664591283390239,5,Relative Entropy
+118,29,Recall,0.9689891260571889,5,Relative Entropy
+119,29,Accuracy,0.9679,5,Relative Entropy
+120,30,MCC,0.935801329590151,5,Relative Entropy
+121,30,Precision,0.9664591283390239,5,Relative Entropy
+122,30,Recall,0.9689891260571889,5,Relative Entropy
+123,30,Accuracy,0.9679,5,Relative Entropy
+0,0,MCC,0.8091768772853987,6,Relative Entropy
+1,0,Precision,0.9759615384615384,6,Relative Entropy
+2,0,Recall,0.8175594039468385,6,Relative Entropy
+3,0,Accuracy,0.8994,6,Relative Entropy
+4,1,MCC,0.935801329590151,6,Relative Entropy
+5,1,Precision,0.9664591283390239,6,Relative Entropy
+6,1,Recall,0.9689891260571889,6,Relative Entropy
+7,1,Accuracy,0.9679,6,Relative Entropy
+8,2,MCC,0.935801329590151,6,Relative Entropy
+9,2,Precision,0.9664591283390239,6,Relative Entropy
+10,2,Recall,0.9689891260571889,6,Relative Entropy
+11,2,Accuracy,0.9679,6,Relative Entropy
+12,3,MCC,0.9336721089980077,6,Relative Entropy
+13,3,Precision,0.9555555555555556,6,Relative Entropy
+14,3,Recall,0.9784534836890858,6,Relative Entropy
+15,3,Accuracy,0.9667,6,Relative Entropy
+16,4,MCC,0.9336721089980077,6,Relative Entropy
+17,4,Precision,0.9555555555555556,6,Relative Entropy
+18,4,Recall,0.9784534836890858,6,Relative Entropy
+19,4,Accuracy,0.9667,6,Relative Entropy
+20,5,MCC,0.9336721089980077,6,Relative Entropy
+21,5,Precision,0.9555555555555556,6,Relative Entropy
+22,5,Recall,0.9784534836890858,6,Relative Entropy
+23,5,Accuracy,0.9667,6,Relative Entropy
+24,6,MCC,0.6303261964801933,6,Relative Entropy
+25,6,Precision,0.9341334894613583,6,Relative Entropy
+26,6,Recall,0.6425694724124044,6,Relative Entropy
+27,6,Accuracy,0.8,6,Relative Entropy
+28,7,MCC,0.9336721089980077,6,Relative Entropy
+29,7,Precision,0.9555555555555556,6,Relative Entropy
+30,7,Recall,0.9784534836890858,6,Relative Entropy
+31,7,Accuracy,0.9667,6,Relative Entropy
+32,8,MCC,0.9336721089980077,6,Relative Entropy
+33,8,Precision,0.9555555555555556,6,Relative Entropy
+34,8,Recall,0.9784534836890858,6,Relative Entropy
+35,8,Accuracy,0.9667,6,Relative Entropy
+36,9,MCC,0.9336721089980077,6,Relative Entropy
+37,9,Precision,0.9555555555555556,6,Relative Entropy
+38,9,Recall,0.9784534836890858,6,Relative Entropy
+39,9,Accuracy,0.9667,6,Relative Entropy
+40,10,MCC,0.9336721089980077,6,Relative Entropy
+41,10,Precision,0.9555555555555556,6,Relative Entropy
+42,10,Recall,0.9784534836890858,6,Relative Entropy
+43,10,Accuracy,0.9667,6,Relative Entropy
+44,11,MCC,0.9336721089980077,6,Relative Entropy
+45,11,Precision,0.9555555555555556,6,Relative Entropy
+46,11,Recall,0.9784534836890858,6,Relative Entropy
+47,11,Accuracy,0.9667,6,Relative Entropy
+48,12,MCC,0.9336721089980077,6,Relative Entropy
+49,12,Precision,0.9555555555555556,6,Relative Entropy
+50,12,Recall,0.9784534836890858,6,Relative Entropy
+51,12,Accuracy,0.9667,6,Relative Entropy
+52,13,MCC,0.9336721089980077,6,Relative Entropy
+53,13,Precision,0.9555555555555556,6,Relative Entropy
+54,13,Recall,0.9784534836890858,6,Relative Entropy
+55,13,Accuracy,0.9667,6,Relative Entropy
+56,14,MCC,0.9336721089980077,6,Relative Entropy
+57,14,Precision,0.9555555555555556,6,Relative Entropy
+58,14,Recall,0.9784534836890858,6,Relative Entropy
+59,14,Accuracy,0.9667,6,Relative Entropy
+60,15,MCC,0.9336721089980077,6,Relative Entropy
+61,15,Precision,0.9555555555555556,6,Relative Entropy
+62,15,Recall,0.9784534836890858,6,Relative Entropy
+63,15,Accuracy,0.9667,6,Relative Entropy
+64,16,MCC,0.9336721089980077,6,Relative Entropy
+65,16,Precision,0.9555555555555556,6,Relative Entropy
+66,16,Recall,0.9784534836890858,6,Relative Entropy
+67,16,Accuracy,0.9667,6,Relative Entropy
+68,17,MCC,0.9336721089980077,6,Relative Entropy
+69,17,Precision,0.9555555555555556,6,Relative Entropy
+70,17,Recall,0.9784534836890858,6,Relative Entropy
+71,17,Accuracy,0.9667,6,Relative Entropy
+72,18,MCC,0.9336721089980077,6,Relative Entropy
+73,18,Precision,0.9555555555555556,6,Relative Entropy
+74,18,Recall,0.9784534836890858,6,Relative Entropy
+75,18,Accuracy,0.9667,6,Relative Entropy
+76,19,MCC,0.9336721089980077,6,Relative Entropy
+77,19,Precision,0.9555555555555556,6,Relative Entropy
+78,19,Recall,0.9784534836890858,6,Relative Entropy
+79,19,Accuracy,0.9667,6,Relative Entropy
+80,20,MCC,0.9336721089980077,6,Relative Entropy
+81,20,Precision,0.9555555555555556,6,Relative Entropy
+82,20,Recall,0.9784534836890858,6,Relative Entropy
+83,20,Accuracy,0.9667,6,Relative Entropy
+84,21,MCC,0.9336721089980077,6,Relative Entropy
+85,21,Precision,0.9555555555555556,6,Relative Entropy
+86,21,Recall,0.9784534836890858,6,Relative Entropy
+87,21,Accuracy,0.9667,6,Relative Entropy
+88,22,MCC,0.9336721089980077,6,Relative Entropy
+89,22,Precision,0.9555555555555556,6,Relative Entropy
+90,22,Recall,0.9784534836890858,6,Relative Entropy
+91,22,Accuracy,0.9667,6,Relative Entropy
+92,23,MCC,0.9336721089980077,6,Relative Entropy
+93,23,Precision,0.9555555555555556,6,Relative Entropy
+94,23,Recall,0.9784534836890858,6,Relative Entropy
+95,23,Accuracy,0.9667,6,Relative Entropy
+96,24,MCC,0.9336721089980077,6,Relative Entropy
+97,24,Precision,0.9555555555555556,6,Relative Entropy
+98,24,Recall,0.9784534836890858,6,Relative Entropy
+99,24,Accuracy,0.9667,6,Relative Entropy
+100,25,MCC,0.9336721089980077,6,Relative Entropy
+101,25,Precision,0.9555555555555556,6,Relative Entropy
+102,25,Recall,0.9784534836890858,6,Relative Entropy
+103,25,Accuracy,0.9667,6,Relative Entropy
+104,26,MCC,0.9336721089980077,6,Relative Entropy
+105,26,Precision,0.9555555555555556,6,Relative Entropy
+106,26,Recall,0.9784534836890858,6,Relative Entropy
+107,26,Accuracy,0.9667,6,Relative Entropy
+108,27,MCC,0.9336721089980077,6,Relative Entropy
+109,27,Precision,0.9555555555555556,6,Relative Entropy
+110,27,Recall,0.9784534836890858,6,Relative Entropy
+111,27,Accuracy,0.9667,6,Relative Entropy
+112,28,MCC,0.9336721089980077,6,Relative Entropy
+113,28,Precision,0.9555555555555556,6,Relative Entropy
+114,28,Recall,0.9784534836890858,6,Relative Entropy
+115,28,Accuracy,0.9667,6,Relative Entropy
+116,29,MCC,0.9336721089980077,6,Relative Entropy
+117,29,Precision,0.9555555555555556,6,Relative Entropy
+118,29,Recall,0.9784534836890858,6,Relative Entropy
+119,29,Accuracy,0.9667,6,Relative Entropy
+120,30,MCC,0.9336721089980077,6,Relative Entropy
+121,30,Precision,0.9555555555555556,6,Relative Entropy
+122,30,Recall,0.9784534836890858,6,Relative Entropy
+123,30,Accuracy,0.9667,6,Relative Entropy
+0,0,MCC,0.8091768772853987,7,Relative Entropy
+1,0,Precision,0.9759615384615384,7,Relative Entropy
+2,0,Recall,0.8175594039468385,7,Relative Entropy
+3,0,Accuracy,0.8994,7,Relative Entropy
+4,1,MCC,0.935801329590151,7,Relative Entropy
+5,1,Precision,0.9664591283390239,7,Relative Entropy
+6,1,Recall,0.9689891260571889,7,Relative Entropy
+7,1,Accuracy,0.9679,7,Relative Entropy
+8,2,MCC,0.935801329590151,7,Relative Entropy
+9,2,Precision,0.9664591283390239,7,Relative Entropy
+10,2,Recall,0.9689891260571889,7,Relative Entropy
+11,2,Accuracy,0.9679,7,Relative Entropy
+12,3,MCC,0.9336721089980077,7,Relative Entropy
+13,3,Precision,0.9555555555555556,7,Relative Entropy
+14,3,Recall,0.9784534836890858,7,Relative Entropy
+15,3,Accuracy,0.9667,7,Relative Entropy
+16,4,MCC,0.9336721089980077,7,Relative Entropy
+17,4,Precision,0.9555555555555556,7,Relative Entropy
+18,4,Recall,0.9784534836890858,7,Relative Entropy
+19,4,Accuracy,0.9667,7,Relative Entropy
+20,5,MCC,0.9336721089980077,7,Relative Entropy
+21,5,Precision,0.9555555555555556,7,Relative Entropy
+22,5,Recall,0.9784534836890858,7,Relative Entropy
+23,5,Accuracy,0.9667,7,Relative Entropy
+24,6,MCC,0.9336721089980077,7,Relative Entropy
+25,6,Precision,0.9555555555555556,7,Relative Entropy
+26,6,Recall,0.9784534836890858,7,Relative Entropy
+27,6,Accuracy,0.9667,7,Relative Entropy
+28,7,MCC,0.9336721089980077,7,Relative Entropy
+29,7,Precision,0.9555555555555556,7,Relative Entropy
+30,7,Recall,0.9784534836890858,7,Relative Entropy
+31,7,Accuracy,0.9667,7,Relative Entropy
+32,8,MCC,0.9336721089980077,7,Relative Entropy
+33,8,Precision,0.9555555555555556,7,Relative Entropy
+34,8,Recall,0.9784534836890858,7,Relative Entropy
+35,8,Accuracy,0.9667,7,Relative Entropy
+36,9,MCC,0.9336721089980077,7,Relative Entropy
+37,9,Precision,0.9555555555555556,7,Relative Entropy
+38,9,Recall,0.9784534836890858,7,Relative Entropy
+39,9,Accuracy,0.9667,7,Relative Entropy
+40,10,MCC,0.9336721089980077,7,Relative Entropy
+41,10,Precision,0.9555555555555556,7,Relative Entropy
+42,10,Recall,0.9784534836890858,7,Relative Entropy
+43,10,Accuracy,0.9667,7,Relative Entropy
+44,11,MCC,0.9336721089980077,7,Relative Entropy
+45,11,Precision,0.9555555555555556,7,Relative Entropy
+46,11,Recall,0.9784534836890858,7,Relative Entropy
+47,11,Accuracy,0.9667,7,Relative Entropy
+48,12,MCC,0.9336721089980077,7,Relative Entropy
+49,12,Precision,0.9555555555555556,7,Relative Entropy
+50,12,Recall,0.9784534836890858,7,Relative Entropy
+51,12,Accuracy,0.9667,7,Relative Entropy
+52,13,MCC,0.9336721089980077,7,Relative Entropy
+53,13,Precision,0.9555555555555556,7,Relative Entropy
+54,13,Recall,0.9784534836890858,7,Relative Entropy
+55,13,Accuracy,0.9667,7,Relative Entropy
+56,14,MCC,0.9336721089980077,7,Relative Entropy
+57,14,Precision,0.9555555555555556,7,Relative Entropy
+58,14,Recall,0.9784534836890858,7,Relative Entropy
+59,14,Accuracy,0.9667,7,Relative Entropy
+60,15,MCC,0.9336721089980077,7,Relative Entropy
+61,15,Precision,0.9555555555555556,7,Relative Entropy
+62,15,Recall,0.9784534836890858,7,Relative Entropy
+63,15,Accuracy,0.9667,7,Relative Entropy
+64,16,MCC,0.9336721089980077,7,Relative Entropy
+65,16,Precision,0.9555555555555556,7,Relative Entropy
+66,16,Recall,0.9784534836890858,7,Relative Entropy
+67,16,Accuracy,0.9667,7,Relative Entropy
+68,17,MCC,0.9336721089980077,7,Relative Entropy
+69,17,Precision,0.9555555555555556,7,Relative Entropy
+70,17,Recall,0.9784534836890858,7,Relative Entropy
+71,17,Accuracy,0.9667,7,Relative Entropy
+72,18,MCC,0.9336721089980077,7,Relative Entropy
+73,18,Precision,0.9555555555555556,7,Relative Entropy
+74,18,Recall,0.9784534836890858,7,Relative Entropy
+75,18,Accuracy,0.9667,7,Relative Entropy
+76,19,MCC,0.9336721089980077,7,Relative Entropy
+77,19,Precision,0.9555555555555556,7,Relative Entropy
+78,19,Recall,0.9784534836890858,7,Relative Entropy
+79,19,Accuracy,0.9667,7,Relative Entropy
+80,20,MCC,0.9336721089980077,7,Relative Entropy
+81,20,Precision,0.9555555555555556,7,Relative Entropy
+82,20,Recall,0.9784534836890858,7,Relative Entropy
+83,20,Accuracy,0.9667,7,Relative Entropy
+84,21,MCC,0.9336721089980077,7,Relative Entropy
+85,21,Precision,0.9555555555555556,7,Relative Entropy
+86,21,Recall,0.9784534836890858,7,Relative Entropy
+87,21,Accuracy,0.9667,7,Relative Entropy
+88,22,MCC,0.935801329590151,7,Relative Entropy
+89,22,Precision,0.9664591283390239,7,Relative Entropy
+90,22,Recall,0.9689891260571889,7,Relative Entropy
+91,22,Accuracy,0.9679,7,Relative Entropy
+92,23,MCC,0.935801329590151,7,Relative Entropy
+93,23,Precision,0.9664591283390239,7,Relative Entropy
+94,23,Recall,0.9689891260571889,7,Relative Entropy
+95,23,Accuracy,0.9679,7,Relative Entropy
+96,24,MCC,0.935801329590151,7,Relative Entropy
+97,24,Precision,0.9664591283390239,7,Relative Entropy
+98,24,Recall,0.9689891260571889,7,Relative Entropy
+99,24,Accuracy,0.9679,7,Relative Entropy
+100,25,MCC,0.935801329590151,7,Relative Entropy
+101,25,Precision,0.9664591283390239,7,Relative Entropy
+102,25,Recall,0.9689891260571889,7,Relative Entropy
+103,25,Accuracy,0.9679,7,Relative Entropy
+104,26,MCC,0.935801329590151,7,Relative Entropy
+105,26,Precision,0.9664591283390239,7,Relative Entropy
+106,26,Recall,0.9689891260571889,7,Relative Entropy
+107,26,Accuracy,0.9679,7,Relative Entropy
+108,27,MCC,0.935801329590151,7,Relative Entropy
+109,27,Precision,0.9664591283390239,7,Relative Entropy
+110,27,Recall,0.9689891260571889,7,Relative Entropy
+111,27,Accuracy,0.9679,7,Relative Entropy
+112,28,MCC,0.935801329590151,7,Relative Entropy
+113,28,Precision,0.9664591283390239,7,Relative Entropy
+114,28,Recall,0.9689891260571889,7,Relative Entropy
+115,28,Accuracy,0.9679,7,Relative Entropy
+116,29,MCC,0.935801329590151,7,Relative Entropy
+117,29,Precision,0.9664591283390239,7,Relative Entropy
+118,29,Recall,0.9689891260571889,7,Relative Entropy
+119,29,Accuracy,0.9679,7,Relative Entropy
+120,30,MCC,0.935801329590151,7,Relative Entropy
+121,30,Precision,0.9664591283390239,7,Relative Entropy
+122,30,Recall,0.9689891260571889,7,Relative Entropy
+123,30,Accuracy,0.9679,7,Relative Entropy
+0,0,MCC,0.8091768772853987,8,Relative Entropy
+1,0,Precision,0.9759615384615384,8,Relative Entropy
+2,0,Recall,0.8175594039468385,8,Relative Entropy
+3,0,Accuracy,0.8994,8,Relative Entropy
+4,1,MCC,0.935801329590151,8,Relative Entropy
+5,1,Precision,0.9664591283390239,8,Relative Entropy
+6,1,Recall,0.9689891260571889,8,Relative Entropy
+7,1,Accuracy,0.9679,8,Relative Entropy
+8,2,MCC,0.935801329590151,8,Relative Entropy
+9,2,Precision,0.9664591283390239,8,Relative Entropy
+10,2,Recall,0.9689891260571889,8,Relative Entropy
+11,2,Accuracy,0.9679,8,Relative Entropy
+12,3,MCC,0.935801329590151,8,Relative Entropy
+13,3,Precision,0.9664591283390239,8,Relative Entropy
+14,3,Recall,0.9689891260571889,8,Relative Entropy
+15,3,Accuracy,0.9679,8,Relative Entropy
+16,4,MCC,0.935801329590151,8,Relative Entropy
+17,4,Precision,0.9664591283390239,8,Relative Entropy
+18,4,Recall,0.9689891260571889,8,Relative Entropy
+19,4,Accuracy,0.9679,8,Relative Entropy
+20,5,MCC,0.9336721089980077,8,Relative Entropy
+21,5,Precision,0.9555555555555556,8,Relative Entropy
+22,5,Recall,0.9784534836890858,8,Relative Entropy
+23,5,Accuracy,0.9667,8,Relative Entropy
+24,6,MCC,0.935801329590151,8,Relative Entropy
+25,6,Precision,0.9664591283390239,8,Relative Entropy
+26,6,Recall,0.9689891260571889,8,Relative Entropy
+27,6,Accuracy,0.9679,8,Relative Entropy
+28,7,MCC,0.935801329590151,8,Relative Entropy
+29,7,Precision,0.9664591283390239,8,Relative Entropy
+30,7,Recall,0.9689891260571889,8,Relative Entropy
+31,7,Accuracy,0.9679,8,Relative Entropy
+32,8,MCC,0.935801329590151,8,Relative Entropy
+33,8,Precision,0.9664591283390239,8,Relative Entropy
+34,8,Recall,0.9689891260571889,8,Relative Entropy
+35,8,Accuracy,0.9679,8,Relative Entropy
+36,9,MCC,0.935801329590151,8,Relative Entropy
+37,9,Precision,0.9664591283390239,8,Relative Entropy
+38,9,Recall,0.9689891260571889,8,Relative Entropy
+39,9,Accuracy,0.9679,8,Relative Entropy
+40,10,MCC,0.935801329590151,8,Relative Entropy
+41,10,Precision,0.9664591283390239,8,Relative Entropy
+42,10,Recall,0.9689891260571889,8,Relative Entropy
+43,10,Accuracy,0.9679,8,Relative Entropy
+44,11,MCC,0.935801329590151,8,Relative Entropy
+45,11,Precision,0.9664591283390239,8,Relative Entropy
+46,11,Recall,0.9689891260571889,8,Relative Entropy
+47,11,Accuracy,0.9679,8,Relative Entropy
+48,12,MCC,0.935801329590151,8,Relative Entropy
+49,12,Precision,0.9664591283390239,8,Relative Entropy
+50,12,Recall,0.9689891260571889,8,Relative Entropy
+51,12,Accuracy,0.9679,8,Relative Entropy
+52,13,MCC,0.935801329590151,8,Relative Entropy
+53,13,Precision,0.9664591283390239,8,Relative Entropy
+54,13,Recall,0.9689891260571889,8,Relative Entropy
+55,13,Accuracy,0.9679,8,Relative Entropy
+56,14,MCC,0.935801329590151,8,Relative Entropy
+57,14,Precision,0.9664591283390239,8,Relative Entropy
+58,14,Recall,0.9689891260571889,8,Relative Entropy
+59,14,Accuracy,0.9679,8,Relative Entropy
+60,15,MCC,0.935801329590151,8,Relative Entropy
+61,15,Precision,0.9664591283390239,8,Relative Entropy
+62,15,Recall,0.9689891260571889,8,Relative Entropy
+63,15,Accuracy,0.9679,8,Relative Entropy
+64,16,MCC,0.935801329590151,8,Relative Entropy
+65,16,Precision,0.9664591283390239,8,Relative Entropy
+66,16,Recall,0.9689891260571889,8,Relative Entropy
+67,16,Accuracy,0.9679,8,Relative Entropy
+68,17,MCC,0.935801329590151,8,Relative Entropy
+69,17,Precision,0.9664591283390239,8,Relative Entropy
+70,17,Recall,0.9689891260571889,8,Relative Entropy
+71,17,Accuracy,0.9679,8,Relative Entropy
+72,18,MCC,0.935801329590151,8,Relative Entropy
+73,18,Precision,0.9664591283390239,8,Relative Entropy
+74,18,Recall,0.9689891260571889,8,Relative Entropy
+75,18,Accuracy,0.9679,8,Relative Entropy
+76,19,MCC,0.935801329590151,8,Relative Entropy
+77,19,Precision,0.9664591283390239,8,Relative Entropy
+78,19,Recall,0.9689891260571889,8,Relative Entropy
+79,19,Accuracy,0.9679,8,Relative Entropy
+80,20,MCC,0.935801329590151,8,Relative Entropy
+81,20,Precision,0.9664591283390239,8,Relative Entropy
+82,20,Recall,0.9689891260571889,8,Relative Entropy
+83,20,Accuracy,0.9679,8,Relative Entropy
+84,21,MCC,0.935801329590151,8,Relative Entropy
+85,21,Precision,0.9664591283390239,8,Relative Entropy
+86,21,Recall,0.9689891260571889,8,Relative Entropy
+87,21,Accuracy,0.9679,8,Relative Entropy
+88,22,MCC,0.935801329590151,8,Relative Entropy
+89,22,Precision,0.9664591283390239,8,Relative Entropy
+90,22,Recall,0.9689891260571889,8,Relative Entropy
+91,22,Accuracy,0.9679,8,Relative Entropy
+92,23,MCC,0.935801329590151,8,Relative Entropy
+93,23,Precision,0.9664591283390239,8,Relative Entropy
+94,23,Recall,0.9689891260571889,8,Relative Entropy
+95,23,Accuracy,0.9679,8,Relative Entropy
+96,24,MCC,0.935801329590151,8,Relative Entropy
+97,24,Precision,0.9664591283390239,8,Relative Entropy
+98,24,Recall,0.9689891260571889,8,Relative Entropy
+99,24,Accuracy,0.9679,8,Relative Entropy
+100,25,MCC,0.935801329590151,8,Relative Entropy
+101,25,Precision,0.9664591283390239,8,Relative Entropy
+102,25,Recall,0.9689891260571889,8,Relative Entropy
+103,25,Accuracy,0.9679,8,Relative Entropy
+104,26,MCC,0.935801329590151,8,Relative Entropy
+105,26,Precision,0.9664591283390239,8,Relative Entropy
+106,26,Recall,0.9689891260571889,8,Relative Entropy
+107,26,Accuracy,0.9679,8,Relative Entropy
+108,27,MCC,0.935801329590151,8,Relative Entropy
+109,27,Precision,0.9664591283390239,8,Relative Entropy
+110,27,Recall,0.9689891260571889,8,Relative Entropy
+111,27,Accuracy,0.9679,8,Relative Entropy
+112,28,MCC,0.935801329590151,8,Relative Entropy
+113,28,Precision,0.9664591283390239,8,Relative Entropy
+114,28,Recall,0.9689891260571889,8,Relative Entropy
+115,28,Accuracy,0.9679,8,Relative Entropy
+116,29,MCC,0.935801329590151,8,Relative Entropy
+117,29,Precision,0.9664591283390239,8,Relative Entropy
+118,29,Recall,0.9689891260571889,8,Relative Entropy
+119,29,Accuracy,0.9679,8,Relative Entropy
+120,30,MCC,0.935801329590151,8,Relative Entropy
+121,30,Precision,0.9664591283390239,8,Relative Entropy
+122,30,Recall,0.9689891260571889,8,Relative Entropy
+123,30,Accuracy,0.9679,8,Relative Entropy
+0,0,MCC,0.8091768772853987,9,Relative Entropy
+1,0,Precision,0.9759615384615384,9,Relative Entropy
+2,0,Recall,0.8175594039468385,9,Relative Entropy
+3,0,Accuracy,0.8994,9,Relative Entropy
+4,1,MCC,0.935801329590151,9,Relative Entropy
+5,1,Precision,0.9664591283390239,9,Relative Entropy
+6,1,Recall,0.9689891260571889,9,Relative Entropy
+7,1,Accuracy,0.9679,9,Relative Entropy
+8,2,MCC,0.8091768772853987,9,Relative Entropy
+9,2,Precision,0.9759615384615384,9,Relative Entropy
+10,2,Recall,0.8175594039468385,9,Relative Entropy
+11,2,Accuracy,0.8994,9,Relative Entropy
+12,3,MCC,0.8091768772853987,9,Relative Entropy
+13,3,Precision,0.9759615384615384,9,Relative Entropy
+14,3,Recall,0.8175594039468385,9,Relative Entropy
+15,3,Accuracy,0.8994,9,Relative Entropy
+16,4,MCC,0.9336721089980077,9,Relative Entropy
+17,4,Precision,0.9555555555555556,9,Relative Entropy
+18,4,Recall,0.9784534836890858,9,Relative Entropy
+19,4,Accuracy,0.9667,9,Relative Entropy
+20,5,MCC,0.935801329590151,9,Relative Entropy
+21,5,Precision,0.9664591283390239,9,Relative Entropy
+22,5,Recall,0.9689891260571889,9,Relative Entropy
+23,5,Accuracy,0.9679,9,Relative Entropy
+24,6,MCC,0.935801329590151,9,Relative Entropy
+25,6,Precision,0.9664591283390239,9,Relative Entropy
+26,6,Recall,0.9689891260571889,9,Relative Entropy
+27,6,Accuracy,0.9679,9,Relative Entropy
+28,7,MCC,0.935801329590151,9,Relative Entropy
+29,7,Precision,0.9664591283390239,9,Relative Entropy
+30,7,Recall,0.9689891260571889,9,Relative Entropy
+31,7,Accuracy,0.9679,9,Relative Entropy
+32,8,MCC,0.935801329590151,9,Relative Entropy
+33,8,Precision,0.9664591283390239,9,Relative Entropy
+34,8,Recall,0.9689891260571889,9,Relative Entropy
+35,8,Accuracy,0.9679,9,Relative Entropy
+36,9,MCC,0.935801329590151,9,Relative Entropy
+37,9,Precision,0.9664591283390239,9,Relative Entropy
+38,9,Recall,0.9689891260571889,9,Relative Entropy
+39,9,Accuracy,0.9679,9,Relative Entropy
+40,10,MCC,0.935801329590151,9,Relative Entropy
+41,10,Precision,0.9664591283390239,9,Relative Entropy
+42,10,Recall,0.9689891260571889,9,Relative Entropy
+43,10,Accuracy,0.9679,9,Relative Entropy
+44,11,MCC,0.935801329590151,9,Relative Entropy
+45,11,Precision,0.9664591283390239,9,Relative Entropy
+46,11,Recall,0.9689891260571889,9,Relative Entropy
+47,11,Accuracy,0.9679,9,Relative Entropy
+48,12,MCC,0.935801329590151,9,Relative Entropy
+49,12,Precision,0.9664591283390239,9,Relative Entropy
+50,12,Recall,0.9689891260571889,9,Relative Entropy
+51,12,Accuracy,0.9679,9,Relative Entropy
+52,13,MCC,0.935801329590151,9,Relative Entropy
+53,13,Precision,0.9664591283390239,9,Relative Entropy
+54,13,Recall,0.9689891260571889,9,Relative Entropy
+55,13,Accuracy,0.9679,9,Relative Entropy
+56,14,MCC,0.935801329590151,9,Relative Entropy
+57,14,Precision,0.9664591283390239,9,Relative Entropy
+58,14,Recall,0.9689891260571889,9,Relative Entropy
+59,14,Accuracy,0.9679,9,Relative Entropy
+60,15,MCC,0.935801329590151,9,Relative Entropy
+61,15,Precision,0.9664591283390239,9,Relative Entropy
+62,15,Recall,0.9689891260571889,9,Relative Entropy
+63,15,Accuracy,0.9679,9,Relative Entropy
+64,16,MCC,0.935801329590151,9,Relative Entropy
+65,16,Precision,0.9664591283390239,9,Relative Entropy
+66,16,Recall,0.9689891260571889,9,Relative Entropy
+67,16,Accuracy,0.9679,9,Relative Entropy
+68,17,MCC,0.935801329590151,9,Relative Entropy
+69,17,Precision,0.9664591283390239,9,Relative Entropy
+70,17,Recall,0.9689891260571889,9,Relative Entropy
+71,17,Accuracy,0.9679,9,Relative Entropy
+72,18,MCC,0.935801329590151,9,Relative Entropy
+73,18,Precision,0.9664591283390239,9,Relative Entropy
+74,18,Recall,0.9689891260571889,9,Relative Entropy
+75,18,Accuracy,0.9679,9,Relative Entropy
+76,19,MCC,0.935801329590151,9,Relative Entropy
+77,19,Precision,0.9664591283390239,9,Relative Entropy
+78,19,Recall,0.9689891260571889,9,Relative Entropy
+79,19,Accuracy,0.9679,9,Relative Entropy
+80,20,MCC,0.935801329590151,9,Relative Entropy
+81,20,Precision,0.9664591283390239,9,Relative Entropy
+82,20,Recall,0.9689891260571889,9,Relative Entropy
+83,20,Accuracy,0.9679,9,Relative Entropy
+84,21,MCC,0.935801329590151,9,Relative Entropy
+85,21,Precision,0.9664591283390239,9,Relative Entropy
+86,21,Recall,0.9689891260571889,9,Relative Entropy
+87,21,Accuracy,0.9679,9,Relative Entropy
+88,22,MCC,0.935801329590151,9,Relative Entropy
+89,22,Precision,0.9664591283390239,9,Relative Entropy
+90,22,Recall,0.9689891260571889,9,Relative Entropy
+91,22,Accuracy,0.9679,9,Relative Entropy
+92,23,MCC,0.935801329590151,9,Relative Entropy
+93,23,Precision,0.9664591283390239,9,Relative Entropy
+94,23,Recall,0.9689891260571889,9,Relative Entropy
+95,23,Accuracy,0.9679,9,Relative Entropy
+96,24,MCC,0.935801329590151,9,Relative Entropy
+97,24,Precision,0.9664591283390239,9,Relative Entropy
+98,24,Recall,0.9689891260571889,9,Relative Entropy
+99,24,Accuracy,0.9679,9,Relative Entropy
+100,25,MCC,0.935801329590151,9,Relative Entropy
+101,25,Precision,0.9664591283390239,9,Relative Entropy
+102,25,Recall,0.9689891260571889,9,Relative Entropy
+103,25,Accuracy,0.9679,9,Relative Entropy
+104,26,MCC,0.935801329590151,9,Relative Entropy
+105,26,Precision,0.9664591283390239,9,Relative Entropy
+106,26,Recall,0.9689891260571889,9,Relative Entropy
+107,26,Accuracy,0.9679,9,Relative Entropy
+108,27,MCC,0.935801329590151,9,Relative Entropy
+109,27,Precision,0.9664591283390239,9,Relative Entropy
+110,27,Recall,0.9689891260571889,9,Relative Entropy
+111,27,Accuracy,0.9679,9,Relative Entropy
+112,28,MCC,0.935801329590151,9,Relative Entropy
+113,28,Precision,0.9664591283390239,9,Relative Entropy
+114,28,Recall,0.9689891260571889,9,Relative Entropy
+115,28,Accuracy,0.9679,9,Relative Entropy
+116,29,MCC,0.935801329590151,9,Relative Entropy
+117,29,Precision,0.9664591283390239,9,Relative Entropy
+118,29,Recall,0.9689891260571889,9,Relative Entropy
+119,29,Accuracy,0.9679,9,Relative Entropy
+120,30,MCC,0.935801329590151,9,Relative Entropy
+121,30,Precision,0.9664591283390239,9,Relative Entropy
+122,30,Recall,0.9689891260571889,9,Relative Entropy
+123,30,Accuracy,0.9679,9,Relative Entropy
+0,0,MCC,0.8091768772853987,0,Random
+1,0,Precision,0.9759615384615384,0,Random
+2,0,Recall,0.8175594039468385,0,Random
+3,0,Accuracy,0.8994,0,Random
+4,1,MCC,0.6302214820927101,0,Random
+5,1,Precision,0.8010440835266821,0,Random
+6,1,Recall,0.8342730567861458,0,Random
+7,1,Accuracy,0.8148,0,Random
+8,2,MCC,0.935801329590151,0,Random
+9,2,Precision,0.9664591283390239,0,Random
+10,2,Recall,0.9689891260571889,0,Random
+11,2,Accuracy,0.9679,0,Random
+12,3,MCC,0.935801329590151,0,Random
+13,3,Precision,0.9664591283390239,0,Random
+14,3,Recall,0.9689891260571889,0,Random
+15,3,Accuracy,0.9679,0,Random
+16,4,MCC,0.935801329590151,0,Random
+17,4,Precision,0.9664591283390239,0,Random
+18,4,Recall,0.9689891260571889,0,Random
+19,4,Accuracy,0.9679,0,Random
+20,5,MCC,0.935801329590151,0,Random
+21,5,Precision,0.9664591283390239,0,Random
+22,5,Recall,0.9689891260571889,0,Random
+23,5,Accuracy,0.9679,0,Random
+24,6,MCC,0.935801329590151,0,Random
+25,6,Precision,0.9664591283390239,0,Random
+26,6,Recall,0.9689891260571889,0,Random
+27,6,Accuracy,0.9679,0,Random
+28,7,MCC,0.935801329590151,0,Random
+29,7,Precision,0.9664591283390239,0,Random
+30,7,Recall,0.9689891260571889,0,Random
+31,7,Accuracy,0.9679,0,Random
+32,8,MCC,0.935801329590151,0,Random
+33,8,Precision,0.9664591283390239,0,Random
+34,8,Recall,0.9689891260571889,0,Random
+35,8,Accuracy,0.9679,0,Random
+36,9,MCC,0.935801329590151,0,Random
+37,9,Precision,0.9664591283390239,0,Random
+38,9,Recall,0.9689891260571889,0,Random
+39,9,Accuracy,0.9679,0,Random
+40,10,MCC,0.935801329590151,0,Random
+41,10,Precision,0.9664591283390239,0,Random
+42,10,Recall,0.9689891260571889,0,Random
+43,10,Accuracy,0.9679,0,Random
+44,11,MCC,0.935801329590151,0,Random
+45,11,Precision,0.9664591283390239,0,Random
+46,11,Recall,0.9689891260571889,0,Random
+47,11,Accuracy,0.9679,0,Random
+48,12,MCC,0.935801329590151,0,Random
+49,12,Precision,0.9664591283390239,0,Random
+50,12,Recall,0.9689891260571889,0,Random
+51,12,Accuracy,0.9679,0,Random
+52,13,MCC,0.935801329590151,0,Random
+53,13,Precision,0.9664591283390239,0,Random
+54,13,Recall,0.9689891260571889,0,Random
+55,13,Accuracy,0.9679,0,Random
+56,14,MCC,0.935801329590151,0,Random
+57,14,Precision,0.9664591283390239,0,Random
+58,14,Recall,0.9689891260571889,0,Random
+59,14,Accuracy,0.9679,0,Random
+60,15,MCC,0.935801329590151,0,Random
+61,15,Precision,0.9664591283390239,0,Random
+62,15,Recall,0.9689891260571889,0,Random
+63,15,Accuracy,0.9679,0,Random
+64,16,MCC,0.935801329590151,0,Random
+65,16,Precision,0.9664591283390239,0,Random
+66,16,Recall,0.9689891260571889,0,Random
+67,16,Accuracy,0.9679,0,Random
+68,17,MCC,0.935801329590151,0,Random
+69,17,Precision,0.9664591283390239,0,Random
+70,17,Recall,0.9689891260571889,0,Random
+71,17,Accuracy,0.9679,0,Random
+72,18,MCC,0.9336721089980077,0,Random
+73,18,Precision,0.9555555555555556,0,Random
+74,18,Recall,0.9784534836890858,0,Random
+75,18,Accuracy,0.9667,0,Random
+76,19,MCC,0.9336721089980077,0,Random
+77,19,Precision,0.9555555555555556,0,Random
+78,19,Recall,0.9784534836890858,0,Random
+79,19,Accuracy,0.9667,0,Random
+80,20,MCC,0.9336721089980077,0,Random
+81,20,Precision,0.9555555555555556,0,Random
+82,20,Recall,0.9784534836890858,0,Random
+83,20,Accuracy,0.9667,0,Random
+84,21,MCC,0.9336721089980077,0,Random
+85,21,Precision,0.9555555555555556,0,Random
+86,21,Recall,0.9784534836890858,0,Random
+87,21,Accuracy,0.9667,0,Random
+88,22,MCC,0.9336721089980077,0,Random
+89,22,Precision,0.9555555555555556,0,Random
+90,22,Recall,0.9784534836890858,0,Random
+91,22,Accuracy,0.9667,0,Random
+92,23,MCC,0.9336721089980077,0,Random
+93,23,Precision,0.9555555555555556,0,Random
+94,23,Recall,0.9784534836890858,0,Random
+95,23,Accuracy,0.9667,0,Random
+96,24,MCC,0.9336721089980077,0,Random
+97,24,Precision,0.9555555555555556,0,Random
+98,24,Recall,0.9784534836890858,0,Random
+99,24,Accuracy,0.9667,0,Random
+100,25,MCC,0.9336721089980077,0,Random
+101,25,Precision,0.9555555555555556,0,Random
+102,25,Recall,0.9784534836890858,0,Random
+103,25,Accuracy,0.9667,0,Random
+104,26,MCC,0.9336721089980077,0,Random
+105,26,Precision,0.9555555555555556,0,Random
+106,26,Recall,0.9784534836890858,0,Random
+107,26,Accuracy,0.9667,0,Random
+108,27,MCC,0.9336721089980077,0,Random
+109,27,Precision,0.9555555555555556,0,Random
+110,27,Recall,0.9784534836890858,0,Random
+111,27,Accuracy,0.9667,0,Random
+112,28,MCC,0.9336721089980077,0,Random
+113,28,Precision,0.9555555555555556,0,Random
+114,28,Recall,0.9784534836890858,0,Random
+115,28,Accuracy,0.9667,0,Random
+116,29,MCC,0.9336721089980077,0,Random
+117,29,Precision,0.9555555555555556,0,Random
+118,29,Recall,0.9784534836890858,0,Random
+119,29,Accuracy,0.9667,0,Random
+120,30,MCC,0.9336721089980077,0,Random
+121,30,Precision,0.9555555555555556,0,Random
+122,30,Recall,0.9784534836890858,0,Random
+123,30,Accuracy,0.9667,0,Random
+0,0,MCC,0.8091768772853987,1,Random
+1,0,Precision,0.9759615384615384,1,Random
+2,0,Recall,0.8175594039468385,1,Random
+3,0,Accuracy,0.8994,1,Random
+4,1,MCC,0.8091768772853987,1,Random
+5,1,Precision,0.9759615384615384,1,Random
+6,1,Recall,0.8175594039468385,1,Random
+7,1,Accuracy,0.8994,1,Random
+8,2,MCC,0.6302214820927101,1,Random
+9,2,Precision,0.8010440835266821,1,Random
+10,2,Recall,0.8342730567861458,1,Random
+11,2,Accuracy,0.8148,1,Random
+12,3,MCC,0.6302214820927101,1,Random
+13,3,Precision,0.8010440835266821,1,Random
+14,3,Recall,0.8342730567861458,1,Random
+15,3,Accuracy,0.8148,1,Random
+16,4,MCC,0.6302214820927101,1,Random
+17,4,Precision,0.8010440835266821,1,Random
+18,4,Recall,0.8342730567861458,1,Random
+19,4,Accuracy,0.8148,1,Random
+20,5,MCC,0.6302214820927101,1,Random
+21,5,Precision,0.8010440835266821,1,Random
+22,5,Recall,0.8342730567861458,1,Random
+23,5,Accuracy,0.8148,1,Random
+24,6,MCC,0.6302214820927101,1,Random
+25,6,Precision,0.8010440835266821,1,Random
+26,6,Recall,0.8342730567861458,1,Random
+27,6,Accuracy,0.8148,1,Random
+28,7,MCC,0.6302214820927101,1,Random
+29,7,Precision,0.8010440835266821,1,Random
+30,7,Recall,0.8342730567861458,1,Random
+31,7,Accuracy,0.8148,1,Random
+32,8,MCC,0.935801329590151,1,Random
+33,8,Precision,0.9664591283390239,1,Random
+34,8,Recall,0.9689891260571889,1,Random
+35,8,Accuracy,0.9679,1,Random
+36,9,MCC,0.935801329590151,1,Random
+37,9,Precision,0.9664591283390239,1,Random
+38,9,Recall,0.9689891260571889,1,Random
+39,9,Accuracy,0.9679,1,Random
+40,10,MCC,0.935801329590151,1,Random
+41,10,Precision,0.9664591283390239,1,Random
+42,10,Recall,0.9689891260571889,1,Random
+43,10,Accuracy,0.9679,1,Random
+44,11,MCC,0.935801329590151,1,Random
+45,11,Precision,0.9664591283390239,1,Random
+46,11,Recall,0.9689891260571889,1,Random
+47,11,Accuracy,0.9679,1,Random
+48,12,MCC,0.935801329590151,1,Random
+49,12,Precision,0.9664591283390239,1,Random
+50,12,Recall,0.9689891260571889,1,Random
+51,12,Accuracy,0.9679,1,Random
+52,13,MCC,0.935801329590151,1,Random
+53,13,Precision,0.9664591283390239,1,Random
+54,13,Recall,0.9689891260571889,1,Random
+55,13,Accuracy,0.9679,1,Random
+56,14,MCC,0.935801329590151,1,Random
+57,14,Precision,0.9664591283390239,1,Random
+58,14,Recall,0.9689891260571889,1,Random
+59,14,Accuracy,0.9679,1,Random
+60,15,MCC,0.935801329590151,1,Random
+61,15,Precision,0.9664591283390239,1,Random
+62,15,Recall,0.9689891260571889,1,Random
+63,15,Accuracy,0.9679,1,Random
+64,16,MCC,0.935801329590151,1,Random
+65,16,Precision,0.9664591283390239,1,Random
+66,16,Recall,0.9689891260571889,1,Random
+67,16,Accuracy,0.9679,1,Random
+68,17,MCC,0.935801329590151,1,Random
+69,17,Precision,0.9664591283390239,1,Random
+70,17,Recall,0.9689891260571889,1,Random
+71,17,Accuracy,0.9679,1,Random
+72,18,MCC,0.935801329590151,1,Random
+73,18,Precision,0.9664591283390239,1,Random
+74,18,Recall,0.9689891260571889,1,Random
+75,18,Accuracy,0.9679,1,Random
+76,19,MCC,0.935801329590151,1,Random
+77,19,Precision,0.9664591283390239,1,Random
+78,19,Recall,0.9689891260571889,1,Random
+79,19,Accuracy,0.9679,1,Random
+80,20,MCC,0.935801329590151,1,Random
+81,20,Precision,0.9664591283390239,1,Random
+82,20,Recall,0.9689891260571889,1,Random
+83,20,Accuracy,0.9679,1,Random
+84,21,MCC,0.935801329590151,1,Random
+85,21,Precision,0.9664591283390239,1,Random
+86,21,Recall,0.9689891260571889,1,Random
+87,21,Accuracy,0.9679,1,Random
+88,22,MCC,0.935801329590151,1,Random
+89,22,Precision,0.9664591283390239,1,Random
+90,22,Recall,0.9689891260571889,1,Random
+91,22,Accuracy,0.9679,1,Random
+92,23,MCC,0.935801329590151,1,Random
+93,23,Precision,0.9664591283390239,1,Random
+94,23,Recall,0.9689891260571889,1,Random
+95,23,Accuracy,0.9679,1,Random
+96,24,MCC,0.935801329590151,1,Random
+97,24,Precision,0.9664591283390239,1,Random
+98,24,Recall,0.9689891260571889,1,Random
+99,24,Accuracy,0.9679,1,Random
+100,25,MCC,0.935801329590151,1,Random
+101,25,Precision,0.9664591283390239,1,Random
+102,25,Recall,0.9689891260571889,1,Random
+103,25,Accuracy,0.9679,1,Random
+104,26,MCC,0.935801329590151,1,Random
+105,26,Precision,0.9664591283390239,1,Random
+106,26,Recall,0.9689891260571889,1,Random
+107,26,Accuracy,0.9679,1,Random
+108,27,MCC,0.935801329590151,1,Random
+109,27,Precision,0.9664591283390239,1,Random
+110,27,Recall,0.9689891260571889,1,Random
+111,27,Accuracy,0.9679,1,Random
+112,28,MCC,0.935801329590151,1,Random
+113,28,Precision,0.9664591283390239,1,Random
+114,28,Recall,0.9689891260571889,1,Random
+115,28,Accuracy,0.9679,1,Random
+116,29,MCC,0.935801329590151,1,Random
+117,29,Precision,0.9664591283390239,1,Random
+118,29,Recall,0.9689891260571889,1,Random
+119,29,Accuracy,0.9679,1,Random
+120,30,MCC,0.935801329590151,1,Random
+121,30,Precision,0.9664591283390239,1,Random
+122,30,Recall,0.9689891260571889,1,Random
+123,30,Accuracy,0.9679,1,Random
+0,0,MCC,0.6302214820927101,2,Random
+1,0,Precision,0.8010440835266821,2,Random
+2,0,Recall,0.8342730567861458,2,Random
+3,0,Accuracy,0.8148,2,Random
+4,1,MCC,0.6302214820927101,2,Random
+5,1,Precision,0.8010440835266821,2,Random
+6,1,Recall,0.8342730567861458,2,Random
+7,1,Accuracy,0.8148,2,Random
+8,2,MCC,0.6302214820927101,2,Random
+9,2,Precision,0.8010440835266821,2,Random
+10,2,Recall,0.8342730567861458,2,Random
+11,2,Accuracy,0.8148,2,Random
+12,3,MCC,0.6302214820927101,2,Random
+13,3,Precision,0.8010440835266821,2,Random
+14,3,Recall,0.8342730567861458,2,Random
+15,3,Accuracy,0.8148,2,Random
+16,4,MCC,0.6302214820927101,2,Random
+17,4,Precision,0.8010440835266821,2,Random
+18,4,Recall,0.8342730567861458,2,Random
+19,4,Accuracy,0.8148,2,Random
+20,5,MCC,0.6302214820927101,2,Random
+21,5,Precision,0.8010440835266821,2,Random
+22,5,Recall,0.8342730567861458,2,Random
+23,5,Accuracy,0.8148,2,Random
+24,6,MCC,0.935801329590151,2,Random
+25,6,Precision,0.9664591283390239,2,Random
+26,6,Recall,0.9689891260571889,2,Random
+27,6,Accuracy,0.9679,2,Random
+28,7,MCC,0.935801329590151,2,Random
+29,7,Precision,0.9664591283390239,2,Random
+30,7,Recall,0.9689891260571889,2,Random
+31,7,Accuracy,0.9679,2,Random
+32,8,MCC,0.935801329590151,2,Random
+33,8,Precision,0.9664591283390239,2,Random
+34,8,Recall,0.9689891260571889,2,Random
+35,8,Accuracy,0.9679,2,Random
+36,9,MCC,0.935801329590151,2,Random
+37,9,Precision,0.9664591283390239,2,Random
+38,9,Recall,0.9689891260571889,2,Random
+39,9,Accuracy,0.9679,2,Random
+40,10,MCC,0.935801329590151,2,Random
+41,10,Precision,0.9664591283390239,2,Random
+42,10,Recall,0.9689891260571889,2,Random
+43,10,Accuracy,0.9679,2,Random
+44,11,MCC,0.935801329590151,2,Random
+45,11,Precision,0.9664591283390239,2,Random
+46,11,Recall,0.9689891260571889,2,Random
+47,11,Accuracy,0.9679,2,Random
+48,12,MCC,0.935801329590151,2,Random
+49,12,Precision,0.9664591283390239,2,Random
+50,12,Recall,0.9689891260571889,2,Random
+51,12,Accuracy,0.9679,2,Random
+52,13,MCC,0.935801329590151,2,Random
+53,13,Precision,0.9664591283390239,2,Random
+54,13,Recall,0.9689891260571889,2,Random
+55,13,Accuracy,0.9679,2,Random
+56,14,MCC,0.935801329590151,2,Random
+57,14,Precision,0.9664591283390239,2,Random
+58,14,Recall,0.9689891260571889,2,Random
+59,14,Accuracy,0.9679,2,Random
+60,15,MCC,0.935801329590151,2,Random
+61,15,Precision,0.9664591283390239,2,Random
+62,15,Recall,0.9689891260571889,2,Random
+63,15,Accuracy,0.9679,2,Random
+64,16,MCC,0.935801329590151,2,Random
+65,16,Precision,0.9664591283390239,2,Random
+66,16,Recall,0.9689891260571889,2,Random
+67,16,Accuracy,0.9679,2,Random
+68,17,MCC,0.935801329590151,2,Random
+69,17,Precision,0.9664591283390239,2,Random
+70,17,Recall,0.9689891260571889,2,Random
+71,17,Accuracy,0.9679,2,Random
+72,18,MCC,0.935801329590151,2,Random
+73,18,Precision,0.9664591283390239,2,Random
+74,18,Recall,0.9689891260571889,2,Random
+75,18,Accuracy,0.9679,2,Random
+76,19,MCC,0.9336721089980077,2,Random
+77,19,Precision,0.9555555555555556,2,Random
+78,19,Recall,0.9784534836890858,2,Random
+79,19,Accuracy,0.9667,2,Random
+80,20,MCC,0.9336721089980077,2,Random
+81,20,Precision,0.9555555555555556,2,Random
+82,20,Recall,0.9784534836890858,2,Random
+83,20,Accuracy,0.9667,2,Random
+84,21,MCC,0.9336721089980077,2,Random
+85,21,Precision,0.9555555555555556,2,Random
+86,21,Recall,0.9784534836890858,2,Random
+87,21,Accuracy,0.9667,2,Random
+88,22,MCC,0.9336721089980077,2,Random
+89,22,Precision,0.9555555555555556,2,Random
+90,22,Recall,0.9784534836890858,2,Random
+91,22,Accuracy,0.9667,2,Random
+92,23,MCC,0.9336721089980077,2,Random
+93,23,Precision,0.9555555555555556,2,Random
+94,23,Recall,0.9784534836890858,2,Random
+95,23,Accuracy,0.9667,2,Random
+96,24,MCC,0.9336721089980077,2,Random
+97,24,Precision,0.9555555555555556,2,Random
+98,24,Recall,0.9784534836890858,2,Random
+99,24,Accuracy,0.9667,2,Random
+100,25,MCC,0.9336721089980077,2,Random
+101,25,Precision,0.9555555555555556,2,Random
+102,25,Recall,0.9784534836890858,2,Random
+103,25,Accuracy,0.9667,2,Random
+104,26,MCC,0.9336721089980077,2,Random
+105,26,Precision,0.9555555555555556,2,Random
+106,26,Recall,0.9784534836890858,2,Random
+107,26,Accuracy,0.9667,2,Random
+108,27,MCC,0.935801329590151,2,Random
+109,27,Precision,0.9664591283390239,2,Random
+110,27,Recall,0.9689891260571889,2,Random
+111,27,Accuracy,0.9679,2,Random
+112,28,MCC,0.935801329590151,2,Random
+113,28,Precision,0.9664591283390239,2,Random
+114,28,Recall,0.9689891260571889,2,Random
+115,28,Accuracy,0.9679,2,Random
+116,29,MCC,0.935801329590151,2,Random
+117,29,Precision,0.9664591283390239,2,Random
+118,29,Recall,0.9689891260571889,2,Random
+119,29,Accuracy,0.9679,2,Random
+120,30,MCC,0.935801329590151,2,Random
+121,30,Precision,0.9664591283390239,2,Random
+122,30,Recall,0.9689891260571889,2,Random
+123,30,Accuracy,0.9679,2,Random
+0,0,MCC,0.8091768772853987,3,Random
+1,0,Precision,0.9759615384615384,3,Random
+2,0,Recall,0.8175594039468385,3,Random
+3,0,Accuracy,0.8994,3,Random
+4,1,MCC,0.6302214820927101,3,Random
+5,1,Precision,0.8010440835266821,3,Random
+6,1,Recall,0.8342730567861458,3,Random
+7,1,Accuracy,0.8148,3,Random
+8,2,MCC,0.5285199379160299,3,Random
+9,2,Precision,0.9311111111111111,3,Random
+10,2,Recall,0.5062424486508256,3,Random
+11,2,Accuracy,0.7362,3,Random
+12,3,MCC,0.935801329590151,3,Random
+13,3,Precision,0.9664591283390239,3,Random
+14,3,Recall,0.9689891260571889,3,Random
+15,3,Accuracy,0.9679,3,Random
+16,4,MCC,0.935801329590151,3,Random
+17,4,Precision,0.9664591283390239,3,Random
+18,4,Recall,0.9689891260571889,3,Random
+19,4,Accuracy,0.9679,3,Random
+20,5,MCC,0.935801329590151,3,Random
+21,5,Precision,0.9664591283390239,3,Random
+22,5,Recall,0.9689891260571889,3,Random
+23,5,Accuracy,0.9679,3,Random
+24,6,MCC,0.935801329590151,3,Random
+25,6,Precision,0.9664591283390239,3,Random
+26,6,Recall,0.9689891260571889,3,Random
+27,6,Accuracy,0.9679,3,Random
+28,7,MCC,0.935801329590151,3,Random
+29,7,Precision,0.9664591283390239,3,Random
+30,7,Recall,0.9689891260571889,3,Random
+31,7,Accuracy,0.9679,3,Random
+32,8,MCC,0.935801329590151,3,Random
+33,8,Precision,0.9664591283390239,3,Random
+34,8,Recall,0.9689891260571889,3,Random
+35,8,Accuracy,0.9679,3,Random
+36,9,MCC,0.935801329590151,3,Random
+37,9,Precision,0.9664591283390239,3,Random
+38,9,Recall,0.9689891260571889,3,Random
+39,9,Accuracy,0.9679,3,Random
+40,10,MCC,0.935801329590151,3,Random
+41,10,Precision,0.9664591283390239,3,Random
+42,10,Recall,0.9689891260571889,3,Random
+43,10,Accuracy,0.9679,3,Random
+44,11,MCC,0.935801329590151,3,Random
+45,11,Precision,0.9664591283390239,3,Random
+46,11,Recall,0.9689891260571889,3,Random
+47,11,Accuracy,0.9679,3,Random
+48,12,MCC,0.935801329590151,3,Random
+49,12,Precision,0.9664591283390239,3,Random
+50,12,Recall,0.9689891260571889,3,Random
+51,12,Accuracy,0.9679,3,Random
+52,13,MCC,0.935801329590151,3,Random
+53,13,Precision,0.9664591283390239,3,Random
+54,13,Recall,0.9689891260571889,3,Random
+55,13,Accuracy,0.9679,3,Random
+56,14,MCC,0.935801329590151,3,Random
+57,14,Precision,0.9664591283390239,3,Random
+58,14,Recall,0.9689891260571889,3,Random
+59,14,Accuracy,0.9679,3,Random
+60,15,MCC,0.935801329590151,3,Random
+61,15,Precision,0.9664591283390239,3,Random
+62,15,Recall,0.9689891260571889,3,Random
+63,15,Accuracy,0.9679,3,Random
+64,16,MCC,0.935801329590151,3,Random
+65,16,Precision,0.9664591283390239,3,Random
+66,16,Recall,0.9689891260571889,3,Random
+67,16,Accuracy,0.9679,3,Random
+68,17,MCC,0.935801329590151,3,Random
+69,17,Precision,0.9664591283390239,3,Random
+70,17,Recall,0.9689891260571889,3,Random
+71,17,Accuracy,0.9679,3,Random
+72,18,MCC,0.935801329590151,3,Random
+73,18,Precision,0.9664591283390239,3,Random
+74,18,Recall,0.9689891260571889,3,Random
+75,18,Accuracy,0.9679,3,Random
+76,19,MCC,0.935801329590151,3,Random
+77,19,Precision,0.9664591283390239,3,Random
+78,19,Recall,0.9689891260571889,3,Random
+79,19,Accuracy,0.9679,3,Random
+80,20,MCC,0.935801329590151,3,Random
+81,20,Precision,0.9664591283390239,3,Random
+82,20,Recall,0.9689891260571889,3,Random
+83,20,Accuracy,0.9679,3,Random
+84,21,MCC,0.935801329590151,3,Random
+85,21,Precision,0.9664591283390239,3,Random
+86,21,Recall,0.9689891260571889,3,Random
+87,21,Accuracy,0.9679,3,Random
+88,22,MCC,0.935801329590151,3,Random
+89,22,Precision,0.9664591283390239,3,Random
+90,22,Recall,0.9689891260571889,3,Random
+91,22,Accuracy,0.9679,3,Random
+92,23,MCC,0.935801329590151,3,Random
+93,23,Precision,0.9664591283390239,3,Random
+94,23,Recall,0.9689891260571889,3,Random
+95,23,Accuracy,0.9679,3,Random
+96,24,MCC,0.935801329590151,3,Random
+97,24,Precision,0.9664591283390239,3,Random
+98,24,Recall,0.9689891260571889,3,Random
+99,24,Accuracy,0.9679,3,Random
+100,25,MCC,0.935801329590151,3,Random
+101,25,Precision,0.9664591283390239,3,Random
+102,25,Recall,0.9689891260571889,3,Random
+103,25,Accuracy,0.9679,3,Random
+104,26,MCC,0.935801329590151,3,Random
+105,26,Precision,0.9664591283390239,3,Random
+106,26,Recall,0.9689891260571889,3,Random
+107,26,Accuracy,0.9679,3,Random
+108,27,MCC,0.935801329590151,3,Random
+109,27,Precision,0.9664591283390239,3,Random
+110,27,Recall,0.9689891260571889,3,Random
+111,27,Accuracy,0.9679,3,Random
+112,28,MCC,0.935801329590151,3,Random
+113,28,Precision,0.9664591283390239,3,Random
+114,28,Recall,0.9689891260571889,3,Random
+115,28,Accuracy,0.9679,3,Random
+116,29,MCC,0.935801329590151,3,Random
+117,29,Precision,0.9664591283390239,3,Random
+118,29,Recall,0.9689891260571889,3,Random
+119,29,Accuracy,0.9679,3,Random
+120,30,MCC,0.935801329590151,3,Random
+121,30,Precision,0.9664591283390239,3,Random
+122,30,Recall,0.9689891260571889,3,Random
+123,30,Accuracy,0.9679,3,Random
+0,0,MCC,0.8091768772853987,4,Random
+1,0,Precision,0.9759615384615384,4,Random
+2,0,Recall,0.8175594039468385,4,Random
+3,0,Accuracy,0.8994,4,Random
+4,1,MCC,0.6302214820927101,4,Random
+5,1,Precision,0.8010440835266821,4,Random
+6,1,Recall,0.8342730567861458,4,Random
+7,1,Accuracy,0.8148,4,Random
+8,2,MCC,0.6302214820927101,4,Random
+9,2,Precision,0.8010440835266821,4,Random
+10,2,Recall,0.8342730567861458,4,Random
+11,2,Accuracy,0.8148,4,Random
+12,3,MCC,0.6302214820927101,4,Random
+13,3,Precision,0.8010440835266821,4,Random
+14,3,Recall,0.8342730567861458,4,Random
+15,3,Accuracy,0.8148,4,Random
+16,4,MCC,0.6302214820927101,4,Random
+17,4,Precision,0.8010440835266821,4,Random
+18,4,Recall,0.8342730567861458,4,Random
+19,4,Accuracy,0.8148,4,Random
+20,5,MCC,0.6302214820927101,4,Random
+21,5,Precision,0.8010440835266821,4,Random
+22,5,Recall,0.8342730567861458,4,Random
+23,5,Accuracy,0.8148,4,Random
+24,6,MCC,0.6302214820927101,4,Random
+25,6,Precision,0.8010440835266821,4,Random
+26,6,Recall,0.8342730567861458,4,Random
+27,6,Accuracy,0.8148,4,Random
+28,7,MCC,0.6302214820927101,4,Random
+29,7,Precision,0.8010440835266821,4,Random
+30,7,Recall,0.8342730567861458,4,Random
+31,7,Accuracy,0.8148,4,Random
+32,8,MCC,0.6302214820927101,4,Random
+33,8,Precision,0.8010440835266821,4,Random
+34,8,Recall,0.8342730567861458,4,Random
+35,8,Accuracy,0.8148,4,Random
+36,9,MCC,0.6302214820927101,4,Random
+37,9,Precision,0.8010440835266821,4,Random
+38,9,Recall,0.8342730567861458,4,Random
+39,9,Accuracy,0.8148,4,Random
+40,10,MCC,0.8091768772853987,4,Random
+41,10,Precision,0.9759615384615384,4,Random
+42,10,Recall,0.8175594039468385,4,Random
+43,10,Accuracy,0.8994,4,Random
+44,11,MCC,0.8091768772853987,4,Random
+45,11,Precision,0.9759615384615384,4,Random
+46,11,Recall,0.8175594039468385,4,Random
+47,11,Accuracy,0.8994,4,Random
+48,12,MCC,0.8091768772853987,4,Random
+49,12,Precision,0.9759615384615384,4,Random
+50,12,Recall,0.8175594039468385,4,Random
+51,12,Accuracy,0.8994,4,Random
+52,13,MCC,0.8091768772853987,4,Random
+53,13,Precision,0.9759615384615384,4,Random
+54,13,Recall,0.8175594039468385,4,Random
+55,13,Accuracy,0.8994,4,Random
+56,14,MCC,0.8091768772853987,4,Random
+57,14,Precision,0.9759615384615384,4,Random
+58,14,Recall,0.8175594039468385,4,Random
+59,14,Accuracy,0.8994,4,Random
+60,15,MCC,0.8091768772853987,4,Random
+61,15,Precision,0.9759615384615384,4,Random
+62,15,Recall,0.8175594039468385,4,Random
+63,15,Accuracy,0.8994,4,Random
+64,16,MCC,0.8091768772853987,4,Random
+65,16,Precision,0.9759615384615384,4,Random
+66,16,Recall,0.8175594039468385,4,Random
+67,16,Accuracy,0.8994,4,Random
+68,17,MCC,0.8091768772853987,4,Random
+69,17,Precision,0.9759615384615384,4,Random
+70,17,Recall,0.8175594039468385,4,Random
+71,17,Accuracy,0.8994,4,Random
+72,18,MCC,0.8091768772853987,4,Random
+73,18,Precision,0.9759615384615384,4,Random
+74,18,Recall,0.8175594039468385,4,Random
+75,18,Accuracy,0.8994,4,Random
+76,19,MCC,0.8091768772853987,4,Random
+77,19,Precision,0.9759615384615384,4,Random
+78,19,Recall,0.8175594039468385,4,Random
+79,19,Accuracy,0.8994,4,Random
+80,20,MCC,0.8091768772853987,4,Random
+81,20,Precision,0.9759615384615384,4,Random
+82,20,Recall,0.8175594039468385,4,Random
+83,20,Accuracy,0.8994,4,Random
+84,21,MCC,0.8091768772853987,4,Random
+85,21,Precision,0.9759615384615384,4,Random
+86,21,Recall,0.8175594039468385,4,Random
+87,21,Accuracy,0.8994,4,Random
+88,22,MCC,0.8091768772853987,4,Random
+89,22,Precision,0.9759615384615384,4,Random
+90,22,Recall,0.8175594039468385,4,Random
+91,22,Accuracy,0.8994,4,Random
+92,23,MCC,0.8091768772853987,4,Random
+93,23,Precision,0.9759615384615384,4,Random
+94,23,Recall,0.8175594039468385,4,Random
+95,23,Accuracy,0.8994,4,Random
+96,24,MCC,0.9336721089980077,4,Random
+97,24,Precision,0.9555555555555556,4,Random
+98,24,Recall,0.9784534836890858,4,Random
+99,24,Accuracy,0.9667,4,Random
+100,25,MCC,0.9336721089980077,4,Random
+101,25,Precision,0.9555555555555556,4,Random
+102,25,Recall,0.9784534836890858,4,Random
+103,25,Accuracy,0.9667,4,Random
+104,26,MCC,0.9336721089980077,4,Random
+105,26,Precision,0.9555555555555556,4,Random
+106,26,Recall,0.9784534836890858,4,Random
+107,26,Accuracy,0.9667,4,Random
+108,27,MCC,0.9336721089980077,4,Random
+109,27,Precision,0.9555555555555556,4,Random
+110,27,Recall,0.9784534836890858,4,Random
+111,27,Accuracy,0.9667,4,Random
+112,28,MCC,0.9336721089980077,4,Random
+113,28,Precision,0.9555555555555556,4,Random
+114,28,Recall,0.9784534836890858,4,Random
+115,28,Accuracy,0.9667,4,Random
+116,29,MCC,0.9336721089980077,4,Random
+117,29,Precision,0.9555555555555556,4,Random
+118,29,Recall,0.9784534836890858,4,Random
+119,29,Accuracy,0.9667,4,Random
+120,30,MCC,0.9336721089980077,4,Random
+121,30,Precision,0.9555555555555556,4,Random
+122,30,Recall,0.9784534836890858,4,Random
+123,30,Accuracy,0.9667,4,Random
+0,0,MCC,0.8091768772853987,5,Random
+1,0,Precision,0.9759615384615384,5,Random
+2,0,Recall,0.8175594039468385,5,Random
+3,0,Accuracy,0.8994,5,Random
+4,1,MCC,0.6302214820927101,5,Random
+5,1,Precision,0.8010440835266821,5,Random
+6,1,Recall,0.8342730567861458,5,Random
+7,1,Accuracy,0.8148,5,Random
+8,2,MCC,0.6302214820927101,5,Random
+9,2,Precision,0.8010440835266821,5,Random
+10,2,Recall,0.8342730567861458,5,Random
+11,2,Accuracy,0.8148,5,Random
+12,3,MCC,0.6302214820927101,5,Random
+13,3,Precision,0.8010440835266821,5,Random
+14,3,Recall,0.8342730567861458,5,Random
+15,3,Accuracy,0.8148,5,Random
+16,4,MCC,0.935801329590151,5,Random
+17,4,Precision,0.9664591283390239,5,Random
+18,4,Recall,0.9689891260571889,5,Random
+19,4,Accuracy,0.9679,5,Random
+20,5,MCC,0.935801329590151,5,Random
+21,5,Precision,0.9664591283390239,5,Random
+22,5,Recall,0.9689891260571889,5,Random
+23,5,Accuracy,0.9679,5,Random
+24,6,MCC,0.935801329590151,5,Random
+25,6,Precision,0.9664591283390239,5,Random
+26,6,Recall,0.9689891260571889,5,Random
+27,6,Accuracy,0.9679,5,Random
+28,7,MCC,0.935801329590151,5,Random
+29,7,Precision,0.9664591283390239,5,Random
+30,7,Recall,0.9689891260571889,5,Random
+31,7,Accuracy,0.9679,5,Random
+32,8,MCC,0.935801329590151,5,Random
+33,8,Precision,0.9664591283390239,5,Random
+34,8,Recall,0.9689891260571889,5,Random
+35,8,Accuracy,0.9679,5,Random
+36,9,MCC,0.935801329590151,5,Random
+37,9,Precision,0.9664591283390239,5,Random
+38,9,Recall,0.9689891260571889,5,Random
+39,9,Accuracy,0.9679,5,Random
+40,10,MCC,0.935801329590151,5,Random
+41,10,Precision,0.9664591283390239,5,Random
+42,10,Recall,0.9689891260571889,5,Random
+43,10,Accuracy,0.9679,5,Random
+44,11,MCC,0.935801329590151,5,Random
+45,11,Precision,0.9664591283390239,5,Random
+46,11,Recall,0.9689891260571889,5,Random
+47,11,Accuracy,0.9679,5,Random
+48,12,MCC,0.935801329590151,5,Random
+49,12,Precision,0.9664591283390239,5,Random
+50,12,Recall,0.9689891260571889,5,Random
+51,12,Accuracy,0.9679,5,Random
+52,13,MCC,0.935801329590151,5,Random
+53,13,Precision,0.9664591283390239,5,Random
+54,13,Recall,0.9689891260571889,5,Random
+55,13,Accuracy,0.9679,5,Random
+56,14,MCC,0.935801329590151,5,Random
+57,14,Precision,0.9664591283390239,5,Random
+58,14,Recall,0.9689891260571889,5,Random
+59,14,Accuracy,0.9679,5,Random
+60,15,MCC,0.935801329590151,5,Random
+61,15,Precision,0.9664591283390239,5,Random
+62,15,Recall,0.9689891260571889,5,Random
+63,15,Accuracy,0.9679,5,Random
+64,16,MCC,0.935801329590151,5,Random
+65,16,Precision,0.9664591283390239,5,Random
+66,16,Recall,0.9689891260571889,5,Random
+67,16,Accuracy,0.9679,5,Random
+68,17,MCC,0.935801329590151,5,Random
+69,17,Precision,0.9664591283390239,5,Random
+70,17,Recall,0.9689891260571889,5,Random
+71,17,Accuracy,0.9679,5,Random
+72,18,MCC,0.935801329590151,5,Random
+73,18,Precision,0.9664591283390239,5,Random
+74,18,Recall,0.9689891260571889,5,Random
+75,18,Accuracy,0.9679,5,Random
+76,19,MCC,0.935801329590151,5,Random
+77,19,Precision,0.9664591283390239,5,Random
+78,19,Recall,0.9689891260571889,5,Random
+79,19,Accuracy,0.9679,5,Random
+80,20,MCC,0.935801329590151,5,Random
+81,20,Precision,0.9664591283390239,5,Random
+82,20,Recall,0.9689891260571889,5,Random
+83,20,Accuracy,0.9679,5,Random
+84,21,MCC,0.935801329590151,5,Random
+85,21,Precision,0.9664591283390239,5,Random
+86,21,Recall,0.9689891260571889,5,Random
+87,21,Accuracy,0.9679,5,Random
+88,22,MCC,0.935801329590151,5,Random
+89,22,Precision,0.9664591283390239,5,Random
+90,22,Recall,0.9689891260571889,5,Random
+91,22,Accuracy,0.9679,5,Random
+92,23,MCC,0.935801329590151,5,Random
+93,23,Precision,0.9664591283390239,5,Random
+94,23,Recall,0.9689891260571889,5,Random
+95,23,Accuracy,0.9679,5,Random
+96,24,MCC,0.935801329590151,5,Random
+97,24,Precision,0.9664591283390239,5,Random
+98,24,Recall,0.9689891260571889,5,Random
+99,24,Accuracy,0.9679,5,Random
+100,25,MCC,0.935801329590151,5,Random
+101,25,Precision,0.9664591283390239,5,Random
+102,25,Recall,0.9689891260571889,5,Random
+103,25,Accuracy,0.9679,5,Random
+104,26,MCC,0.935801329590151,5,Random
+105,26,Precision,0.9664591283390239,5,Random
+106,26,Recall,0.9689891260571889,5,Random
+107,26,Accuracy,0.9679,5,Random
+108,27,MCC,0.935801329590151,5,Random
+109,27,Precision,0.9664591283390239,5,Random
+110,27,Recall,0.9689891260571889,5,Random
+111,27,Accuracy,0.9679,5,Random
+112,28,MCC,0.935801329590151,5,Random
+113,28,Precision,0.9664591283390239,5,Random
+114,28,Recall,0.9689891260571889,5,Random
+115,28,Accuracy,0.9679,5,Random
+116,29,MCC,0.935801329590151,5,Random
+117,29,Precision,0.9664591283390239,5,Random
+118,29,Recall,0.9689891260571889,5,Random
+119,29,Accuracy,0.9679,5,Random
+120,30,MCC,0.935801329590151,5,Random
+121,30,Precision,0.9664591283390239,5,Random
+122,30,Recall,0.9689891260571889,5,Random
+123,30,Accuracy,0.9679,5,Random
+0,0,MCC,0.6302214820927101,6,Random
+1,0,Precision,0.8010440835266821,6,Random
+2,0,Recall,0.8342730567861458,6,Random
+3,0,Accuracy,0.8148,6,Random
+4,1,MCC,0.6302214820927101,6,Random
+5,1,Precision,0.8010440835266821,6,Random
+6,1,Recall,0.8342730567861458,6,Random
+7,1,Accuracy,0.8148,6,Random
+8,2,MCC,0.6302214820927101,6,Random
+9,2,Precision,0.8010440835266821,6,Random
+10,2,Recall,0.8342730567861458,6,Random
+11,2,Accuracy,0.8148,6,Random
+12,3,MCC,0.6302214820927101,6,Random
+13,3,Precision,0.8010440835266821,6,Random
+14,3,Recall,0.8342730567861458,6,Random
+15,3,Accuracy,0.8148,6,Random
+16,4,MCC,0.6302214820927101,6,Random
+17,4,Precision,0.8010440835266821,6,Random
+18,4,Recall,0.8342730567861458,6,Random
+19,4,Accuracy,0.8148,6,Random
+20,5,MCC,0.6302214820927101,6,Random
+21,5,Precision,0.8010440835266821,6,Random
+22,5,Recall,0.8342730567861458,6,Random
+23,5,Accuracy,0.8148,6,Random
+24,6,MCC,0.935801329590151,6,Random
+25,6,Precision,0.9664591283390239,6,Random
+26,6,Recall,0.9689891260571889,6,Random
+27,6,Accuracy,0.9679,6,Random
+28,7,MCC,0.935801329590151,6,Random
+29,7,Precision,0.9664591283390239,6,Random
+30,7,Recall,0.9689891260571889,6,Random
+31,7,Accuracy,0.9679,6,Random
+32,8,MCC,0.935801329590151,6,Random
+33,8,Precision,0.9664591283390239,6,Random
+34,8,Recall,0.9689891260571889,6,Random
+35,8,Accuracy,0.9679,6,Random
+36,9,MCC,0.935801329590151,6,Random
+37,9,Precision,0.9664591283390239,6,Random
+38,9,Recall,0.9689891260571889,6,Random
+39,9,Accuracy,0.9679,6,Random
+40,10,MCC,0.935801329590151,6,Random
+41,10,Precision,0.9664591283390239,6,Random
+42,10,Recall,0.9689891260571889,6,Random
+43,10,Accuracy,0.9679,6,Random
+44,11,MCC,0.935801329590151,6,Random
+45,11,Precision,0.9664591283390239,6,Random
+46,11,Recall,0.9689891260571889,6,Random
+47,11,Accuracy,0.9679,6,Random
+48,12,MCC,0.935801329590151,6,Random
+49,12,Precision,0.9664591283390239,6,Random
+50,12,Recall,0.9689891260571889,6,Random
+51,12,Accuracy,0.9679,6,Random
+52,13,MCC,0.935801329590151,6,Random
+53,13,Precision,0.9664591283390239,6,Random
+54,13,Recall,0.9689891260571889,6,Random
+55,13,Accuracy,0.9679,6,Random
+56,14,MCC,0.935801329590151,6,Random
+57,14,Precision,0.9664591283390239,6,Random
+58,14,Recall,0.9689891260571889,6,Random
+59,14,Accuracy,0.9679,6,Random
+60,15,MCC,0.935801329590151,6,Random
+61,15,Precision,0.9664591283390239,6,Random
+62,15,Recall,0.9689891260571889,6,Random
+63,15,Accuracy,0.9679,6,Random
+64,16,MCC,0.935801329590151,6,Random
+65,16,Precision,0.9664591283390239,6,Random
+66,16,Recall,0.9689891260571889,6,Random
+67,16,Accuracy,0.9679,6,Random
+68,17,MCC,0.935801329590151,6,Random
+69,17,Precision,0.9664591283390239,6,Random
+70,17,Recall,0.9689891260571889,6,Random
+71,17,Accuracy,0.9679,6,Random
+72,18,MCC,0.935801329590151,6,Random
+73,18,Precision,0.9664591283390239,6,Random
+74,18,Recall,0.9689891260571889,6,Random
+75,18,Accuracy,0.9679,6,Random
+76,19,MCC,0.935801329590151,6,Random
+77,19,Precision,0.9664591283390239,6,Random
+78,19,Recall,0.9689891260571889,6,Random
+79,19,Accuracy,0.9679,6,Random
+80,20,MCC,0.935801329590151,6,Random
+81,20,Precision,0.9664591283390239,6,Random
+82,20,Recall,0.9689891260571889,6,Random
+83,20,Accuracy,0.9679,6,Random
+84,21,MCC,0.935801329590151,6,Random
+85,21,Precision,0.9664591283390239,6,Random
+86,21,Recall,0.9689891260571889,6,Random
+87,21,Accuracy,0.9679,6,Random
+88,22,MCC,0.935801329590151,6,Random
+89,22,Precision,0.9664591283390239,6,Random
+90,22,Recall,0.9689891260571889,6,Random
+91,22,Accuracy,0.9679,6,Random
+92,23,MCC,0.935801329590151,6,Random
+93,23,Precision,0.9664591283390239,6,Random
+94,23,Recall,0.9689891260571889,6,Random
+95,23,Accuracy,0.9679,6,Random
+96,24,MCC,0.935801329590151,6,Random
+97,24,Precision,0.9664591283390239,6,Random
+98,24,Recall,0.9689891260571889,6,Random
+99,24,Accuracy,0.9679,6,Random
+100,25,MCC,0.935801329590151,6,Random
+101,25,Precision,0.9664591283390239,6,Random
+102,25,Recall,0.9689891260571889,6,Random
+103,25,Accuracy,0.9679,6,Random
+104,26,MCC,0.935801329590151,6,Random
+105,26,Precision,0.9664591283390239,6,Random
+106,26,Recall,0.9689891260571889,6,Random
+107,26,Accuracy,0.9679,6,Random
+108,27,MCC,0.935801329590151,6,Random
+109,27,Precision,0.9664591283390239,6,Random
+110,27,Recall,0.9689891260571889,6,Random
+111,27,Accuracy,0.9679,6,Random
+112,28,MCC,0.9336721089980077,6,Random
+113,28,Precision,0.9555555555555556,6,Random
+114,28,Recall,0.9784534836890858,6,Random
+115,28,Accuracy,0.9667,6,Random
+116,29,MCC,0.9336721089980077,6,Random
+117,29,Precision,0.9555555555555556,6,Random
+118,29,Recall,0.9784534836890858,6,Random
+119,29,Accuracy,0.9667,6,Random
+120,30,MCC,0.9336721089980077,6,Random
+121,30,Precision,0.9555555555555556,6,Random
+122,30,Recall,0.9784534836890858,6,Random
+123,30,Accuracy,0.9667,6,Random
+0,0,MCC,0.6302214820927101,7,Random
+1,0,Precision,0.8010440835266821,7,Random
+2,0,Recall,0.8342730567861458,7,Random
+3,0,Accuracy,0.8148,7,Random
+4,1,MCC,0.6302214820927101,7,Random
+5,1,Precision,0.8010440835266821,7,Random
+6,1,Recall,0.8342730567861458,7,Random
+7,1,Accuracy,0.8148,7,Random
+8,2,MCC,0.6302214820927101,7,Random
+9,2,Precision,0.8010440835266821,7,Random
+10,2,Recall,0.8342730567861458,7,Random
+11,2,Accuracy,0.8148,7,Random
+12,3,MCC,0.6302214820927101,7,Random
+13,3,Precision,0.8010440835266821,7,Random
+14,3,Recall,0.8342730567861458,7,Random
+15,3,Accuracy,0.8148,7,Random
+16,4,MCC,0.6302214820927101,7,Random
+17,4,Precision,0.8010440835266821,7,Random
+18,4,Recall,0.8342730567861458,7,Random
+19,4,Accuracy,0.8148,7,Random
+20,5,MCC,0.6302214820927101,7,Random
+21,5,Precision,0.8010440835266821,7,Random
+22,5,Recall,0.8342730567861458,7,Random
+23,5,Accuracy,0.8148,7,Random
+24,6,MCC,0.6302214820927101,7,Random
+25,6,Precision,0.8010440835266821,7,Random
+26,6,Recall,0.8342730567861458,7,Random
+27,6,Accuracy,0.8148,7,Random
+28,7,MCC,0.6302214820927101,7,Random
+29,7,Precision,0.8010440835266821,7,Random
+30,7,Recall,0.8342730567861458,7,Random
+31,7,Accuracy,0.8148,7,Random
+32,8,MCC,0.6302214820927101,7,Random
+33,8,Precision,0.8010440835266821,7,Random
+34,8,Recall,0.8342730567861458,7,Random
+35,8,Accuracy,0.8148,7,Random
+36,9,MCC,0.6302214820927101,7,Random
+37,9,Precision,0.8010440835266821,7,Random
+38,9,Recall,0.8342730567861458,7,Random
+39,9,Accuracy,0.8148,7,Random
+40,10,MCC,0.935801329590151,7,Random
+41,10,Precision,0.9664591283390239,7,Random
+42,10,Recall,0.9689891260571889,7,Random
+43,10,Accuracy,0.9679,7,Random
+44,11,MCC,0.935801329590151,7,Random
+45,11,Precision,0.9664591283390239,7,Random
+46,11,Recall,0.9689891260571889,7,Random
+47,11,Accuracy,0.9679,7,Random
+48,12,MCC,0.935801329590151,7,Random
+49,12,Precision,0.9664591283390239,7,Random
+50,12,Recall,0.9689891260571889,7,Random
+51,12,Accuracy,0.9679,7,Random
+52,13,MCC,0.935801329590151,7,Random
+53,13,Precision,0.9664591283390239,7,Random
+54,13,Recall,0.9689891260571889,7,Random
+55,13,Accuracy,0.9679,7,Random
+56,14,MCC,0.935801329590151,7,Random
+57,14,Precision,0.9664591283390239,7,Random
+58,14,Recall,0.9689891260571889,7,Random
+59,14,Accuracy,0.9679,7,Random
+60,15,MCC,0.935801329590151,7,Random
+61,15,Precision,0.9664591283390239,7,Random
+62,15,Recall,0.9689891260571889,7,Random
+63,15,Accuracy,0.9679,7,Random
+64,16,MCC,0.935801329590151,7,Random
+65,16,Precision,0.9664591283390239,7,Random
+66,16,Recall,0.9689891260571889,7,Random
+67,16,Accuracy,0.9679,7,Random
+68,17,MCC,0.935801329590151,7,Random
+69,17,Precision,0.9664591283390239,7,Random
+70,17,Recall,0.9689891260571889,7,Random
+71,17,Accuracy,0.9679,7,Random
+72,18,MCC,0.935801329590151,7,Random
+73,18,Precision,0.9664591283390239,7,Random
+74,18,Recall,0.9689891260571889,7,Random
+75,18,Accuracy,0.9679,7,Random
+76,19,MCC,0.935801329590151,7,Random
+77,19,Precision,0.9664591283390239,7,Random
+78,19,Recall,0.9689891260571889,7,Random
+79,19,Accuracy,0.9679,7,Random
+80,20,MCC,0.935801329590151,7,Random
+81,20,Precision,0.9664591283390239,7,Random
+82,20,Recall,0.9689891260571889,7,Random
+83,20,Accuracy,0.9679,7,Random
+84,21,MCC,0.935801329590151,7,Random
+85,21,Precision,0.9664591283390239,7,Random
+86,21,Recall,0.9689891260571889,7,Random
+87,21,Accuracy,0.9679,7,Random
+88,22,MCC,0.935801329590151,7,Random
+89,22,Precision,0.9664591283390239,7,Random
+90,22,Recall,0.9689891260571889,7,Random
+91,22,Accuracy,0.9679,7,Random
+92,23,MCC,0.935801329590151,7,Random
+93,23,Precision,0.9664591283390239,7,Random
+94,23,Recall,0.9689891260571889,7,Random
+95,23,Accuracy,0.9679,7,Random
+96,24,MCC,0.935801329590151,7,Random
+97,24,Precision,0.9664591283390239,7,Random
+98,24,Recall,0.9689891260571889,7,Random
+99,24,Accuracy,0.9679,7,Random
+100,25,MCC,0.935801329590151,7,Random
+101,25,Precision,0.9664591283390239,7,Random
+102,25,Recall,0.9689891260571889,7,Random
+103,25,Accuracy,0.9679,7,Random
+104,26,MCC,0.935801329590151,7,Random
+105,26,Precision,0.9664591283390239,7,Random
+106,26,Recall,0.9689891260571889,7,Random
+107,26,Accuracy,0.9679,7,Random
+108,27,MCC,0.9336721089980077,7,Random
+109,27,Precision,0.9555555555555556,7,Random
+110,27,Recall,0.9784534836890858,7,Random
+111,27,Accuracy,0.9667,7,Random
+112,28,MCC,0.9336721089980077,7,Random
+113,28,Precision,0.9555555555555556,7,Random
+114,28,Recall,0.9784534836890858,7,Random
+115,28,Accuracy,0.9667,7,Random
+116,29,MCC,0.9336721089980077,7,Random
+117,29,Precision,0.9555555555555556,7,Random
+118,29,Recall,0.9784534836890858,7,Random
+119,29,Accuracy,0.9667,7,Random
+120,30,MCC,0.9336721089980077,7,Random
+121,30,Precision,0.9555555555555556,7,Random
+122,30,Recall,0.9784534836890858,7,Random
+123,30,Accuracy,0.9667,7,Random
+0,0,MCC,0.8091768772853987,8,Random
+1,0,Precision,0.9759615384615384,8,Random
+2,0,Recall,0.8175594039468385,8,Random
+3,0,Accuracy,0.8994,8,Random
+4,1,MCC,0.6302214820927101,8,Random
+5,1,Precision,0.8010440835266821,8,Random
+6,1,Recall,0.8342730567861458,8,Random
+7,1,Accuracy,0.8148,8,Random
+8,2,MCC,0.6302214820927101,8,Random
+9,2,Precision,0.8010440835266821,8,Random
+10,2,Recall,0.8342730567861458,8,Random
+11,2,Accuracy,0.8148,8,Random
+12,3,MCC,0.935801329590151,8,Random
+13,3,Precision,0.9664591283390239,8,Random
+14,3,Recall,0.9689891260571889,8,Random
+15,3,Accuracy,0.9679,8,Random
+16,4,MCC,0.935801329590151,8,Random
+17,4,Precision,0.9664591283390239,8,Random
+18,4,Recall,0.9689891260571889,8,Random
+19,4,Accuracy,0.9679,8,Random
+20,5,MCC,0.935801329590151,8,Random
+21,5,Precision,0.9664591283390239,8,Random
+22,5,Recall,0.9689891260571889,8,Random
+23,5,Accuracy,0.9679,8,Random
+24,6,MCC,0.935801329590151,8,Random
+25,6,Precision,0.9664591283390239,8,Random
+26,6,Recall,0.9689891260571889,8,Random
+27,6,Accuracy,0.9679,8,Random
+28,7,MCC,0.935801329590151,8,Random
+29,7,Precision,0.9664591283390239,8,Random
+30,7,Recall,0.9689891260571889,8,Random
+31,7,Accuracy,0.9679,8,Random
+32,8,MCC,0.935801329590151,8,Random
+33,8,Precision,0.9664591283390239,8,Random
+34,8,Recall,0.9689891260571889,8,Random
+35,8,Accuracy,0.9679,8,Random
+36,9,MCC,0.935801329590151,8,Random
+37,9,Precision,0.9664591283390239,8,Random
+38,9,Recall,0.9689891260571889,8,Random
+39,9,Accuracy,0.9679,8,Random
+40,10,MCC,0.935801329590151,8,Random
+41,10,Precision,0.9664591283390239,8,Random
+42,10,Recall,0.9689891260571889,8,Random
+43,10,Accuracy,0.9679,8,Random
+44,11,MCC,0.935801329590151,8,Random
+45,11,Precision,0.9664591283390239,8,Random
+46,11,Recall,0.9689891260571889,8,Random
+47,11,Accuracy,0.9679,8,Random
+48,12,MCC,0.935801329590151,8,Random
+49,12,Precision,0.9664591283390239,8,Random
+50,12,Recall,0.9689891260571889,8,Random
+51,12,Accuracy,0.9679,8,Random
+52,13,MCC,0.935801329590151,8,Random
+53,13,Precision,0.9664591283390239,8,Random
+54,13,Recall,0.9689891260571889,8,Random
+55,13,Accuracy,0.9679,8,Random
+56,14,MCC,0.935801329590151,8,Random
+57,14,Precision,0.9664591283390239,8,Random
+58,14,Recall,0.9689891260571889,8,Random
+59,14,Accuracy,0.9679,8,Random
+60,15,MCC,0.935801329590151,8,Random
+61,15,Precision,0.9664591283390239,8,Random
+62,15,Recall,0.9689891260571889,8,Random
+63,15,Accuracy,0.9679,8,Random
+64,16,MCC,0.935801329590151,8,Random
+65,16,Precision,0.9664591283390239,8,Random
+66,16,Recall,0.9689891260571889,8,Random
+67,16,Accuracy,0.9679,8,Random
+68,17,MCC,0.935801329590151,8,Random
+69,17,Precision,0.9664591283390239,8,Random
+70,17,Recall,0.9689891260571889,8,Random
+71,17,Accuracy,0.9679,8,Random
+72,18,MCC,0.935801329590151,8,Random
+73,18,Precision,0.9664591283390239,8,Random
+74,18,Recall,0.9689891260571889,8,Random
+75,18,Accuracy,0.9679,8,Random
+76,19,MCC,0.935801329590151,8,Random
+77,19,Precision,0.9664591283390239,8,Random
+78,19,Recall,0.9689891260571889,8,Random
+79,19,Accuracy,0.9679,8,Random
+80,20,MCC,0.935801329590151,8,Random
+81,20,Precision,0.9664591283390239,8,Random
+82,20,Recall,0.9689891260571889,8,Random
+83,20,Accuracy,0.9679,8,Random
+84,21,MCC,0.935801329590151,8,Random
+85,21,Precision,0.9664591283390239,8,Random
+86,21,Recall,0.9689891260571889,8,Random
+87,21,Accuracy,0.9679,8,Random
+88,22,MCC,0.935801329590151,8,Random
+89,22,Precision,0.9664591283390239,8,Random
+90,22,Recall,0.9689891260571889,8,Random
+91,22,Accuracy,0.9679,8,Random
+92,23,MCC,0.935801329590151,8,Random
+93,23,Precision,0.9664591283390239,8,Random
+94,23,Recall,0.9689891260571889,8,Random
+95,23,Accuracy,0.9679,8,Random
+96,24,MCC,0.935801329590151,8,Random
+97,24,Precision,0.9664591283390239,8,Random
+98,24,Recall,0.9689891260571889,8,Random
+99,24,Accuracy,0.9679,8,Random
+100,25,MCC,0.935801329590151,8,Random
+101,25,Precision,0.9664591283390239,8,Random
+102,25,Recall,0.9689891260571889,8,Random
+103,25,Accuracy,0.9679,8,Random
+104,26,MCC,0.935801329590151,8,Random
+105,26,Precision,0.9664591283390239,8,Random
+106,26,Recall,0.9689891260571889,8,Random
+107,26,Accuracy,0.9679,8,Random
+108,27,MCC,0.935801329590151,8,Random
+109,27,Precision,0.9664591283390239,8,Random
+110,27,Recall,0.9689891260571889,8,Random
+111,27,Accuracy,0.9679,8,Random
+112,28,MCC,0.935801329590151,8,Random
+113,28,Precision,0.9664591283390239,8,Random
+114,28,Recall,0.9689891260571889,8,Random
+115,28,Accuracy,0.9679,8,Random
+116,29,MCC,0.935801329590151,8,Random
+117,29,Precision,0.9664591283390239,8,Random
+118,29,Recall,0.9689891260571889,8,Random
+119,29,Accuracy,0.9679,8,Random
+120,30,MCC,0.935801329590151,8,Random
+121,30,Precision,0.9664591283390239,8,Random
+122,30,Recall,0.9689891260571889,8,Random
+123,30,Accuracy,0.9679,8,Random
+0,0,MCC,0.8091768772853987,9,Random
+1,0,Precision,0.9759615384615384,9,Random
+2,0,Recall,0.8175594039468385,9,Random
+3,0,Accuracy,0.8994,9,Random
+4,1,MCC,0.6302214820927101,9,Random
+5,1,Precision,0.8010440835266821,9,Random
+6,1,Recall,0.8342730567861458,9,Random
+7,1,Accuracy,0.8148,9,Random
+8,2,MCC,0.935801329590151,9,Random
+9,2,Precision,0.9664591283390239,9,Random
+10,2,Recall,0.9689891260571889,9,Random
+11,2,Accuracy,0.9679,9,Random
+12,3,MCC,0.935801329590151,9,Random
+13,3,Precision,0.9664591283390239,9,Random
+14,3,Recall,0.9689891260571889,9,Random
+15,3,Accuracy,0.9679,9,Random
+16,4,MCC,0.935801329590151,9,Random
+17,4,Precision,0.9664591283390239,9,Random
+18,4,Recall,0.9689891260571889,9,Random
+19,4,Accuracy,0.9679,9,Random
+20,5,MCC,0.935801329590151,9,Random
+21,5,Precision,0.9664591283390239,9,Random
+22,5,Recall,0.9689891260571889,9,Random
+23,5,Accuracy,0.9679,9,Random
+24,6,MCC,0.8091768772853987,9,Random
+25,6,Precision,0.9759615384615384,9,Random
+26,6,Recall,0.8175594039468385,9,Random
+27,6,Accuracy,0.8994,9,Random
+28,7,MCC,0.8091768772853987,9,Random
+29,7,Precision,0.9759615384615384,9,Random
+30,7,Recall,0.8175594039468385,9,Random
+31,7,Accuracy,0.8994,9,Random
+32,8,MCC,0.8091768772853987,9,Random
+33,8,Precision,0.9759615384615384,9,Random
+34,8,Recall,0.8175594039468385,9,Random
+35,8,Accuracy,0.8994,9,Random
+36,9,MCC,0.8091768772853987,9,Random
+37,9,Precision,0.9759615384615384,9,Random
+38,9,Recall,0.8175594039468385,9,Random
+39,9,Accuracy,0.8994,9,Random
+40,10,MCC,0.8091768772853987,9,Random
+41,10,Precision,0.9759615384615384,9,Random
+42,10,Recall,0.8175594039468385,9,Random
+43,10,Accuracy,0.8994,9,Random
+44,11,MCC,0.8091768772853987,9,Random
+45,11,Precision,0.9759615384615384,9,Random
+46,11,Recall,0.8175594039468385,9,Random
+47,11,Accuracy,0.8994,9,Random
+48,12,MCC,0.8091768772853987,9,Random
+49,12,Precision,0.9759615384615384,9,Random
+50,12,Recall,0.8175594039468385,9,Random
+51,12,Accuracy,0.8994,9,Random
+52,13,MCC,0.8091768772853987,9,Random
+53,13,Precision,0.9759615384615384,9,Random
+54,13,Recall,0.8175594039468385,9,Random
+55,13,Accuracy,0.8994,9,Random
+56,14,MCC,0.8091768772853987,9,Random
+57,14,Precision,0.9759615384615384,9,Random
+58,14,Recall,0.8175594039468385,9,Random
+59,14,Accuracy,0.8994,9,Random
+60,15,MCC,0.8091768772853987,9,Random
+61,15,Precision,0.9759615384615384,9,Random
+62,15,Recall,0.8175594039468385,9,Random
+63,15,Accuracy,0.8994,9,Random
+64,16,MCC,0.8091768772853987,9,Random
+65,16,Precision,0.9759615384615384,9,Random
+66,16,Recall,0.8175594039468385,9,Random
+67,16,Accuracy,0.8994,9,Random
+68,17,MCC,0.8091768772853987,9,Random
+69,17,Precision,0.9759615384615384,9,Random
+70,17,Recall,0.8175594039468385,9,Random
+71,17,Accuracy,0.8994,9,Random
+72,18,MCC,0.8091768772853987,9,Random
+73,18,Precision,0.9759615384615384,9,Random
+74,18,Recall,0.8175594039468385,9,Random
+75,18,Accuracy,0.8994,9,Random
+76,19,MCC,0.8091768772853987,9,Random
+77,19,Precision,0.9759615384615384,9,Random
+78,19,Recall,0.8175594039468385,9,Random
+79,19,Accuracy,0.8994,9,Random
+80,20,MCC,0.935801329590151,9,Random
+81,20,Precision,0.9664591283390239,9,Random
+82,20,Recall,0.9689891260571889,9,Random
+83,20,Accuracy,0.9679,9,Random
+84,21,MCC,0.935801329590151,9,Random
+85,21,Precision,0.9664591283390239,9,Random
+86,21,Recall,0.9689891260571889,9,Random
+87,21,Accuracy,0.9679,9,Random
+88,22,MCC,0.935801329590151,9,Random
+89,22,Precision,0.9664591283390239,9,Random
+90,22,Recall,0.9689891260571889,9,Random
+91,22,Accuracy,0.9679,9,Random
+92,23,MCC,0.935801329590151,9,Random
+93,23,Precision,0.9664591283390239,9,Random
+94,23,Recall,0.9689891260571889,9,Random
+95,23,Accuracy,0.9679,9,Random
+96,24,MCC,0.935801329590151,9,Random
+97,24,Precision,0.9664591283390239,9,Random
+98,24,Recall,0.9689891260571889,9,Random
+99,24,Accuracy,0.9679,9,Random
+100,25,MCC,0.935801329590151,9,Random
+101,25,Precision,0.9664591283390239,9,Random
+102,25,Recall,0.9689891260571889,9,Random
+103,25,Accuracy,0.9679,9,Random
+104,26,MCC,0.935801329590151,9,Random
+105,26,Precision,0.9664591283390239,9,Random
+106,26,Recall,0.9689891260571889,9,Random
+107,26,Accuracy,0.9679,9,Random
+108,27,MCC,0.935801329590151,9,Random
+109,27,Precision,0.9664591283390239,9,Random
+110,27,Recall,0.9689891260571889,9,Random
+111,27,Accuracy,0.9679,9,Random
+112,28,MCC,0.935801329590151,9,Random
+113,28,Precision,0.9664591283390239,9,Random
+114,28,Recall,0.9689891260571889,9,Random
+115,28,Accuracy,0.9679,9,Random
+116,29,MCC,0.935801329590151,9,Random
+117,29,Precision,0.9664591283390239,9,Random
+118,29,Recall,0.9689891260571889,9,Random
+119,29,Accuracy,0.9679,9,Random
+120,30,MCC,0.935801329590151,9,Random
+121,30,Precision,0.9664591283390239,9,Random
+122,30,Recall,0.9689891260571889,9,Random
+123,30,Accuracy,0.9679,9,Random

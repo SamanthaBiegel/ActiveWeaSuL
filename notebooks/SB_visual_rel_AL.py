@@ -63,7 +63,7 @@ from visualrelation import VisualRelationDataset, VisualRelationClassifier, Word
 torch.cuda.is_available()
 
 # +
-balance=False
+balance=True
 semantic_predicates = [
         "carry",
         "cover",
@@ -74,11 +74,12 @@ semantic_predicates = [
         "sit on",
         "stand on",
         "ride",
-#         "wear"
+        "wear"
     ]
 
-classify = ["sit on"]
+classify = ["wear"]
 df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_predicates, path_prefix=path_prefix, drop_duplicates=True, balance=balance, validation=False)
+# df_train, df_test = load_vr_data(path_prefix=path_prefix, drop_duplicates=False, balance=False, validation=False)
 
 print("Train Relationships: ", len(df_train))
 print("Test Relationships: ", len(df_test))
@@ -92,8 +93,8 @@ df_train
 
 # # **Define labeling functions**
 
-SITON = 1
-# WEAR = 1
+# SITON = 1
+WEAR = 1
 OTHER = 0
 ABSTAIN = -1
 
@@ -112,21 +113,23 @@ def lf_not_person(x):
 
 
 # +
-# def lf_wear_object(x):
-#     if x.subject_name == "person":
-#         if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
-#             return WEAR
-#     return OTHER
+def lf_wear_object(x):
+    if x.subject_name == "person":
+        if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
+            return WEAR
+    return OTHER
 
-# def lf_area(x):
-#     if area(x.subject_bbox) / area(x.object_bbox) > 1:
-#         return WEAR
-#     return OTHER
+def lf_area(x):
+    if area(x.subject_bbox) / area(x.object_bbox) > 1:
+        return WEAR
+    return OTHER
 
-# def lf_dist(x):
-#     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
-#         return OTHER
-#     return WEAR
+def lf_dist(x):
+    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
+        return OTHER
+    return WEAR
+
+
 # -
 
 YMIN = 0
@@ -162,8 +165,8 @@ def lf_area(x):
 
 # +
 # lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
-lfs = [lf_siton_object, lf_dist, lf_area]
-# lfs = [lf_wear_object, lf_dist, lf_area, lf_ydist]
+# lfs = [lf_siton_object, lf_dist, lf_area]
+lfs = [lf_wear_object, lf_dist, lf_area, lf_ydist]
 
 L_train = apply_lfs(df_train, lfs)
 # L_test = apply_lfs(df_test, lfs)
@@ -228,17 +231,19 @@ dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_image
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
 
+al.label_model.bucket_inverse
+
 # +
 # al_metrics = {}
 # for i in range(50):
 it = 20
-query_strategy = "margin"
+query_strategy = "relative_entropy"
 
 al = ActiveLearningPipeline(it=it,
 #                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
                             query_strategy=query_strategy,
-                            randomness=0.2)
+                            randomness=0)
 
 Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance)
 al.label_model.print_metrics()
@@ -246,6 +251,22 @@ al.label_model.print_metrics()
 al.plot_metrics(true_label_counts=False)
 
 al.plot_iterations()
+
+mask = (al.ground_truth_labels != -1)
+
+torch.norm((torch.Tensor(al.ground_truth_labels) - Y_probs_al[:,1])[mask]) ** 2
+
+Y_probs_al[al.queried]
+
+al.ground_truth_labels[al.queried]
+
+np.repeat(0.98, 20) ** np.arange(19, -1, -1)
+
+np.arange(19, -1, -1)
+
+(torch.Tensor(al.ground_truth_labels) - Y_probs_al[:,1])[al.queried]
+
+al.plot_parameters()
 
 plot_train_loss(al.label_model.losses, "Epoch", "Label")
 

@@ -13,28 +13,14 @@
 #     name: python3
 # ---
 
-# !dir
-
-from os import listdir
-from os.path import isfile, join
-path = "../../../s3_home/uploads"
-files = [f for f in listdir(path) if isfile(join(path, f))]
-
-with open("image_files.txt", "w") as f:
-    for item in files:
-        f.write("%s\n" % item)
-
-len(files)
-
 # +
-DAP = True
+DAP = False
     
 if DAP:
-    # ! pip install -r ../requirements.txt
-# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/subset_VG --recursive --exclude "glove" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD"
-# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    # ! pip install -r requirements.txt
+    # ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
     path_prefix = "/tmp/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
@@ -118,7 +104,7 @@ pred_list = ['carrying',
 # df_vis = visgen_df_actions.loc[:,["image_id", "predicate", "object_name", "object_h", "object_w", "object_y", "object_x", "subject_name", "subject_h", "subject_w", "subject_y", "subject_x", "y"]]
 # df_vis = df_vis.dropna()
 # df_vis = df_drop_duplicates(df_vis)
-# df_vis = balance_dataset(df_vis)
+# # df_vis = balance_dataset(df_vis)
 
 # +
 # df_vis["object_x_max"] = df_vis["object_x"] + df_vis["object_w"]
@@ -143,6 +129,23 @@ pred_list = ['carrying',
 
 import ast
 df_vis = pd.read_csv(path_prefix + "data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+
+df_vis.source_img.drop_duplicates()
+
+df_vis[df_vis.subject_category == "dog"][:30]
+
+# +
+# with open("image_files.txt", "r") as f:
+#     files = f.readlines()
+#     image_files = [file.strip() for file in files]
+    
+# subset_images = list(df_vis["source_img"].drop_duplicates())
+# missing_images = [image for image in subset_images if image not in image_files]
+# len(missing_images)
+
+# +
+# for image in missing_images:
+# #     ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/missing_VG/$image
 
 # +
 # predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
@@ -228,6 +231,7 @@ L = apply_lfs(df_vis, lfs)
 analyze_lfs(L, df_vis["y"], lfs)
 
 class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
+
 
 
 
