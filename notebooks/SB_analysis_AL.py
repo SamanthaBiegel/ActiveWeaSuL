@@ -53,50 +53,11 @@ p_z = 0.5
 data = SyntheticData(N, p_z, centroids)
 df = data.sample_data_set().create_df()
 
-plot_probs(df, probs=data.y, soft_labels=False)
-
 df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
-df.loc[:, "wl4"] = (df["x2"]<-0.5)*1
-df.loc[:, "wl5"] = (df["x1"]<0)*1
-
-
-# +
-def random_LF(y, fp, fn, abstain):
-    ab = np.random.uniform()
-    
-    if ab < abstain:
-        return -1
-    
-    threshold = np.random.uniform()
-    
-    if y == 1 and threshold < fn:
-        return 0
-        
-    elif y == 0 and threshold < fp:
-        return 1
-        
-    
-    
-    return y
-
-# df.loc[:, "wl1"] = [random_LF(y, fp=0.1, fn=0.2, abstain=0) for y in df["y"]]
-# df.loc[:, "wl2"] = [random_LF(y, fp=0.05, fn=0.4, abstain=0) for y in df["y"]]
-# df.loc[:, "wl3"] = [random_LF(y, fp=0.6, fn=0.8, abstain=0) for y in df["y"]]
-# -
 
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
-
-_, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
-
-plot_probs(df, probs=inv_idx, soft_labels=False)
-
-# +
-# psi_y, wl_idx_y = lm._get_psi(label_matrix, [[0],[1],[2],[3]], 4)
-
-# +
-# pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(color, axis=None)
 
 # +
 final_model_kwargs = {'input_dim': 2,
@@ -107,7 +68,6 @@ final_model_kwargs = {'input_dim': 2,
 
 class_balance = np.array([1 - p_z, p_z])
 cliques=[[0],[1,2]]
-# cliques=[[0],[1],[2]]
 
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
@@ -115,9 +75,6 @@ al_kwargs = {'add_prob_loss': False,
              'df': df,
              'n_epochs': 200
             }
-# -
-
-# # Margin strategy
 
 # +
 L = label_matrix[:, :-1]
@@ -175,12 +132,8 @@ fig = go.Figure(go.Scatter(x=P_lambda.squeeze(), y=np.array(true_probs)-P_Y_lamb
 fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
 fig.show()
 
-final_model_kwargs
-
-al_kwargs
-
 entropies_random = {}
-for i in range(10):
+for i in range(3):
     it = 30
     query_strategy = "margin"
     L = label_matrix[:, :-1]
@@ -203,8 +156,6 @@ for i in range(10):
         
     entropies_random[i] = entropy_sampled_buckets
 
-entropies_marg[0]
-
 entropies_marg_df = pd.DataFrame.from_dict(entropies_marg).stack().reset_index().rename(columns={"level_0": "Number of points acquired", "level_1": "Run", 0: "Entropy"})
 entropies_marg_df["Strategy"] = "Margin"
 
@@ -216,7 +167,9 @@ entropies_random_df["Strategy"] = "Random"
 
 entropies_joined = pd.concat([entropies_re_df, entropies_marg_df, entropies_random_df])
 
-entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+# +
+# entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+# -
 
 entropies_joined["Number of points acquired"] = entropies_joined["Number of points acquired"].apply(lambda x: x+1)
 
@@ -231,10 +184,6 @@ fig = ax.get_figure()
 fig.savefig("plots/entropies.png")
 # -
 
-entropies_joined
-
-al.plot_metrics()
-
 entropy_df = pd.DataFrame.from_dict(al.bucket_AL_values).stack().reset_index().rename(columns={"level_0": "WL bucket", "level_1": "Active Learning Iteration", 0: "KL divergence"})
 
 entropy_df["WL bucket"] = entropy_df["WL bucket"].map(al.confs)
@@ -245,10 +194,7 @@ divergence_plot = sns.lineplot(data=entropy_df, x="Active Learning Iteration", y
 # fig = divergence_plot.get_figure()
 # fig.savefig("plots/divergence_plot.png")
 
-al.plot_iterations()
-
-
-def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, randomness):
+def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, randomness, penalty_strength):
     al_metrics = {}
     al_metrics["lm_metrics"] = {}
     al_metrics["fm_metrics"] = {}
@@ -260,22 +206,69 @@ def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, r
         al = ActiveLearningPipeline(it=nr_al_it,
                                     final_model = DiscriminativeModel(df, **final_model_kwargs),
                                     **al_kwargs,
+                                    penalty_strength=penalty_strength,
                                     query_strategy=query_strategy,
                                     randomness=randomness)
 
-        Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+        Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df["y"].values)
         al.label_model.print_metrics()
+        al.final_model.print_metrics()
         al_metrics["lm_metrics"][i] = al.metrics
         al_metrics["fm_metrics"][i] = al.final_metrics
-        al.plot_metrics()
         
-    return al_metrics, Y_probs_al, al
+    return al_metrics
 
 
 runs=10
 it=30
 
-al_metrics_re, Y_probs_al_re, al_re = active_learning_experiment(it, runs, "probs", "relative_entropy", 0)
+# +
+test_strengths = [1, 1e2, 1e3, 1e4, 1e5]
+strength_metrics = {}
+
+for test, strength in enumerate(test_strengths):
+
+    strength_metrics[test] = active_learning_experiment(it, runs, "probs", "relative_entropy", 0, strength)
+
+
+# -
+
+def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
+    joined_metrics = pd.DataFrame()
+    for i in range(nr_runs):
+        int_df = pd.DataFrame.from_dict(al_metrics[metric_string][i]).drop("Labels").T
+        int_df = int_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Metric", 0: "Value"})
+        int_df["Run"] = str(i)
+
+        joined_metrics = pd.concat([joined_metrics, int_df])
+
+    joined_metrics["Value"] = joined_metrics["Value"].apply(pd.to_numeric)
+    joined_metrics["Lambda"] = strategy_string
+    # joined_metrics = joined_metrics[joined_metrics["Run"] != "7"]
+    
+    return joined_metrics
+
+
+for key, value in strength_metrics.items():
+    if key == 0:
+        joined_lambdas = create_metric_df(value, 10, "lm_metrics", test_strengths[key])
+    else:
+        joined_lambdas = pd.concat([joined_lambdas, create_metric_df(value, 10, "lm_metrics", test_strengths[key])])
+
+
+joined_lambdas
+
+joined_lambdas = joined_lambdas[joined_lambdas["Metric"] == "Accuracy"]
+
+colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors), rc={'figure.figsize':(15,10)})
+
+
+ax = sns.lineplot(data=joined_lambdas, x="Active Learning Iteration", y="Value", ci=68, n_boot=1000, estimator="mean", hue="Lambda", palette=sns.color_palette(colors), legend=True)
+# (ax.set_titles("{col_name}"))
+
+ax = sns.relplot(data=joined_lambdas, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, estimator="mean", hue="Lambda", palette="deep", legend=True)
+(ax.set_titles("{col_name}"))
 
 al_metrics_random, Y_probs_al_random, al_random = active_learning_experiment(it, runs, "probs", "relative_entropy", 1)
 
@@ -314,11 +307,6 @@ joined_df_lm = pd.concat([metric_df_re_lm, metric_df_random_lm])
 # joined_df_fm = pd.concat([metric_df_re_fm, metric_df_random_fm])
 # -
 
-metric_df_re_fm = metric_df_re_fm[metric_df_re_fm["Run"] != "7"]
-metric_df_re_fm
-
-joined_df_lm[joined_df_lm["Run"] == "7"]
-
 sns.set_theme(style="white")
 
 ax = sns.relplot(data=metric_df_re_lm, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, hue="Metric",legend=False)
@@ -338,7 +326,21 @@ ax = sns.relplot(data=joined_df_lm[joined_df_lm["Strategy"] == "Relative Entropy
 (ax.set_titles("{col_name}"))
 
 
-joined_df_lm[joined_df_lm["Strategy"] == "Random"]
+joined_df_lm = pd.read_csv("results/lm_re_random.csv")
+joined_df_fm = pd.read_csv("results/fm_re_random.csv")
+
+joined_df_lm["Model"] = "Generative"
+joined_df_fm["Model"] = "Discriminative"
+joined_df_models = pd.concat([joined_df_lm, joined_df_fm])
+joined_df_models = joined_df_models[joined_df_models["Metric"] == "Accuracy"].rename(columns={"Value": "Accuracy"})
+
+sns.set_context("paper")
+colors = ["#086788",  "#ef7b45", "#e3b505", "#739e82", "#d88c9a"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors))
+ax = sns.relplot(data=joined_df_models, x="Active Learning Iteration", y="Accuracy", col="Model", hue="Strategy", ci=68, n_boot=10000, estimator="mean", kind="line", facet_kws={"despine": False})
+# plt.grid(figure=ax.axes[0], alpha=0.2)
+# plt.grid(figure=ax.fig, alpha=0.2)
+(ax.set_titles("{col_name}"))
 
 al.plot_iterations()
 
