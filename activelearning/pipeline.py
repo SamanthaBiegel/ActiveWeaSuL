@@ -188,13 +188,15 @@ class ActiveLearningPipeline(PlotMixin):
 
         return self.predict(self)
 
-    def refine_probabilities(self, label_matrix, cliques, class_balance, label_matrix_test, y_test):
+    def refine_probabilities(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train, dl_test):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
 
         self.label_matrix = label_matrix
-        self.ground_truth_labels = np.full_like(self.df["y"].values, -1) 
-        self.X = self.df[["x1", "x2"]].values
+        self.ground_truth_labels = np.full_like(self.df["y"].values, -1)
+        if "x1" in self.df.columns:
+            self.X = self.df[["x1", "x2"]].values
         self.y = self.df["y"].values
+        self.y_test = y_test
         nr_wl = label_matrix.shape[1]
         self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
 
@@ -207,6 +209,9 @@ class ActiveLearningPipeline(PlotMixin):
             # neigh.fit(self.X)
 
         old_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
+        psi_test, _ = self.label_model._get_psi(label_matrix_test, cliques, nr_wl)
+        test_probs = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
+        
         if not not self.final_model:
             if self.final_model.__class__.__name__ == "VisualRelationClassifier":
                 dataset = VisualRelationDataset(image_dir=self.image_dir, 
@@ -215,17 +220,19 @@ class ActiveLearningPipeline(PlotMixin):
 
                 dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
 
-                self.final_probs = self.final_model.fit(dl).predict()
+                self.final_model = self.final_model.fit(dl)
+                final_probs = self.final_model._predict(dl_train)
+                final_test_probs = self.final_model._predict(dl_test)
             else:
-                self.final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
+                final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
+        else:
+            final_probs = None
+            final_test_probs = None
 
         _, self.unique_idx, self.unique_inverse = np.unique(old_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
-
-        test_probs = self.label_model.
-        self.log(count=0, final_probs=self.final_probs, probs=old_probs)
-        psi_test, _ = self.label_model._get_psi(label_matrix_test, cliques, nr_wl)
-        probs_test = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
-        self.test_performance["before"] = self.label_model._analyze(probs_test, y_test)
+        self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}                
+        
+        self.log(count=0, probs=old_probs, test_probs=test_probs, final_probs=final_probs, final_test_probs=final_test_probs)
 
         for i in tqdm(range(self.it)):
             sel_idx = self.query(old_probs, i)
@@ -248,17 +255,24 @@ class ActiveLearningPipeline(PlotMixin):
                 # Fit label model
                 new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels, last_posteriors=self.unique_prob_dict[i]).predict()
 
-            if not not self.final_model:
+            test_probs = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
+
+            if not not self.final_model and (i+1) % 5 == 0:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
                     dataset.Y = new_probs.clone().detach().numpy()
 
                     dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
 
-                    self.final_probs = self.final_model.fit(dl).predict()
+                    self.final_model = self.final_model.fit(dl)
+                    final_probs = self.final_model._predict(dl_train)
+                    final_test_probs = self.final_model._predict(dl_test)
                 else:
-                    self.final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+                    final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+            else:
+                final_probs = None
+                final_test_probs = None
 
-            self.log(count=i+1, probs=new_probs, final_probs=self.final_probs, selected_point=sel_idx)
+            self.log(count=i+1, probs=new_probs, test_probs=test_probs, final_probs=final_probs, final_test_probs=final_test_probs, selected_point=sel_idx)
 
             old_probs = new_probs.clone()
 
@@ -272,19 +286,16 @@ class ActiveLearningPipeline(PlotMixin):
             #     self.label_matrix = np.concatenate([self.label_matrix, np.full_like(self.df["y"].values, -1)[:,None]], axis=1)
             #     cliques.append([nr_wl + i + 1])
 
-        probs_test = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
-        self.test_performance["after"] = self.label_model._analyze(probs_test, y_test)
-
-        self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
-
         return new_probs
 
-    def log(self, count, probs, final_probs=None, selected_point=None):
+    def log(self, count, probs, test_probs, final_probs, final_test_probs, selected_point=None):
         """Keep track of accuracy and other metrics"""
 
         if count == 0:
             self.metrics = {}
+            self.test_metrics = {}
             self.final_metrics = {}
+            self.final_test_metrics = {}
             self.queried = []
             self.prob_dict = {}
             self.final_prob_dict = {}
@@ -294,13 +305,15 @@ class ActiveLearningPipeline(PlotMixin):
 
         self.label_model.analyze()
         self.metrics[count] = self.label_model.metric_dict
+        self.test_metrics[count] = self.label_model._analyze(test_probs, self.y_test)
         self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
         self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
-        if not not self.final_model:
-            self.final_model.analyze()
-            self.final_metrics[count] = self.final_model.metric_dict
+        if not not self.final_model and count % 5 == 0:
+            # self.final_model.analyze()
+            self.final_metrics[count] = self.final_model._analyze(final_probs, self.y)
+            self.final_test_metrics[count] = self.final_model._analyze(final_test_probs, self.y_test)
             self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
 
         if selected_point is not None:

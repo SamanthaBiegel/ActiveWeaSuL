@@ -17,10 +17,13 @@
 DAP = True
     
 if DAP:
-    # ! pip install -r ../requirements.txt
+# #     ! pip install -r ../requirements.txt
     # ! aws s3 cp s3://user/gc03ye/uploads/VRD/ /tmp/data/annotations --recursive --exclude "sg_dataset*"
-    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/glove --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD/sg_dataset/sg_train_images/ /tmp/data/images/train_images --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD/sg_dataset/sg_test_images/ /tmp/data/images/test_images --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    import torch
     path_prefix = "/tmp/"
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
@@ -63,7 +66,7 @@ from visualrelation import VisualRelationDataset, VisualRelationClassifier, Word
 torch.cuda.is_available()
 
 # +
-balance=True
+balance=False
 semantic_predicates = [
         "carry",
         "cover",
@@ -74,27 +77,37 @@ semantic_predicates = [
         "sit on",
         "stand on",
         "ride",
-        "wear"
+#         "wear"
     ]
 
-classify = ["wear"]
+classify = ["sit on"]
 df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_predicates, path_prefix=path_prefix, drop_duplicates=True, balance=balance, validation=False)
-# df_train, df_test = load_vr_data(path_prefix=path_prefix, drop_duplicates=False, balance=False, validation=False)
 
 print("Train Relationships: ", len(df_train))
 print("Test Relationships: ", len(df_test))
+# -
+
+df_train
+
+# +
+# df_test.to_csv("datasets/vrd_test_set.csv", index=False)
+
+# df_train = pd.read_csv("datasets/vrd_train_set.csv")
+# df_test = pd.read_csv("datasets/vrd_test_set.csv")
 
 # +
 # pd.set_option('display.max_rows',102)
 # pd.DataFrame(df_train.groupby("y")["source_img"].count())
 # -
 
-df_train
+df_train.mean()
+
+df_train["subject_bbox"][0]
 
 # # **Define labeling functions**
 
-# SITON = 1
-WEAR = 1
+SITON = 1
+# WEAR = 1
 OTHER = 0
 ABSTAIN = -1
 
@@ -113,23 +126,21 @@ def lf_not_person(x):
 
 
 # +
-def lf_wear_object(x):
-    if x.subject_name == "person":
-        if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
-            return WEAR
-    return OTHER
+# def lf_wear_object(x):
+#     if x.subject_name == "person":
+#         if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
+#             return WEAR
+#     return OTHER
 
-def lf_area(x):
-    if area(x.subject_bbox) / area(x.object_bbox) > 1:
-        return WEAR
-    return OTHER
+# def lf_area(x):
+#     if area(x.subject_bbox) / area(x.object_bbox) > 1:
+#         return WEAR
+#     return OTHER
 
-def lf_dist(x):
-    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
-        return OTHER
-    return WEAR
-
-
+# def lf_dist(x):
+#     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
+#         return OTHER
+#     return WEAR
 # -
 
 YMIN = 0
@@ -165,14 +176,16 @@ def lf_area(x):
 
 # +
 # lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
-# lfs = [lf_siton_object, lf_dist, lf_area]
-lfs = [lf_wear_object, lf_dist, lf_area, lf_ydist]
+lfs = [lf_siton_object, lf_dist, lf_area]
+# lfs = [lf_wear_object, lf_dist, lf_area, lf_ydist]
 
 L_train = apply_lfs(df_train, lfs)
-# L_test = apply_lfs(df_test, lfs)
+L_test = apply_lfs(df_test, lfs)
 # -
 
 analyze_lfs(L_train, df_train["y"], lfs)
+
+analyze_lfs(L_test, df_test["y"], lfs)
 
 # # **Initial fit label model**
 
@@ -209,8 +222,6 @@ for i in range(1):
 # [i for i, j in enumerate(Y_probs_al[:,1].detach().numpy()) if (j == np.max(Y_probs_al[:,1].detach().numpy())) and (al.ground_truth_labels[i] == -1) and not (al.all_abstain[i])]
 # -
 
-plot_train_loss(lm.losses)
-
 train_on = "probs" # probs or labels
 n_epochs = 3
 lr = 1e-3
@@ -224,48 +235,228 @@ al_kwargs = {'add_prob_loss': False,
              'batch_size': batch_size
             }
 
+# +
 dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
                       df=df_test,
                       Y=df_test["y"].values)
 dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=df_train["y"].values)
+dl_train = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
-al.label_model.bucket_inverse
 
 # +
-# al_metrics = {}
-# for i in range(50):
-it = 20
+al_metrics = {}
+al_metrics["lm_metrics"] = {}
+al_metrics["lm_test_metrics"] = {}
+al_metrics["fm_metrics"] = {}
+al_metrics["fm_test_metrics"] = {}
+
+for i in range(4):
+    it = 50
+    query_strategy = "relative_entropy"
+
+    al = ActiveLearningPipeline(it=it,
+                                final_model=VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                                **al_kwargs,
+                                image_dir=path_prefix + "data/images/train_images",
+                                query_strategy=query_strategy,
+                                randomness=0)
+
+    Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance,
+                                         label_matrix_test=L_test, y_test=df_test["y"].values, dl_train=dl_train, dl_test=dl_test)
+    al.label_model.print_metrics()
+    al_metrics["lm_metrics"][i] = al.metrics
+    al_metrics["lm_test_metrics"][i] = al.test_metrics
+    al_metrics["fm_metrics"][i] = al.final_metrics
+    al_metrics["fm_test_metrics"][i] = al.final_test_metrics
+
+
+# -
+def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_string):
+    joined_metrics = pd.DataFrame()
+    for i in range(nr_runs):
+        int_df = pd.DataFrame.from_dict(al_metrics[metric_string][i]).drop("Labels", errors="ignore").T
+        int_df = int_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Metric", 0: "Value"})
+        int_df["Run"] = str(i)
+
+        joined_metrics = pd.concat([joined_metrics, int_df])
+
+    joined_metrics["Value"] = joined_metrics["Value"].apply(pd.to_numeric)
+    joined_metrics["Set"] = strategy_string
+    joined_metrics["Model"] = model_string
+    joined_metrics["Label"] = "AL"
+    
+    return joined_metrics
+
+
+metrics_joined = pd.concat([create_metric_df(al_metrics, 4, "lm_metrics", "train", "Generative"),
+                           create_metric_df(al_metrics, 4, "lm_test_metrics", "test", "Generative"),
+                           create_metric_df(al_metrics, 4, "fm_metrics", "train", "Discriminative"),
+                           create_metric_df(al_metrics, 4, "fm_test_metrics", "test", "Discriminative"),
+                           pd.read_csv("results/vrd_incl_optimal.csv")])
+
+metrics_joined_test = pd.read_csv("results/vrd_incl_optimal_10_trials.csv")
+
+metrics_joined_test
+
+# +
+# metrics_joined.to_csv("results/vrd_incl_optimal_10_trials.csv", index=False)
+# -
+
+sns.set_theme(style="white")
+colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors))
+
+al.label_model._analyze(true_test, df_test.y.values)
+
+lm_train = al.label_model._analyze(al.label_model.predict_true(), df_train["y"].values)
+# lm_test = al.label_model._analyze(true_test, df_test.y.values)
+psi_test, _ = al.label_model._get_psi(L_test, cliques, len(lfs))
+lm_test = al.label_model._analyze(al.label_model._predict(L_test, psi_test, al.label_model.get_true_mu()[:, 1][:, None], df_train.y.mean()), df_test.y)
+
+fm_train = {'MCC': 0.5929464302605295, 'Precision': 0.7248322147651006, 'Recall': 0.627906976744186, 'Accuracy': 0.8677581863979849}
+fm_test = {'MCC': 0.5378129202989759, 'Precision': 0.7096774193548387, 'Recall': 0.55, 'Accuracy': 0.8540540540540541}
+
+fm_train_full = {'MCC': 0.7963334186630372, 'Precision': 0.7745098039215687, 'Recall': 0.9186046511627907, 'Accuracy': 0.924433249370277}
+fm_test_full = {'MCC': 0.7447663283072967, 'Precision': 0.72, 'Recall': 0.9, 'Accuracy': 0.9027027027027027}
+
+metrics_joined["Label"] = "AL"
+
+
+# +
+def create_optimal_df(perf_dict, model_string, set_string, label_string):
+
+    optimal_lm = pd.DataFrame({"Accuracy": np.repeat(perf_dict["Accuracy"], 51), "MCC": np.repeat(perf_dict["MCC"], 51), "Precision": np.repeat(perf_dict["Precision"], 51), "Recall": np.repeat(perf_dict["Recall"], 51)})
+    optimal_lm = optimal_lm.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Metric", 0: "Value"})
+    optimal_lm["Model"] = model_string
+    optimal_lm["Set"] = set_string
+    optimal_lm["Label"] = label_string
+    optimal_lm["Run"] = 0
+    
+    return optimal_lm
+
+optimals_df = pd.concat([create_optimal_df(lm_train, "Generative", "train", "*"),
+           create_optimal_df(lm_test, "Generative", "test", "*"),
+          create_optimal_df(fm_train, "Discriminative", "train", "*"),
+          create_optimal_df(fm_test, "Discriminative", "test", "*"),
+          create_optimal_df(fm_train_full, "Discriminative", "train", "**"),
+          create_optimal_df(fm_test_full, "Discriminative", "test", "**")])
+# -
+
+metrics_joined_optimal = pd.concat([metrics_joined, optimals_df])
+
+ax = sns.relplot(data=metrics_joined_optimal, x="Active Learning Iteration", y="Value", col="Metric", row="Model", kind="line", ci=68, n_boot=1000, hue="Set", style="Label",legend=True)
+(ax.set_titles("{col_name}"))
+
+# +
+
+ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", row="Model", kind="line", ci=68, n_boot=1000, hue="Set", style="Label",legend=True)
+(ax.set_titles("{col_name}"))
+# -
+
+metrics_joined
+
+# +
+it = 30
 query_strategy = "relative_entropy"
 
 al = ActiveLearningPipeline(it=it,
-                            final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                             final_model=VisualRelationClassifier(pretrained_model, dl_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                             **al_kwargs,
+                            image_dir=path_prefix + "data/images/train_images",
                             query_strategy=query_strategy,
                             randomness=0)
 
-Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance)
+Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance, label_matrix_test=L_test, y_test=df_test["y"].values)
 al.label_model.print_metrics()
 # -
+
+
+
+n_epochs=5
+batch_size=20
+
+# +
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=Y_probs.clone().clamp(0,1).detach().numpy())
+dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
+
+vc = VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
+
+vc = vc.fit(dl)
+
+vc._analyze(probs_final, df_test["y"].values)
+
+probs_final = vc_al._predict(dl_train)
+
+probs_final_test = vc_al._predict(dl_test)
+
+print(vc._analyze(probs_final, df_train["y"].values))
+print(vc._analyze(probs_final_test, df_test["y"].values))
+# -
+
+al.label_model.predict_true()
+
+lm._predict(L_test, psi_test, lm.mu, df_test.y.mean())
+
+# +
+lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([L_test, df_test.y.values[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+
+P_Y_lambda = np.zeros((L_test.shape[0], 2))
+
+for i, j in zip([0, 1], [1, 0]):
+    P_Y_lambda[df_test.y.values == i, i] = ((lambda_counts/L_test.shape[0])[lambda_index]/lm.P_lambda.squeeze())[df_test.y.values == i]
+    P_Y_lambda[df_test.y.values == i, j] = 1 - P_Y_lambda[df_test.y.values == i, i]
+
+true_test = torch.Tensor(P_Y_lambda)
+# -
+
+
+
+# +
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=al.label_model.predict_true().detach().numpy())
+dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
+
+vc_al = VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=True)
+
+vc_al = vc_al.fit(dl)
+
+probs_final_al = vc_al._predict(dl_train)
+
+probs_final_al_test = vc_al._predict(dl_test)
+
+print(vc_al._analyze(probs_final_al, df_train["y"].values))
+print(vc_al._analyze(probs_final_al_test, df_test["y"].values))
+# -
+
+print(vc_al._analyze(probs_final_al, df_train["y"].values))
+print(vc_al._analyze(probs_final_al_test, df_test["y"].values))
+
+probs_final_al
+
+Y_probs_al
+
+dl.shuffle
+
+plot_train_loss([loss.cpu().detach().numpy() for loss in vc_al.losses])
+
+plot_train_loss(vc_al.average_losses)
+
+
+
+
+
 al.plot_metrics(true_label_counts=False)
 
+
+
 al.plot_iterations()
-
-mask = (al.ground_truth_labels != -1)
-
-torch.norm((torch.Tensor(al.ground_truth_labels) - Y_probs_al[:,1])[mask]) ** 2
-
-Y_probs_al[al.queried]
-
-al.ground_truth_labels[al.queried]
-
-np.repeat(0.98, 20) ** np.arange(19, -1, -1)
-
-np.arange(19, -1, -1)
-
-(torch.Tensor(al.ground_truth_labels) - Y_probs_al[:,1])[al.queried]
-
-al.plot_parameters()
 
 plot_train_loss(al.label_model.losses, "Epoch", "Label")
 

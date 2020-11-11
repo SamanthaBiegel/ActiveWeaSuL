@@ -264,28 +264,39 @@ analyze_lfs(L, df_vis["y"], lfs)
 
 class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 
+# +
+lm = LabelModel(df=df_vis,
+                    active_learning=False,
+                    add_cliques=True,
+                    add_prob_loss=False,
+                    n_epochs=200,
+                    lr=1e-1)
+
+Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+lm.analyze()
+lm.print_metrics()
+
+# -
 
 
 
 
-lm_metrics = {}
-for i in range(20):
-    
-    lm = LabelModel(df=df_vis,
-                        active_learning=False,
-                        add_cliques=True,
-                        add_prob_loss=False,
-                        n_epochs=200,
-                        lr=1e-1)
 
-    Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-    lm.analyze()
-    lm.print_metrics()
-    lm_metrics[i] = lm.metric_dict
 
-plot_train_loss(lm.losses)
 
-metrics = ["accuracy", "precision", "recall", "f1"]
+
+
+
+
+
+
+
+
+
+
+
+
+
 train_on = "probs" # probs or labels
 n_epochs = 3
 lr = 1e-3
@@ -312,7 +323,42 @@ dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/V
                       Y=Y_probs.clone().clamp(0,1).detach().numpy())
 
 dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
+
+# +
+# torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
+
+# +
+# al.unique_prob_dict[1]
 # -
+L_final = L[valid_embeddings]
+
+indices_shuffle = np.random.permutation(df_vis_final.shape[0])
+
+
+train_idx, test_idx = indices_shuffle[:10000], indices_shuffle[10000:]
+
+df_train = df_vis_final.iloc[train_idx]
+df_test = df_vis_final.iloc[test_idx]
+
+L_train = L_final[train_idx]
+L_test = L_final[test_idx]
+
+lm_metrics = {}
+for i in range(20):
+    
+    lm = LabelModel(df=df_train,
+                        active_learning=False,
+                        add_cliques=True,
+                        add_prob_loss=False,
+                        n_epochs=200,
+                        lr=1e-1)
+
+    Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
+    lm.analyze()
+    lm.print_metrics()
+    lm_metrics[i] = lm.metric_dict
+
+df_train["y"].mean()
 
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
@@ -323,41 +369,125 @@ al_kwargs = {'add_prob_loss': False,
              'lr': 1e-1
             }
 
-# +
-# torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
 
 # +
-# al.unique_prob_dict[1]
+
+def visual_genome_experiment(nr_al_it, nr_runs, randomness):
+    al_metrics = {}
+    al_metrics["lm_metrics"] = {}
+    al_metrics["fm_metrics"] = {}
+
+    for i in range(nr_runs):
+        query_strategy = "relative_entropy"
+
+        al = ActiveLearningPipeline(it=nr_al_it,
+#                                     final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                                    **al_kwargs,
+                                    query_strategy=query_strategy,
+                                    image_dir = "/tmp/data/visual_genome/VG_100K",
+                                    randomness=randomness)
+
+        Y_probs_al = al.refine_probabilities(label_matrix=L_final, cliques=cliques, class_balance=class_balance, label_matrix_test=L_final, y_test=df_vis_final["y"].values)
+        al.label_model.print_metrics()
+#         al.final_model.print_metrics()
+        al_metrics["lm_metrics"][i] = al.metrics
+#         al_metrics["fm_metrics"][i] = al.final_metrics
+        
+    return al_metrics
+
+
 # -
 
+metrics_vis_random = visual_genome_experiment(30, 10, 1)
 
-
-len(valid_embeddings)
-
-df_vis[valid_embeddings].y.mean()
 
 # +
-al_metrics = {}
-al_metrics["lm_metrics"] = {}
-al_metrics["fm_metrics"] = {}
+# import pickle
+# with open("results/al_metrics_vis.pkl", "rb") as f:
+#     metrics_vis = pickle.load(f)
 
-for i in range(10):
-    it = 20
-    query_strategy = "relative_entropy"
-
-    al = ActiveLearningPipeline(it=it,
-#                                 final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
-                                **al_kwargs,
-                                query_strategy=query_strategy,
-                                image_dir = "/tmp/data/visual_genome/VG_100K",
-                                randomness=0)
-
-    Y_probs_al = al.refine_probabilities(label_matrix=L[valid_embeddings], cliques=cliques, class_balance=class_balance)
-    al.label_model.print_metrics()
-    al.final_model.print_metrics()
-    al_metrics["lm_metrics"][i] = al.metrics
-    al_metrics["fm_metrics"][i] = al.final_metrics
+# +
+# with open("results/al_metrics_vis_random.pkl", "wb") as f:
+#     pickle.dump(metrics_df_vis_random, f)
 # -
+
+def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
+    joined_metrics = pd.DataFrame()
+    for i in range(nr_runs):
+        int_df = pd.DataFrame.from_dict(al_metrics[metric_string][i]).drop("Labels").T
+        int_df = int_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Metric", 0: "Value"})
+        int_df["Run"] = str(i)
+
+        joined_metrics = pd.concat([joined_metrics, int_df])
+
+    joined_metrics["Value"] = joined_metrics["Value"].apply(pd.to_numeric)
+    joined_metrics["Strategy"] = strategy_string
+    # joined_metrics = joined_metrics[joined_metrics["Run"] != "7"]
+    
+    return joined_metrics
+
+
+metrics_df_vis = create_metric_df(metrics_vis, 10, "lm_metrics", "Relative Entropy")
+metrics_df_vis_random = create_metric_df(metrics_vis_random, 10, "lm_metrics", "Random")
+
+sns.set_theme(style="white")
+colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors))
+
+metrics_df_vis = metrics_df_vis[metrics_df_vis["Metric"] == "Accuracy"]
+metrics_df_vis_random = metrics_df_vis_random[metrics_df_vis_random["Metric"] == "Accuracy"]
+
+metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.25))
+
+metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.5))
+
+metrics_vis_joined = pd.concat([metrics_df_vis, metrics_df_vis_random])
+
+ax = sns.lineplot(data=metrics_vis_joined, x="Active Learning Iteration", y="Value", hue = "Strategy", ci=50, n_boot=1000, estimator=np.median, legend=False)
+
+
+
+al_metrics_vis = visual_genome_experiment(30, 10)
+
+import pickle
+file_metrics = open("results/al_metrics_vis.pkl", "wb")
+pickle.dump(al_metrics_vis, file_metrics)
+file_metrics.close()
+
+
+def visual_genome_experiment(nr_al_it, nr_runs):
+    al_metrics = {}
+    al_metrics["lm_metrics"] = {}
+    al_metrics["fm_metrics"] = {}
+
+    for i in range(nr_runs):
+        query_strategy = "relative_entropy"
+
+        al = ActiveLearningPipeline(it=nr_al_it,
+                                    final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                                    **al_kwargs,
+                                    query_strategy=query_strategy,
+                                    image_dir = "/tmp/data/visual_genome/VG_100K",
+                                    randomness=0)
+
+        Y_probs_al = al.refine_probabilities(label_matrix=L_final, cliques=cliques, class_balance=class_balance, label_matrix_test=L_final, y_test=df_vis_final["y"].values)
+        al.label_model.print_metrics()
+        al.final_model.print_metrics()
+        al_metrics["lm_metrics"][i] = al.metrics
+        al_metrics["fm_metrics"][i] = al.final_metrics
+        
+    return al_metrics
+
+
+al_metrics_vis_2 = visual_genome_experiment(30, 1)
+
+file_metrics = open("results/al_metrics_vis_2.pkl", "wb")
+pickle.dump(al_metrics_vis_2, file_metrics)
+file_metrics.close()
+
+al.plot_metrics(al.test_metrics)
+
+al.plot_metrics(al.metrics)
 
 al.final_model.losses
 

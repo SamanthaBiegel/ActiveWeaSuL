@@ -75,9 +75,9 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
     def __init__(self,
                  pretrained_model,
-                 test_dataloader,
                  df,
                  data_path_prefix,
+                 soft_labels=True,
                  word_embedding_size=100,
                  n_epochs=1,
                  lr=1e-3,
@@ -91,7 +91,7 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         self.word_embedding_size = word_embedding_size
         self.text_module = WordEmb(emb_path=data_path_prefix + "data/word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
         self.concat_module = FlatConcat().to(self.device)
-        self.test_dataloader = test_dataloader
+        self.soft_labels=soft_labels
         self.df = df
         self.n_epochs = n_epochs
         self.lr = lr
@@ -134,6 +134,8 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
     def fit(self, train_dataloader):
         """Train classifier"""
 
+        self.train_dataloader = train_dataloader
+
         self.init_model()
         self.train()
 
@@ -141,13 +143,18 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
         self.counts = 0
         self.average_losses = []
 
-        loss_f = self.cross_entropy_soft_labels
+        if self.soft_labels:
+            loss_f = self.cross_entropy_soft_labels
+        else:
+            loss_f = F.cross_entropy
+
+        # loss_f = self.cross_entropy_soft_labels
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 
         n_batches = len(train_dataloader)
 
-        for epoch in tqdm(range(self.n_epochs)):
+        for epoch in tqdm(range(self.n_epochs), desc="VR Model Epochs"):
             for i, (batch_features, batch_labels) in enumerate(train_dataloader):
                 optimizer.zero_grad()
 
@@ -159,21 +166,21 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
                 loss = loss_f(batch_logits, batch_labels["label"])
 
+                loss.backward()
+
+                optimizer.step()
+
                 count = len(batch_labels)
                 self.losses.append(loss * count)
                 self.counts += count
                 self.average_losses.append((sum(self.losses) / self.counts).item())
-
-                loss.backward()
-
-                optimizer.step()
 
         return self
 
     def predict(self):
         """Predict on the train set"""
 
-        self.preds = self._predict(self.test_dataloader)
+        self.preds = self._predict(self.train_dataloader)
 
         return self.preds
 

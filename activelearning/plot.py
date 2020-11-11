@@ -156,12 +156,12 @@ class PlotMixin:
 
         return fig
 
-    def plot_metrics(self, true_label_counts=True):
+    def plot_metrics(self, metrics, true_label_counts=False):
         """Plot metrics per iteration"""
 
         figures = []
 
-        figures.append(self.plot_dict(self.metrics, "Metric", 0))
+        figures.append(self.plot_dict(metrics, "Metric", 0))
         figures[0].update_layout(title_text="Label model performance", yaxis_title="")
         if true_label_counts:
             metric_dict = self.label_model._analyze(self.label_model.predict_true_counts(), self.df["y"].values)
