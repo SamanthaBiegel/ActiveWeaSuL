@@ -15,6 +15,7 @@ class LabelModel(PerformanceMixin):
                  df: pd.DataFrame,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
+                 penalty_strength: float = 1e3,
                  active_learning: bool = False,
                  add_cliques: bool = False,
                  add_prob_loss: bool = False,
@@ -28,6 +29,7 @@ class LabelModel(PerformanceMixin):
         self.hide_progress_bar = hide_progress_bar
         self.z = None
         self.df = df
+        self.penalty_strength = penalty_strength
  
     def init_properties(self):
         """Get properties such as dimensions from label matrix"""
@@ -55,15 +57,15 @@ class LabelModel(PerformanceMixin):
 
         return cov_OS
 
-    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 1e3):
+    def loss_prior_knowledge_cov(self, cov_OS, penalty_strength: float = 1e4):
         """Compute loss from prior knowledge on part of covariance matrix"""
 
-        cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
-        # cov_OS_al = cov_OS[self.al_idx]
+        # cov_OS_al = cov_OS[list(itertools.chain.from_iterable([self.wl_idx[clique] for clique in ["3", "0_3", "1_3", "2_3", "1_2_3"]]))]
+        cov_OS_al = cov_OS[self.al_idx]
 
         return penalty_strength * torch.norm(cov_OS_al - self.cov_AL[:, None]) ** 2
 
-    def loss_prior_knowledge_probs(self, probs, penalty_strength: float = 1e3):
+    def loss_prior_knowledge_probs(self, probs):
         """Compute probabilistic label loss for sampled data points"""
 
         # Label to probabilistic label (eg 1 to (0 1))
@@ -82,7 +84,7 @@ class LabelModel(PerformanceMixin):
 
         # return penalty_strength * torch.sum(discount_factor * ((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask] ** 2))
 
-        return penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
+        return self.penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
     
     def loss_probs(self, probs, penalty_strength: float = 1e3):
         """Compute loss for probabilities below 0 or above 1"""
@@ -106,6 +108,8 @@ class LabelModel(PerformanceMixin):
         if self.active_learning == "cov":
             # Add loss for current covariance if taking active learning weak label into account
             tmp_cov_OS = self.calculate_cov_OS()
+            # print(loss)
+            # print(self.loss_prior_knowledge_cov(tmp_cov_OS))
             loss += self.loss_prior_knowledge_cov(tmp_cov_OS)
 
         if self.active_learning == "probs":
@@ -207,11 +211,14 @@ class LabelModel(PerformanceMixin):
 
         psi = np.concatenate([psi, psi_2], axis=1)
 
-        # wl_idx = {k: v for k, v in wl_idx.items() if k in ["0", "1", "2", "3", "1_2"]}
 
-        # psi = np.concatenate([psi, psi_2], axis=1)[:, list(itertools.chain.from_iterable([wl_idx[clique] for clique in wl_idx.keys()]))]
+        # if self.active_learning == "cov":
 
-        # wl_idx["1_2"] = [8,9,10,11]
+        #     wl_idx = {k: v for k, v in wl_idx.items() if k in ["0", "1", "2", "3", "1_2"]}
+
+        #     psi = np.concatenate([psi, psi_2], axis=1)[:, list(itertools.chain.from_iterable([wl_idx[clique] for clique in wl_idx.keys()]))]
+
+        #     wl_idx["1_2"] = [8,9,10,11]
 
         return psi, wl_idx
 
@@ -264,30 +271,29 @@ class LabelModel(PerformanceMixin):
                 self.mask[self.al_idx, :] = 0
                 self.mask[:, self.al_idx] = 0
 
-                # self.cov_AL = torch.Tensor((self.psi[:, self.al_idx] * self.psi[:, self.al_idx]).mean(axis=0) / self.class_balance[:, None] * self.cov_Y)[:, 1]
                 E_AL_Y = self.E_O.copy()
                 # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
-                # E_AL_Y[self.al_idx[0]] = 0
+                E_AL_Y[self.al_idx[0]] = 0
+                self.cov_AL = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
 
-                self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
+                # self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
-                self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["0_3"][0:2]] = 0
+                # self.cov_AL_03 = torch.Tensor(E_AL_Y[self.wl_idx["0_3"]] - self.psi[:, self.wl_idx["0_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
-                self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["1_3"][0:2]] = 0
+                # self.cov_AL_13 = torch.Tensor(E_AL_Y[self.wl_idx["1_3"]] - self.psi[:, self.wl_idx["1_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
-                self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["2_3"][0:2]] = 0
+                # self.cov_AL_23 = torch.Tensor(E_AL_Y[self.wl_idx["2_3"]] - self.psi[:, self.wl_idx["2_3"]].mean(axis=0)*self.E_S)
 
-                E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
-                self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
+                # E_AL_Y[self.wl_idx["1_2_3"][0:4]] = 0
+                # self.cov_AL_123 = torch.Tensor(E_AL_Y[self.wl_idx["1_2_3"]] - self.psi[:, self.wl_idx["1_2_3"]].mean(axis=0)*self.E_S)
 
-                self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
-                # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23))
+                # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
 
-        if self.z is None:
-            self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
+        # if self.z is None:
+        self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
 
         if self.cov_O_inverse.shape[0] != self.z.shape[0]:
             self.z = nn.Parameter(torch.cat((self.z, torch.normal(0, 1, size=(self.y_dim, self.y_dim - 1)))), requires_grad=True)
@@ -386,7 +392,7 @@ class LabelModel(PerformanceMixin):
         return self._predict(self.label_matrix, self.psi, self.get_true_mu()[:, 1][:, None], self.df["y"].mean())
 
     def predict_true_counts(self):
-        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix, self.df.y.values[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.df.y.values[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
         P_Y_lambda = np.zeros((self.N, 2))
 
