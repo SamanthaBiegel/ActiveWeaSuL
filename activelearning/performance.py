@@ -38,9 +38,9 @@ class PerformanceMixin:
         """Matthews correlation coefficient"""
 
         nominator = TP * TN - FP * FN
-        denominator_squared = (TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)
+        denominator = np.sqrt(TP + FP) * np.sqrt(TP + FN) * np.sqrt(TN + FP) * np.sqrt(TN + FN)
 
-        return nominator / np.sqrt(denominator_squared)
+        return nominator / denominator
 
     def recall(self, TP, FN):
         """Fraction of true class 1 and all class 1"""
