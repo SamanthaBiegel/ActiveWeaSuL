@@ -234,7 +234,7 @@ class ActiveLearningPipeline(PlotMixin):
         
         self.log(count=0, probs=old_probs, test_probs=test_probs, final_probs=final_probs, final_test_probs=final_test_probs)
 
-        for i in tqdm(range(self.it)):
+        for i in tqdm(range(self.it), desc="Active Learning Iterations"):
             sel_idx = self.query(old_probs, i)
             self.ground_truth_labels[sel_idx] = self.y[sel_idx]
 
