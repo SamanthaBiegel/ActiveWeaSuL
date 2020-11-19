@@ -21,9 +21,9 @@ if DAP:
 # #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
 # #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
 # #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
-#     path_prefix = "/tmp/"
-#     import torch
-#     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
+    path_prefix = "/tmp/"
+    import torch
+    pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
 else:
     import torchvision.models as models
     pretrained_model = models.resnet18(pretrained=True)
@@ -330,7 +330,7 @@ al_kwargs = {'add_prob_loss': False,
              'active_learning': "probs",
              'df': df_train,
              'n_epochs': 200,
-             'batch_size': 16,
+             'batch_size': 32,
              'lr': 1e-1
             }
 
@@ -347,14 +347,14 @@ def visual_genome_experiment(nr_al_it, nr_runs, randomness):
     al_metrics = {}
     al_metrics["lm_metrics"] = {}
     al_metrics["lm_test_metrics"] = {}
-    al_metrics["fm_metrics"] = {}
-    al_metrics["fm_test_metrics"] = {}
+#     al_metrics["fm_metrics"] = {}
+#     al_metrics["fm_test_metrics"] = {}
 
     for i in range(nr_runs):
         query_strategy = "relative_entropy"
 
         al = ActiveLearningPipeline(it=nr_al_it,
-                                    final_model=VisualRelationClassifier(pretrained_model, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                                     final_model=VisualRelationClassifier(pretrained_model, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                     **al_kwargs,
                                     query_strategy=query_strategy,
                                     image_dir = "/tmp/data/visual_genome/VG_100K",
@@ -367,28 +367,27 @@ def visual_genome_experiment(nr_al_it, nr_runs, randomness):
 
         al_metrics["lm_metrics"][i] = al.metrics
         al_metrics["lm_test_metrics"][i] = al.test_metrics
-        al_metrics["fm_metrics"][i] = al.final_metrics
-        al_metrics["fm_test_metrics"][i] = al.final_test_metrics
+#         al_metrics["fm_metrics"][i] = al.final_metrics
+#         al_metrics["fm_test_metrics"][i] = al.final_test_metrics
         
     return al_metrics
 
 
 # -
 
-metrics_vis_re = visual_genome_experiment(50, 1, 0)
+metrics_vis_re_gen = visual_genome_experiment(50, 5, 0)
 
 # +
 # metrics_vis_random = visual_genome_experiment(30, 10, 1)
-
-# +
-# import pickle
-# with open("results/al_metrics_vis.pkl", "rb") as f:
-#     metrics_vis = pickle.load(f)
 # -
 
 import pickle
-with open("results/al_metrics_vis_split_2.pkl", "wb") as f:
-    pickle.dump(metrics_vis_re, f)
+with open("results/al_metrics_vis_split.pkl", "rb") as f:
+    metrics_vis_re = pickle.load(f)
+
+import pickle
+with open("results/al_metrics_vis_gen.pickle", "wb") as f:
+    pickle.dump(metrics_vis_re_gen, f)
 
 
 def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_string):
@@ -408,28 +407,40 @@ def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_
     return joined_metrics
 
 
-metrics_joined = pd.concat([create_metric_df(metrics_vis_re, 1, "lm_metrics", "train", "Generative"),
-                           create_metric_df(metrics_vis_re, 1, "lm_test_metrics", "test", "Generative"),
-                           create_metric_df(metrics_vis_re, 1, "fm_metrics", "train", "Discriminative"),
-                           create_metric_df(metrics_vis_re, 1, "fm_test_metrics", "test", "Discriminative")])
+metrics_joined = pd.concat([create_metric_df(metrics_vis_re_gen, 5, "lm_metrics", "train", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 5, "lm_test_metrics", "test", "Generative")])
+#                            create_metric_df(metrics_vis_re_gen, 5, "fm_metrics", "train", "Discriminative"),
+#                            create_metric_df(metrics_vis_re_gen, 5, "fm_test_metrics", "test", "Discriminative")])
+
+
+metrics_joined = pd.concat([metrics_joined, pd.read_csv("results/vis_re.csv")])
 
 # +
 # metrics_joined.to_csv("results/vis_re.csv")
 # -
 
+metrics_joined = pd.read_csv("results/vis_re.csv")
+
 sns.set_theme(style="white")
 colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
-ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set",
-                 ci=68, n_boot=1000, estimator="mean", kind="line", legend=False)
-ax.axes[0][0].set_ylim((0.2,0.9))
-plt.show()
+# +
+# ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set",
+#                  ci=68, n_boot=1000, estimator="mean", kind="line", legend=False)
+# ax.axes[0][0].set_ylim((0.2,0.9))
+# plt.show()
+# -
+
+metrics_joined
+
+ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
+                 ci=None, estimator="mean",kind="line", legend=False)
 
 ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
                  ci=68, n_boot=1000, estimator="mean",kind="line", legend=False)
 
-ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
+ax = sns.relplot(data=pd.read_csv("results/vis_re.csv"), x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
                  ci=68, n_boot=1000, estimator="mean",kind="line", legend=False)
 
 al.plot_metrics()
