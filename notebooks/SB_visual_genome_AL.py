@@ -13,44 +13,14 @@
 #     name: python3
 # ---
 
-from os import listdir
-from os.path import isfile, join
-path = "../../../s3_home/uploads"
-files = [f for f in listdir(path) if isfile(join(path, f))]
-
-with open("image_files.txt", "w") as f:
-    for item in files:
-        f.write("%s\n" % item)
-
-len(files)
-
-# +
-# # ! aws s3 mv s3://project/vis_trans_net/SB/data/visual_genome/VG_100K/glove s3://project/vis_trans_net/SB/data/word_embeddings --recursive
-
-# +
-# # ! aws s3 ls s3://project/vis_trans_net/SB/data/word_embeddings --recursive
-
-# +
-# # !aws s3 ls s3://project/vis_trans_net/SB/data --recursive
-
-# +
-# # ! aws s3 ls s3://user/gc03ye/uploads --recursive
-
-# +
-# # ! aws s3 cp s3://user/gc03ye/uploads s3://project/vis_trans_net/SB/data/ --recursive --exclude "*.jpg" --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "train.zip" --exclude "VRD/*" --exclude "VRD" --exclude ".ipynb_checkpoints*"
-# -
-
-# ! aws s3 ls s3://project/vis_trans_net/SB/models/
-
 # +
 DAP = True
     
 if DAP:
-    # ! pip install -r ../requirements.txt
-# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD /tmp/data/VRD --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
-    # ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
+# #     ! pip install -r ../requirements.txt
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
     path_prefix = "/tmp/"
     import torch
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
@@ -161,7 +131,8 @@ pred_list = ['carrying',
 import ast
 df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
-all_img = list(df_vis.source_img.drop_duplicates())
+# +
+# all_img = list(df_vis.source_img.drop_duplicates())
 
 # +
 # [img for img in all_img if img not in files]
@@ -191,32 +162,32 @@ all_img = list(df_vis.source_img.drop_duplicates())
 OTHER = 0
 
 # +
-WEAR = 1
+# WEAR = 1
 
-def lf_wear_object(x):
-    if x.subject_name == "person":
-        if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
-            return WEAR
-    return OTHER
+# def lf_wear_object(x):
+#     if x.subject_name == "person":
+#         if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
+#             return WEAR
+#     return OTHER
 
-def lf_area(x):
-    if (x.subject_w * x.subject_h) / (x.object_w * x.object_h) > 1:
-        return WEAR
-    return OTHER
+# def lf_area(x):
+#     if (x.subject_w * x.subject_h) / (x.object_w * x.object_h) > 1:
+#         return WEAR
+#     return OTHER
 
-def lf_dist(x):
-    if ((x.subject_x - x.object_x) + (x.subject_y - x.object_y)) > 10:
-        return OTHER
-    return WEAR
+# def lf_dist(x):
+#     if ((x.subject_x - x.object_x) + (x.subject_y - x.object_y)) > 10:
+#         return OTHER
+#     return WEAR
 
-def lf_ydist(x):
-    if x.subject_y_max > x.object_y_max and x.subject_y < x.object_y:
-        return WEAR
-    return OTHER
+# def lf_ydist(x):
+#     if x.subject_y_max > x.object_y_max and x.subject_y < x.object_y:
+#         return WEAR
+#     return OTHER
 
-lfs = [lf_wear_object, lf_dist, lf_area]
+# lfs = [lf_wear_object, lf_dist, lf_area]
 
-cliques=[[0],[1,2]]
+# cliques=[[0],[1,2]]
 
 # +
 SITON = 1
@@ -279,24 +250,6 @@ lm.print_metrics()
 # -
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 train_on = "probs" # probs or labels
 n_epochs = 3
 lr = 1e-3
@@ -309,20 +262,14 @@ word_embs = pd.read_csv(
 word_embs = list(word_embs.columns)
 
 # +
-n_epochs = 3
-lr=1e-2
-batch_size = 256
+# n_epochs = 3
+# lr=1e-2
+# batch_size = 64
 
 valid_embeddings = (df_vis["channels"] == 3) & df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
 
 df_vis_final = df_vis[valid_embeddings]
 df_vis_final.index = list(range(len(df_vis_final)))
-
-dataset_al = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_vis_final, 
-                      Y=Y_probs.clone().clamp(0,1).detach().numpy())
-
-dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 
 # +
 # torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
@@ -332,118 +279,186 @@ dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 # -
 L_final = L[valid_embeddings]
 
+np.random.seed(633)
 indices_shuffle = np.random.permutation(df_vis_final.shape[0])
 
 
-train_idx, test_idx = indices_shuffle[:10000], indices_shuffle[10000:]
+# +
+split_nr = int(np.ceil(0.9*df_vis_final.shape[0]))
+train_idx, test_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
 
 df_train = df_vis_final.iloc[train_idx]
 df_test = df_vis_final.iloc[test_idx]
+df_train.index = list(range(len(df_train)))
+df_test.index = list(range(len(df_test)))
 
-L_train = L_final[train_idx]
-L_test = L_final[test_idx]
+L_train = L_final[train_idx,:]
+L_test = L_final[test_idx,:]
 
-lm_metrics = {}
-for i in range(20):
+# +
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_test,
+                      Y=df_test["y"].values)
+dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_train,
+                      Y=df_train["y"].values)
+dl_train = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+
+# +
+# lm_metrics = {}
+# for i in range(20):
     
-    lm = LabelModel(df=df_train,
-                        active_learning=False,
-                        add_cliques=True,
-                        add_prob_loss=False,
-                        n_epochs=200,
-                        lr=1e-1)
+#     lm = LabelModel(df=df_train,
+#                         active_learning=False,
+#                         add_cliques=True,
+#                         add_prob_loss=False,
+#                         n_epochs=200,
+#                         lr=1e-1)
 
-    Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
-    lm.analyze()
-    lm.print_metrics()
-    lm_metrics[i] = lm.metric_dict
+#     Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
+#     lm.analyze()
+#     lm.print_metrics()
+#     lm_metrics[i] = lm.metric_dict
+# -
 
 df_train["y"].mean()
 
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
-             'df': df_vis_final,
+             'df': df_train,
              'n_epochs': 200,
-             'batch_size': batch_size,
+             'batch_size': 32,
              'lr': 1e-1
             }
 
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_vis_final,
+                      Y=df_vis_final["y"].values)
+dl = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
 # +
+n_epochs = 3
+lr=1e-3
 
 def visual_genome_experiment(nr_al_it, nr_runs, randomness):
     al_metrics = {}
     al_metrics["lm_metrics"] = {}
-    al_metrics["fm_metrics"] = {}
+    al_metrics["lm_test_metrics"] = {}
+#     al_metrics["fm_metrics"] = {}
+#     al_metrics["fm_test_metrics"] = {}
 
     for i in range(nr_runs):
         query_strategy = "relative_entropy"
 
         al = ActiveLearningPipeline(it=nr_al_it,
-#                                     final_model=VisualRelationClassifier(pretrained_model, dl_al_test, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                                     final_model=VisualRelationClassifier(pretrained_model, df_vis_final, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                     **al_kwargs,
                                     query_strategy=query_strategy,
                                     image_dir = "/tmp/data/visual_genome/VG_100K",
                                     randomness=randomness)
 
-        Y_probs_al = al.refine_probabilities(label_matrix=L_final, cliques=cliques, class_balance=class_balance, label_matrix_test=L_final, y_test=df_vis_final["y"].values)
-        al.label_model.print_metrics()
-#         al.final_model.print_metrics()
+        Y_probs_al = al.refine_probabilities(label_matrix=L_train, cliques=cliques, class_balance=class_balance,
+                                             label_matrix_test=L_test, y_test=df_test["y"].values, dl_train=dl_train, dl_test=dl_test)
+#         Y_probs_al = al.refine_probabilities(label_matrix=L_final, cliques=cliques, class_balance=class_balance,
+#                                              label_matrix_test=L_final, y_test=df_vis_final["y"].values, dl_train=dl, dl_test=dl)
+
         al_metrics["lm_metrics"][i] = al.metrics
+        al_metrics["lm_test_metrics"][i] = al.test_metrics
 #         al_metrics["fm_metrics"][i] = al.final_metrics
+#         al_metrics["fm_test_metrics"][i] = al.final_test_metrics
         
     return al_metrics
 
 
 # -
 
-metrics_vis_random = visual_genome_experiment(30, 10, 1)
-
-
-# +
-# import pickle
-# with open("results/al_metrics_vis.pkl", "rb") as f:
-#     metrics_vis = pickle.load(f)
+metrics_vis_re_gen = visual_genome_experiment(50, 5, 0)
 
 # +
-# with open("results/al_metrics_vis_random.pkl", "wb") as f:
-#     pickle.dump(metrics_df_vis_random, f)
+# metrics_vis_random = visual_genome_experiment(30, 10, 1)
 # -
 
-def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
+import pickle
+with open("results/al_metrics_vis_split.pkl", "rb") as f:
+    metrics_vis_re = pickle.load(f)
+
+import pickle
+with open("results/al_metrics_vis_gen.pickle", "wb") as f:
+    pickle.dump(metrics_vis_re_gen, f)
+
+
+def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_string):
     joined_metrics = pd.DataFrame()
     for i in range(nr_runs):
-        int_df = pd.DataFrame.from_dict(al_metrics[metric_string][i]).drop("Labels").T
+        int_df = pd.DataFrame.from_dict(al_metrics[metric_string][i]).drop("Labels", errors="ignore").T
         int_df = int_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Metric", 0: "Value"})
         int_df["Run"] = str(i)
 
         joined_metrics = pd.concat([joined_metrics, int_df])
 
     joined_metrics["Value"] = joined_metrics["Value"].apply(pd.to_numeric)
-    joined_metrics["Strategy"] = strategy_string
-    # joined_metrics = joined_metrics[joined_metrics["Run"] != "7"]
+    joined_metrics["Set"] = strategy_string
+    joined_metrics["Model"] = model_string
+    joined_metrics["Label"] = "AL"
     
     return joined_metrics
 
 
-metrics_df_vis = create_metric_df(metrics_vis, 10, "lm_metrics", "Relative Entropy")
-metrics_df_vis_random = create_metric_df(metrics_vis_random, 10, "lm_metrics", "Random")
+metrics_joined = pd.concat([create_metric_df(metrics_vis_re_gen, 5, "lm_metrics", "train", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 5, "lm_test_metrics", "test", "Generative")])
+#                            create_metric_df(metrics_vis_re_gen, 5, "fm_metrics", "train", "Discriminative"),
+#                            create_metric_df(metrics_vis_re_gen, 5, "fm_test_metrics", "test", "Discriminative")])
+
+
+metrics_joined = pd.concat([metrics_joined, pd.read_csv("results/vis_re.csv")])
+
+# +
+# metrics_joined.to_csv("results/vis_re.csv")
+# -
+
+metrics_joined = pd.read_csv("results/vis_re.csv")
 
 sns.set_theme(style="white")
 colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
+# +
+# ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set",
+#                  ci=68, n_boot=1000, estimator="mean", kind="line", legend=False)
+# ax.axes[0][0].set_ylim((0.2,0.9))
+# plt.show()
+# -
+
+metrics_joined
+
+ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
+                 ci=None, estimator="mean",kind="line", legend=False)
+
+ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
+                 ci=68, n_boot=1000, estimator="mean",kind="line", legend=False)
+
+ax = sns.relplot(data=pd.read_csv("results/vis_re.csv"), x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
+                 ci=68, n_boot=1000, estimator="mean",kind="line", legend=False)
+
+al.plot_metrics()
+
+metrics_df_vis = create_metric_df(metrics_vis, 10, "lm_metrics", "Relative Entropy")
+metrics_df_vis_random = create_metric_df(metrics_vis_random, 10, "lm_metrics", "Random")
+
 metrics_df_vis = metrics_df_vis[metrics_df_vis["Metric"] == "Accuracy"]
 metrics_df_vis_random = metrics_df_vis_random[metrics_df_vis_random["Metric"] == "Accuracy"]
 
-metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.25))
+# +
+# metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.25))
 
-metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.5))
+# +
+# metrics_df_vis.groupby("Active Learning Iteration").agg(lambda x: x.quantile(0.5))
+# -
 
 metrics_vis_joined = pd.concat([metrics_df_vis, metrics_df_vis_random])
-
-ax = sns.lineplot(data=metrics_vis_joined, x="Active Learning Iteration", y="Value", hue = "Strategy", ci=50, n_boot=1000, estimator=np.median, legend=False)
 
 
 
