@@ -17,10 +17,10 @@
 DAP = True
     
 if DAP:
-# #     ! pip install -r ../requirements.txt
-# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
-# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
+    # ! pip install -r ../requirements.txt
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    # ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
     path_prefix = "/tmp/"
     import torch
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
@@ -379,14 +379,15 @@ metrics_vis_re_gen = visual_genome_experiment(50, 5, 0)
 
 # +
 # metrics_vis_random = visual_genome_experiment(30, 10, 1)
+
+# +
+# import pickle
+# with open("results/al_metrics_vis_split.pkl", "rb") as f:
+#     metrics_vis_re = pickle.load(f)
 # -
 
 import pickle
-with open("results/al_metrics_vis_split.pkl", "rb") as f:
-    metrics_vis_re = pickle.load(f)
-
-import pickle
-with open("results/al_metrics_vis_gen.pickle", "wb") as f:
+with open("results/al_metrics_vis_gen_2.pickle", "wb") as f:
     pickle.dump(metrics_vis_re_gen, f)
 
 
