@@ -30,6 +30,7 @@ class ActiveLearningPipeline(PlotMixin):
                  query_strategy: str = "margin",
                  alpha: float = 0.01,
                  beta: float = 0.1,
+                 penalty_strength: float = 1e3,
                  add_neighbors: int = 0,
                  add_cliques: bool = True,
                  add_prob_loss: bool = False,
@@ -48,6 +49,7 @@ class ActiveLearningPipeline(PlotMixin):
         self.label_model = LabelModel(df=df,
                                       n_epochs=n_epochs,
                                       lr=lr,
+                                      penalty_strength=penalty_strength,
                                       active_learning=active_learning,
                                       add_cliques=add_cliques,
                                       add_prob_loss=add_prob_loss,
@@ -131,11 +133,8 @@ class ActiveLearningPipeline(PlotMixin):
             rel_entropy[i] = entropy(lm_posteriors[i, :], sample_posteriors[i, :])#/len(bucket_gt)
 
         max_buckets = np.where(rel_entropy == np.max(rel_entropy))[0]
-        # print(lm_posteriors)
-        # print(sample_posteriors)
-        # print(rel_entropy)
-        # print(max_buckets)
-        random.seed(random.SystemRandom().random())
+        
+        random.seed(None)
         pick_bucket = random.choice(max_buckets)
 
         self.bucket_values = rel_entropy
@@ -144,8 +143,9 @@ class ActiveLearningPipeline(PlotMixin):
 
     def query(self, probs, iteration):
         """Choose data point to label from label predictions"""
-
-        pick = np.random.uniform()
+        
+        random.seed(None)
+        pick = random.uniform(0, 1)
 
         if pick < self.randomness:
             indices = [i for i in range(self.label_model.N) if self.ground_truth_labels[i] == -1 and not self.all_abstain[i]]
@@ -167,8 +167,7 @@ class ActiveLearningPipeline(PlotMixin):
             self.query_strategy = "margin"
             return self.query(probs, iteration)
 
-        # Make really random
-        random.seed(random.SystemRandom().random())
+        random.seed(None)
 
         # Pick a random point from least confident data points
         if self.add_neighbors:
@@ -233,7 +232,7 @@ class ActiveLearningPipeline(PlotMixin):
         self.confs = {range(len(self.unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}                
         
         self.log(count=0, probs=old_probs, test_probs=test_probs, final_probs=final_probs, final_test_probs=final_test_probs)
-
+        
         for i in tqdm(range(self.it), desc="Active Learning Iterations"):
             sel_idx = self.query(old_probs, i)
             self.ground_truth_labels[sel_idx] = self.y[sel_idx]

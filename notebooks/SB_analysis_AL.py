@@ -25,6 +25,7 @@ import pandas as pd
 import random
 import plotly.express as px
 import plotly.graph_objects as go
+from scipy.stats import entropy
 import seaborn as sns
 import sys
 import torch
@@ -46,17 +47,22 @@ from pipeline import ActiveLearningPipeline
 pd.options.display.expand_frame_repr = False 
 np.set_printoptions(suppress=True, precision=16)
 
+# +
 N = 10000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 p_z = 0.5
 
-data = SyntheticData(N, p_z, centroids)
-df = data.sample_data_set().create_df()
+# data = SyntheticData(N, p_z, centroids)
+# df = data.sample_data_set().create_df()
 
-df.loc[:, "wl1"] = (df["x2"]<0.4)*1
-df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
-df.loc[:, "wl3"] = (df["x1"]<-1)*1
+# df.loc[:, "wl1"] = (df["x2"]<0.4)*1
+# df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
+# df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
+# label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+# -
+
+df = pd.read_csv("../data/synthetic_dataset_3.csv")
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 
 # +
@@ -89,73 +95,62 @@ lm = LabelModel(df=df,
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
 lm.print_metrics()
-
-# +
-lambda_combs, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-new_counts = lambda_counts.copy()
-rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
-for i, comb in enumerate(lambda_combs):
-    nr_non_abstain = (comb != -1).sum()
-    if nr_non_abstain < lm.nr_wl:
-        if nr_non_abstain == 0:
-            new_counts[i] = 0
-        else:
-            match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
-            new_counts[i] = lambda_counts[match_rows].sum()
-
-P_lambda = torch.Tensor((new_counts/lm.N)[lambda_index][:, None])
-
-# +
-lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([lm.label_matrix,df.y.values[:,None]],axis=1), axis=0, return_counts=True, return_inverse=True)
-
-P_Y_lambda = np.zeros((lm.N, 2))
-
-P_Y_lambda[df.y.values == 0, 0] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df.y.values == 0]
-P_Y_lambda[df.y.values == 0, 1] = 1 - P_Y_lambda[df.y.values == 0, 0]
-
-P_Y_lambda[df.y.values == 1, 1] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df.y.values == 1]
-P_Y_lambda[df.y.values == 1, 0] = 1 - P_Y_lambda[df.y.values == 1, 1]                                                               
-
-# +
-true_probs = lm.predict_true()[:, 1]
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=P_Y_lambda[:, 1], y=true_probs, mode='markers', showlegend=False, marker_color=np.array(px.colors.qualitative.Pastel)[0]))
-fig.add_trace(go.Scatter(x=np.linspace(0, 1, 100), y=np.linspace(0, 1, 100), line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel)[1]), showlegend=False))
-
-fig.update_yaxes(range=[0, 1], title_text="True from Junction Tree ")
-fig.update_xaxes(range=[0, 1], title_text="True from P(Y, lambda)")
-fig.update_layout(template="plotly_white", width=1000, height=500)
-fig.show()
 # -
 
-fig = go.Figure(go.Scatter(x=P_lambda.squeeze(), y=np.array(true_probs)-P_Y_lambda[:,1], mode="markers"))
-fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
-fig.show()
+# ### Bucket entropy over time
 
-entropies_random = {}
-for i in range(3):
-    it = 30
-    query_strategy = "margin"
-    L = label_matrix[:, :-1]
-    al_kwargs["active_learning"] = "probs"
+# +
+it = 30
+query_strategy = "relative_entropy"
+L = label_matrix[:, :-1]
 
-    al = ActiveLearningPipeline(it=it,
-    #                             final_model = DiscriminativeModel(df, **final_model_kwargs),
-                                **al_kwargs,
-                                query_strategy=query_strategy,
-                                randomness=1)
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0)
 
-    Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-    al.label_model.print_metrics()
-    
-    entropy_sampled_buckets = []
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
 
-    for j in range(it):
-        bucket_list = al.unique_inverse[al.queried[:j+1]]
-        entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
+# entropy_sampled_buckets = []
+
+# for j in range(it):
+#     bucket_list = al.unique_inverse[al.queried[:j+1]]
+#     entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
+
+
+# -
+
+def bucket_entropy_experiment(strategy, randomness):
+
+    entropies = {}
+    for i in tqdm(range(10), desc="Repetitions"):
+        it = 30
+        query_strategy = strategy
+        L = label_matrix[:, :-1]
+
+        al = ActiveLearningPipeline(it=it,
+                                    **al_kwargs,
+                                    query_strategy=query_strategy,
+                                    randomness=randomness)
+
+        Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
+
+        entropy_sampled_buckets = []
+
+        for j in range(it):
+            bucket_list = al.unique_inverse[al.queried[:j+1]]
+            entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
+
+        entropies[i] = entropy_sampled_buckets
         
-    entropies_random[i] = entropy_sampled_buckets
+    return entropies
 
+
+entropies_marg = bucket_entropy_experiment("margin", 0)
+entropies_re = bucket_entropy_experiment("relative_entropy", 0)
+entropies_random = bucket_entropy_experiment("margin", 1)
+
+# +
 entropies_marg_df = pd.DataFrame.from_dict(entropies_marg).stack().reset_index().rename(columns={"level_0": "Number of points acquired", "level_1": "Run", 0: "Entropy"})
 entropies_marg_df["Strategy"] = "Margin"
 
@@ -167,21 +162,28 @@ entropies_random_df["Strategy"] = "Random"
 
 entropies_joined = pd.concat([entropies_re_df, entropies_marg_df, entropies_random_df])
 
-# +
-# entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+entropies_joined["Number of points acquired"] = entropies_joined["Number of points acquired"].apply(lambda x: x+1)
 # -
 
-entropies_joined["Number of points acquired"] = entropies_joined["Number of points acquired"].apply(lambda x: x+1)
+entropies_joined = entropies_joined.rename(columns={"Number of points acquired": "Number of labeled points"})
 
 # +
-# sns.set_theme(style="white")
+# entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+
+# +
+# entropies_joined = pd.read_csv("results/bucket_entropies.csv")
+
+# +
 colors = ["#d88c9a",  "#086788",  "#e3b505","#ef7b45",  "#739e82"]
 
 sns.set(rc={'figure.figsize':(15, 10)}, style="whitegrid", palette=sns.color_palette(colors))
-ax = sns.lineplot(data=entropies_joined, x="Number of points acquired", y="Entropy", hue="Strategy", ci=68, n_boot=10000, hue_order=["Random", "Relative Entropy", "Margin"])
-plt.gca().legend().set_title('')
-fig = ax.get_figure()
-fig.savefig("plots/entropies.png")
+ax = sns.lineplot(data=entropies_joined, x="Number of labeled points", y="Entropy", hue="Strategy", ci=68, n_boot=10000, hue_order=["Random", "Relative Entropy", "Margin"])
+handles,labels = ax.axes.get_legend_handles_labels()
+labels = ["Random", "MaxKL", "Margin"]
+plt.legend(handles=handles, labels=labels, loc="lower right")
+plt.show()
+# fig = ax.get_figure()
+# fig.savefig("plots/entropies.png")
 # -
 
 entropy_df = pd.DataFrame.from_dict(al.bucket_AL_values).stack().reset_index().rename(columns={"level_0": "WL bucket", "level_1": "Active Learning Iteration", 0: "KL divergence"})
@@ -256,15 +258,29 @@ for key, value in strength_metrics.items():
         joined_lambdas = pd.concat([joined_lambdas, create_metric_df(value, 10, "lm_metrics", test_strengths[key])])
 
 
-joined_lambdas
+for key, value in strength_metrics.items():
+    if key == 0:
+        joined_lambdas_final = create_metric_df(value, 10, "fm_metrics", test_strengths[key])
+    else:
+        joined_lambdas_final = pd.concat([joined_lambdas, create_metric_df(value, 10, "fm_metrics", test_strengths[key])])
 
 joined_lambdas = joined_lambdas[joined_lambdas["Metric"] == "Accuracy"]
+joined_lambdas["Model"] = "Generative"
+
+joined_lambdas_final = joined_lambdas_final[joined_lambdas_final["Metric"] == "Accuracy"]
+joined_lambdas_final["Model"] = "Discriminative"
+
+joined_lambdas_models = pd.concat([joined_lambdas, joined_lambdas_final])
+
+joined_lambdas_models
 
 colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
 sns.set(style="whitegrid", palette=sns.color_palette(colors), rc={'figure.figsize':(15,10)})
 
 
-ax = sns.lineplot(data=joined_lambdas, x="Active Learning Iteration", y="Value", ci=68, n_boot=1000, estimator="mean", hue="Lambda", palette=sns.color_palette(colors), legend=True)
+joined_lambdas_filter = joined_lambdas[joined_lambdas["Lambda"] != 1e2]
+
+ax = sns.relplot(data=joined_lambdas_models, x="Active Learning Iteration", y="Value", col="Model", ci=68, n_boot=1000, estimator="mean", hue="Lambda", kind="line", palette=sns.color_palette(colors), legend=True)
 # (ax.set_titles("{col_name}"))
 
 ax = sns.relplot(data=joined_lambdas, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=10000, estimator="mean", hue="Lambda", palette="deep", legend=True)
@@ -376,8 +392,76 @@ fm.print_metrics()
 
 plot_train_loss(fm.losses)
 
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final = fm.fit(features=data.X, labels=Y_probs.detach().numpy()).predict()
+df = pd.read_csv("../data/synthetic_dataset_3.csv")
+
+random.seed(None)
+df_1 = df.iloc[[random.choice(range(len(df)))]]
+
+df_1[["x1", "x2"]].values.squeeze()
+
+fm = DiscriminativeModel(df_1, **final_model_kwargs, soft_labels=False)
+probs_final = fm._predict(torch.Tensor(df[["x1", "x2"]].values))
+fm._analyze(probs_final, df["y"].values)
+
+fm = DiscriminativeModel(df_1, **final_model_kwargs, soft_labels=False)
+probs_final = fm.fit(features=df_1[["x1", "x2"]].values[None, :], labels=np.array(df_1["y"])[None])._predict(torch.Tensor(df[["x1", "x2"]].values))
+fm._analyze(probs_final, df["y"].values)["Accuracy"]
+
+torch.argmin(torch.abs(probs_final[:, 1] - probs_final[:, 0])).item()
+
+probs_final[6977]
+
+final_model_kwargs
+
+final_model_kwargs["batch_size"] = 1
+
+# +
+
+accuracy_dict = {}
+for j in tqdm(range(10)):
+    accuracies = []
+    queried = []
+    fm = DiscriminativeModel(df_1, **final_model_kwargs, soft_labels=False)
+    probs = fm._predict(torch.Tensor(df[["x1", "x2"]].values))
+    accuracies.append(fm._analyze(probs, df["y"].values)["Accuracy"])
+
+    for i in range(30):    
+        queried.append(torch.argmin(torch.abs(probs[:, 1] - probs[:, 0])).item())
+
+        if i==0:
+            X = df.iloc[queried][["x1", "x2"]].values.squeeze()[None, :]
+            y = np.array(df.iloc[queried]["y"]).squeeze()[None]
+        else:
+            X = df.iloc[queried][["x1", "x2"]].values
+            y = np.array(df.iloc[queried]["y"])
+    #     print(X.shape)
+    #     print(y.shape)
+
+        fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=False)
+        probs = fm.fit(features=X, labels=y)._predict(torch.Tensor(df[["x1", "x2"]].values))
+        accuracies.append(fm._analyze(probs, df["y"].values)["Accuracy"])
+        
+    accuracy_dict[j] = accuracies
+
+
+# -
+
+accuracy_df = pd.DataFrame.from_dict(accuracy_dict)
+
+accuracy_df = accuracy_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Run", 0: "Accuracy"})
+
+accuracy_df
+
+# +
+# accuracy_df.to_csv("results/accuracy_only_AL.csv")
+# -
+
+sns.lineplot(data=accuracy_df, x="Active Learning Iteration", y="Accuracy", ci=68)
+
+plot_probs(df, probs, add_labeled_points=queried)
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=False)
+probs_final_al_mar = fm.fit(features=data.X, labels=data.y).predict()
 fm.analyze()
 fm.print_metrics()
 
