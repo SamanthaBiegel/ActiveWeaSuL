@@ -132,6 +132,9 @@ class ActiveLearningPipeline(PlotMixin):
             
             rel_entropy[i] = entropy(lm_posteriors[i, :], sample_posteriors[i, :])#/len(bucket_gt)
 
+            if -1 not in list(bucket_items):
+                rel_entropy[i] = 0
+
         max_buckets = np.where(rel_entropy == np.max(rel_entropy))[0]
         
         random.seed(None)
@@ -187,7 +190,7 @@ class ActiveLearningPipeline(PlotMixin):
 
         return self.predict(self)
 
-    def refine_probabilities(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train, dl_test):
+    def refine_probabilities(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train=None, dl_test=None):
         """Iteratively refine label matrix and training set predictions with active learning strategy"""
 
         self.label_matrix = label_matrix
@@ -202,6 +205,8 @@ class ActiveLearningPipeline(PlotMixin):
         if self.active_learning == "cov":
             # self.add_cliques = False
             self.label_matrix = np.concatenate([self.label_matrix, self.ground_truth_labels[:, None]], axis=1)
+            label_matrix_test = np.concatenate([label_matrix_test, np.full_like(y_test, -1)[:, None]], axis=1)
+            nr_wl += 1
 
         # if self.add_neighbors:
             # neigh = NearestNeighbors(n_neighbors=self.add_neighbors)
@@ -224,6 +229,7 @@ class ActiveLearningPipeline(PlotMixin):
                 final_test_probs = self.final_model._predict(dl_test)
             else:
                 final_probs = self.final_model.fit(features=self.X, labels=old_probs.detach().numpy()).predict()
+                final_test_probs = self.final_model.predict()
         else:
             final_probs = None
             final_test_probs = None
@@ -243,7 +249,7 @@ class ActiveLearningPipeline(PlotMixin):
                     # self.label_matrix[neighbors_sel_idx, nr_wl] = self.y[sel_idx]
                     pass
                 else:
-                    self.label_matrix[sel_idx, nr_wl] = self.y[sel_idx]
+                    self.label_matrix[sel_idx, nr_wl-1] = self.y[sel_idx]
 
             if not self.active_learning:
                 self.label_matrix[sel_idx, :] = self.y[sel_idx]
@@ -252,7 +258,7 @@ class ActiveLearningPipeline(PlotMixin):
                 new_probs = self.update_parameters(n_queried=i+1, alpha=self.alpha)
             else:
                 # Fit label model
-                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels, last_posteriors=self.unique_prob_dict[i]).predict()
+                new_probs = self.label_model.fit(label_matrix=self.label_matrix, cliques=cliques, class_balance=class_balance, ground_truth_labels=self.ground_truth_labels).predict()
 
             test_probs = self.label_model._predict(label_matrix_test, psi_test, self.label_model.mu, torch.tensor(self.label_model.E_S))
 
@@ -267,6 +273,7 @@ class ActiveLearningPipeline(PlotMixin):
                     final_test_probs = self.final_model._predict(dl_test)
                 else:
                     final_probs = self.final_model.fit(features=self.X, labels=new_probs.detach().numpy()).predict()
+                    final_test_probs = self.final_model.predict()
             else:
                 final_probs = None
                 final_test_probs = None

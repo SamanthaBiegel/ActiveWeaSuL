@@ -1,0 +1,1001 @@
+Active Learning Iteration,Metric,Accuracy,Run,Strategy,Model,Dash
+0,Accuracy,0.9015,0,Relative Entropy,Generative,y
+1,Accuracy,0.9637,0,Relative Entropy,Generative,y
+2,Accuracy,0.9648,0,Relative Entropy,Generative,y
+3,Accuracy,0.9648,0,Relative Entropy,Generative,y
+4,Accuracy,0.9648,0,Relative Entropy,Generative,y
+5,Accuracy,0.9648,0,Relative Entropy,Generative,y
+6,Accuracy,0.9648,0,Relative Entropy,Generative,y
+7,Accuracy,0.9648,0,Relative Entropy,Generative,y
+8,Accuracy,0.9648,0,Relative Entropy,Generative,y
+9,Accuracy,0.9648,0,Relative Entropy,Generative,y
+10,Accuracy,0.9648,0,Relative Entropy,Generative,y
+11,Accuracy,0.9648,0,Relative Entropy,Generative,y
+12,Accuracy,0.9648,0,Relative Entropy,Generative,y
+13,Accuracy,0.9648,0,Relative Entropy,Generative,y
+14,Accuracy,0.9648,0,Relative Entropy,Generative,y
+15,Accuracy,0.9648,0,Relative Entropy,Generative,y
+16,Accuracy,0.9648,0,Relative Entropy,Generative,y
+17,Accuracy,0.9648,0,Relative Entropy,Generative,y
+18,Accuracy,0.9648,0,Relative Entropy,Generative,y
+19,Accuracy,0.9648,0,Relative Entropy,Generative,y
+20,Accuracy,0.9648,0,Relative Entropy,Generative,y
+21,Accuracy,0.9648,0,Relative Entropy,Generative,y
+22,Accuracy,0.9648,0,Relative Entropy,Generative,y
+23,Accuracy,0.9648,0,Relative Entropy,Generative,y
+24,Accuracy,0.9648,0,Relative Entropy,Generative,y
+25,Accuracy,0.9648,0,Relative Entropy,Generative,y
+26,Accuracy,0.9648,0,Relative Entropy,Generative,y
+27,Accuracy,0.9648,0,Relative Entropy,Generative,y
+28,Accuracy,0.9648,0,Relative Entropy,Generative,y
+29,Accuracy,0.9648,0,Relative Entropy,Generative,y
+30,Accuracy,0.9648,0,Relative Entropy,Generative,y
+0,Accuracy,0.9015,1,Relative Entropy,Generative,y
+1,Accuracy,0.9637,1,Relative Entropy,Generative,y
+2,Accuracy,0.9648,1,Relative Entropy,Generative,y
+3,Accuracy,0.9637,1,Relative Entropy,Generative,y
+4,Accuracy,0.9637,1,Relative Entropy,Generative,y
+5,Accuracy,0.9637,1,Relative Entropy,Generative,y
+6,Accuracy,0.9637,1,Relative Entropy,Generative,y
+7,Accuracy,0.9637,1,Relative Entropy,Generative,y
+8,Accuracy,0.9637,1,Relative Entropy,Generative,y
+9,Accuracy,0.9637,1,Relative Entropy,Generative,y
+10,Accuracy,0.9648,1,Relative Entropy,Generative,y
+11,Accuracy,0.9637,1,Relative Entropy,Generative,y
+12,Accuracy,0.9637,1,Relative Entropy,Generative,y
+13,Accuracy,0.9637,1,Relative Entropy,Generative,y
+14,Accuracy,0.9648,1,Relative Entropy,Generative,y
+15,Accuracy,0.9648,1,Relative Entropy,Generative,y
+16,Accuracy,0.9648,1,Relative Entropy,Generative,y
+17,Accuracy,0.9648,1,Relative Entropy,Generative,y
+18,Accuracy,0.9648,1,Relative Entropy,Generative,y
+19,Accuracy,0.9648,1,Relative Entropy,Generative,y
+20,Accuracy,0.9648,1,Relative Entropy,Generative,y
+21,Accuracy,0.9648,1,Relative Entropy,Generative,y
+22,Accuracy,0.9648,1,Relative Entropy,Generative,y
+23,Accuracy,0.9648,1,Relative Entropy,Generative,y
+24,Accuracy,0.9648,1,Relative Entropy,Generative,y
+25,Accuracy,0.9648,1,Relative Entropy,Generative,y
+26,Accuracy,0.9648,1,Relative Entropy,Generative,y
+27,Accuracy,0.9648,1,Relative Entropy,Generative,y
+28,Accuracy,0.9648,1,Relative Entropy,Generative,y
+29,Accuracy,0.9648,1,Relative Entropy,Generative,y
+30,Accuracy,0.9648,1,Relative Entropy,Generative,y
+0,Accuracy,0.9015,2,Relative Entropy,Generative,y
+1,Accuracy,0.9637,2,Relative Entropy,Generative,y
+2,Accuracy,0.9648,2,Relative Entropy,Generative,y
+3,Accuracy,0.9648,2,Relative Entropy,Generative,y
+4,Accuracy,0.9648,2,Relative Entropy,Generative,y
+5,Accuracy,0.9648,2,Relative Entropy,Generative,y
+6,Accuracy,0.9648,2,Relative Entropy,Generative,y
+7,Accuracy,0.9648,2,Relative Entropy,Generative,y
+8,Accuracy,0.9648,2,Relative Entropy,Generative,y
+9,Accuracy,0.9648,2,Relative Entropy,Generative,y
+10,Accuracy,0.9648,2,Relative Entropy,Generative,y
+11,Accuracy,0.9648,2,Relative Entropy,Generative,y
+12,Accuracy,0.9648,2,Relative Entropy,Generative,y
+13,Accuracy,0.9648,2,Relative Entropy,Generative,y
+14,Accuracy,0.9648,2,Relative Entropy,Generative,y
+15,Accuracy,0.9648,2,Relative Entropy,Generative,y
+16,Accuracy,0.9648,2,Relative Entropy,Generative,y
+17,Accuracy,0.9648,2,Relative Entropy,Generative,y
+18,Accuracy,0.9648,2,Relative Entropy,Generative,y
+19,Accuracy,0.9648,2,Relative Entropy,Generative,y
+20,Accuracy,0.9648,2,Relative Entropy,Generative,y
+21,Accuracy,0.9648,2,Relative Entropy,Generative,y
+22,Accuracy,0.9648,2,Relative Entropy,Generative,y
+23,Accuracy,0.9648,2,Relative Entropy,Generative,y
+24,Accuracy,0.9648,2,Relative Entropy,Generative,y
+25,Accuracy,0.9637,2,Relative Entropy,Generative,y
+26,Accuracy,0.9648,2,Relative Entropy,Generative,y
+27,Accuracy,0.9637,2,Relative Entropy,Generative,y
+28,Accuracy,0.9637,2,Relative Entropy,Generative,y
+29,Accuracy,0.9637,2,Relative Entropy,Generative,y
+30,Accuracy,0.9637,2,Relative Entropy,Generative,y
+0,Accuracy,0.9015,3,Relative Entropy,Generative,y
+1,Accuracy,0.9637,3,Relative Entropy,Generative,y
+2,Accuracy,0.9648,3,Relative Entropy,Generative,y
+3,Accuracy,0.9648,3,Relative Entropy,Generative,y
+4,Accuracy,0.9648,3,Relative Entropy,Generative,y
+5,Accuracy,0.9637,3,Relative Entropy,Generative,y
+6,Accuracy,0.9648,3,Relative Entropy,Generative,y
+7,Accuracy,0.9648,3,Relative Entropy,Generative,y
+8,Accuracy,0.9648,3,Relative Entropy,Generative,y
+9,Accuracy,0.9637,3,Relative Entropy,Generative,y
+10,Accuracy,0.9648,3,Relative Entropy,Generative,y
+11,Accuracy,0.9648,3,Relative Entropy,Generative,y
+12,Accuracy,0.9637,3,Relative Entropy,Generative,y
+13,Accuracy,0.9637,3,Relative Entropy,Generative,y
+14,Accuracy,0.9637,3,Relative Entropy,Generative,y
+15,Accuracy,0.9637,3,Relative Entropy,Generative,y
+16,Accuracy,0.9648,3,Relative Entropy,Generative,y
+17,Accuracy,0.9648,3,Relative Entropy,Generative,y
+18,Accuracy,0.9648,3,Relative Entropy,Generative,y
+19,Accuracy,0.9648,3,Relative Entropy,Generative,y
+20,Accuracy,0.9648,3,Relative Entropy,Generative,y
+21,Accuracy,0.9648,3,Relative Entropy,Generative,y
+22,Accuracy,0.9648,3,Relative Entropy,Generative,y
+23,Accuracy,0.9648,3,Relative Entropy,Generative,y
+24,Accuracy,0.9648,3,Relative Entropy,Generative,y
+25,Accuracy,0.9648,3,Relative Entropy,Generative,y
+26,Accuracy,0.9648,3,Relative Entropy,Generative,y
+27,Accuracy,0.9648,3,Relative Entropy,Generative,y
+28,Accuracy,0.9648,3,Relative Entropy,Generative,y
+29,Accuracy,0.9648,3,Relative Entropy,Generative,y
+30,Accuracy,0.9648,3,Relative Entropy,Generative,y
+0,Accuracy,0.8189,4,Relative Entropy,Generative,y
+1,Accuracy,0.9637,4,Relative Entropy,Generative,y
+2,Accuracy,0.9648,4,Relative Entropy,Generative,y
+3,Accuracy,0.9648,4,Relative Entropy,Generative,y
+4,Accuracy,0.9648,4,Relative Entropy,Generative,y
+5,Accuracy,0.9648,4,Relative Entropy,Generative,y
+6,Accuracy,0.9648,4,Relative Entropy,Generative,y
+7,Accuracy,0.9648,4,Relative Entropy,Generative,y
+8,Accuracy,0.9648,4,Relative Entropy,Generative,y
+9,Accuracy,0.9648,4,Relative Entropy,Generative,y
+10,Accuracy,0.9648,4,Relative Entropy,Generative,y
+11,Accuracy,0.9648,4,Relative Entropy,Generative,y
+12,Accuracy,0.9648,4,Relative Entropy,Generative,y
+13,Accuracy,0.9648,4,Relative Entropy,Generative,y
+14,Accuracy,0.9648,4,Relative Entropy,Generative,y
+15,Accuracy,0.9648,4,Relative Entropy,Generative,y
+16,Accuracy,0.9648,4,Relative Entropy,Generative,y
+17,Accuracy,0.9648,4,Relative Entropy,Generative,y
+18,Accuracy,0.9648,4,Relative Entropy,Generative,y
+19,Accuracy,0.9648,4,Relative Entropy,Generative,y
+20,Accuracy,0.9648,4,Relative Entropy,Generative,y
+21,Accuracy,0.9648,4,Relative Entropy,Generative,y
+22,Accuracy,0.9648,4,Relative Entropy,Generative,y
+23,Accuracy,0.9648,4,Relative Entropy,Generative,y
+24,Accuracy,0.9648,4,Relative Entropy,Generative,y
+25,Accuracy,0.9648,4,Relative Entropy,Generative,y
+26,Accuracy,0.9648,4,Relative Entropy,Generative,y
+27,Accuracy,0.9648,4,Relative Entropy,Generative,y
+28,Accuracy,0.9648,4,Relative Entropy,Generative,y
+29,Accuracy,0.9648,4,Relative Entropy,Generative,y
+30,Accuracy,0.9648,4,Relative Entropy,Generative,y
+0,Accuracy,0.9015,5,Relative Entropy,Generative,y
+1,Accuracy,0.9637,5,Relative Entropy,Generative,y
+2,Accuracy,0.9015,5,Relative Entropy,Generative,y
+3,Accuracy,0.9015,5,Relative Entropy,Generative,y
+4,Accuracy,0.9015,5,Relative Entropy,Generative,y
+5,Accuracy,0.9637,5,Relative Entropy,Generative,y
+6,Accuracy,0.9637,5,Relative Entropy,Generative,y
+7,Accuracy,0.9637,5,Relative Entropy,Generative,y
+8,Accuracy,0.9637,5,Relative Entropy,Generative,y
+9,Accuracy,0.9648,5,Relative Entropy,Generative,y
+10,Accuracy,0.9648,5,Relative Entropy,Generative,y
+11,Accuracy,0.9648,5,Relative Entropy,Generative,y
+12,Accuracy,0.9637,5,Relative Entropy,Generative,y
+13,Accuracy,0.9648,5,Relative Entropy,Generative,y
+14,Accuracy,0.9648,5,Relative Entropy,Generative,y
+15,Accuracy,0.9648,5,Relative Entropy,Generative,y
+16,Accuracy,0.9648,5,Relative Entropy,Generative,y
+17,Accuracy,0.9648,5,Relative Entropy,Generative,y
+18,Accuracy,0.9648,5,Relative Entropy,Generative,y
+19,Accuracy,0.9648,5,Relative Entropy,Generative,y
+20,Accuracy,0.9648,5,Relative Entropy,Generative,y
+21,Accuracy,0.9648,5,Relative Entropy,Generative,y
+22,Accuracy,0.9648,5,Relative Entropy,Generative,y
+23,Accuracy,0.9648,5,Relative Entropy,Generative,y
+24,Accuracy,0.9648,5,Relative Entropy,Generative,y
+25,Accuracy,0.9648,5,Relative Entropy,Generative,y
+26,Accuracy,0.9648,5,Relative Entropy,Generative,y
+27,Accuracy,0.9648,5,Relative Entropy,Generative,y
+28,Accuracy,0.9648,5,Relative Entropy,Generative,y
+29,Accuracy,0.9648,5,Relative Entropy,Generative,y
+30,Accuracy,0.9648,5,Relative Entropy,Generative,y
+0,Accuracy,0.9015,6,Relative Entropy,Generative,y
+1,Accuracy,0.9637,6,Relative Entropy,Generative,y
+2,Accuracy,0.9648,6,Relative Entropy,Generative,y
+3,Accuracy,0.9637,6,Relative Entropy,Generative,y
+4,Accuracy,0.9637,6,Relative Entropy,Generative,y
+5,Accuracy,0.9637,6,Relative Entropy,Generative,y
+6,Accuracy,0.9637,6,Relative Entropy,Generative,y
+7,Accuracy,0.9637,6,Relative Entropy,Generative,y
+8,Accuracy,0.9637,6,Relative Entropy,Generative,y
+9,Accuracy,0.9637,6,Relative Entropy,Generative,y
+10,Accuracy,0.9637,6,Relative Entropy,Generative,y
+11,Accuracy,0.9637,6,Relative Entropy,Generative,y
+12,Accuracy,0.9637,6,Relative Entropy,Generative,y
+13,Accuracy,0.9637,6,Relative Entropy,Generative,y
+14,Accuracy,0.9648,6,Relative Entropy,Generative,y
+15,Accuracy,0.9648,6,Relative Entropy,Generative,y
+16,Accuracy,0.9648,6,Relative Entropy,Generative,y
+17,Accuracy,0.9648,6,Relative Entropy,Generative,y
+18,Accuracy,0.9648,6,Relative Entropy,Generative,y
+19,Accuracy,0.9648,6,Relative Entropy,Generative,y
+20,Accuracy,0.9648,6,Relative Entropy,Generative,y
+21,Accuracy,0.9648,6,Relative Entropy,Generative,y
+22,Accuracy,0.9648,6,Relative Entropy,Generative,y
+23,Accuracy,0.9648,6,Relative Entropy,Generative,y
+24,Accuracy,0.9648,6,Relative Entropy,Generative,y
+25,Accuracy,0.9648,6,Relative Entropy,Generative,y
+26,Accuracy,0.9648,6,Relative Entropy,Generative,y
+27,Accuracy,0.9648,6,Relative Entropy,Generative,y
+28,Accuracy,0.9648,6,Relative Entropy,Generative,y
+29,Accuracy,0.9648,6,Relative Entropy,Generative,y
+30,Accuracy,0.9648,6,Relative Entropy,Generative,y
+0,Accuracy,0.9015,7,Relative Entropy,Generative,y
+1,Accuracy,0.9648,7,Relative Entropy,Generative,y
+2,Accuracy,0.9648,7,Relative Entropy,Generative,y
+3,Accuracy,0.9648,7,Relative Entropy,Generative,y
+4,Accuracy,0.9648,7,Relative Entropy,Generative,y
+5,Accuracy,0.9648,7,Relative Entropy,Generative,y
+6,Accuracy,0.9648,7,Relative Entropy,Generative,y
+7,Accuracy,0.9637,7,Relative Entropy,Generative,y
+8,Accuracy,0.9637,7,Relative Entropy,Generative,y
+9,Accuracy,0.9637,7,Relative Entropy,Generative,y
+10,Accuracy,0.9637,7,Relative Entropy,Generative,y
+11,Accuracy,0.9637,7,Relative Entropy,Generative,y
+12,Accuracy,0.9637,7,Relative Entropy,Generative,y
+13,Accuracy,0.9637,7,Relative Entropy,Generative,y
+14,Accuracy,0.9637,7,Relative Entropy,Generative,y
+15,Accuracy,0.9637,7,Relative Entropy,Generative,y
+16,Accuracy,0.9637,7,Relative Entropy,Generative,y
+17,Accuracy,0.9637,7,Relative Entropy,Generative,y
+18,Accuracy,0.9637,7,Relative Entropy,Generative,y
+19,Accuracy,0.9637,7,Relative Entropy,Generative,y
+20,Accuracy,0.9637,7,Relative Entropy,Generative,y
+21,Accuracy,0.9637,7,Relative Entropy,Generative,y
+22,Accuracy,0.9637,7,Relative Entropy,Generative,y
+23,Accuracy,0.9637,7,Relative Entropy,Generative,y
+24,Accuracy,0.9637,7,Relative Entropy,Generative,y
+25,Accuracy,0.9637,7,Relative Entropy,Generative,y
+26,Accuracy,0.9637,7,Relative Entropy,Generative,y
+27,Accuracy,0.9637,7,Relative Entropy,Generative,y
+28,Accuracy,0.9637,7,Relative Entropy,Generative,y
+29,Accuracy,0.9637,7,Relative Entropy,Generative,y
+30,Accuracy,0.9637,7,Relative Entropy,Generative,y
+0,Accuracy,0.9015,8,Relative Entropy,Generative,y
+1,Accuracy,0.9648,8,Relative Entropy,Generative,y
+2,Accuracy,0.9648,8,Relative Entropy,Generative,y
+3,Accuracy,0.9637,8,Relative Entropy,Generative,y
+4,Accuracy,0.9637,8,Relative Entropy,Generative,y
+5,Accuracy,0.9637,8,Relative Entropy,Generative,y
+6,Accuracy,0.9637,8,Relative Entropy,Generative,y
+7,Accuracy,0.9637,8,Relative Entropy,Generative,y
+8,Accuracy,0.9637,8,Relative Entropy,Generative,y
+9,Accuracy,0.9637,8,Relative Entropy,Generative,y
+10,Accuracy,0.9637,8,Relative Entropy,Generative,y
+11,Accuracy,0.9637,8,Relative Entropy,Generative,y
+12,Accuracy,0.9637,8,Relative Entropy,Generative,y
+13,Accuracy,0.9637,8,Relative Entropy,Generative,y
+14,Accuracy,0.9637,8,Relative Entropy,Generative,y
+15,Accuracy,0.9637,8,Relative Entropy,Generative,y
+16,Accuracy,0.9637,8,Relative Entropy,Generative,y
+17,Accuracy,0.9637,8,Relative Entropy,Generative,y
+18,Accuracy,0.9637,8,Relative Entropy,Generative,y
+19,Accuracy,0.9637,8,Relative Entropy,Generative,y
+20,Accuracy,0.9637,8,Relative Entropy,Generative,y
+21,Accuracy,0.9637,8,Relative Entropy,Generative,y
+22,Accuracy,0.9637,8,Relative Entropy,Generative,y
+23,Accuracy,0.9637,8,Relative Entropy,Generative,y
+24,Accuracy,0.9637,8,Relative Entropy,Generative,y
+25,Accuracy,0.9637,8,Relative Entropy,Generative,y
+26,Accuracy,0.9637,8,Relative Entropy,Generative,y
+27,Accuracy,0.9637,8,Relative Entropy,Generative,y
+28,Accuracy,0.9637,8,Relative Entropy,Generative,y
+29,Accuracy,0.9637,8,Relative Entropy,Generative,y
+30,Accuracy,0.9637,8,Relative Entropy,Generative,y
+0,Accuracy,0.9015,9,Relative Entropy,Generative,y
+1,Accuracy,0.9648,9,Relative Entropy,Generative,y
+2,Accuracy,0.9648,9,Relative Entropy,Generative,y
+3,Accuracy,0.9637,9,Relative Entropy,Generative,y
+4,Accuracy,0.9637,9,Relative Entropy,Generative,y
+5,Accuracy,0.9637,9,Relative Entropy,Generative,y
+6,Accuracy,0.9637,9,Relative Entropy,Generative,y
+7,Accuracy,0.9648,9,Relative Entropy,Generative,y
+8,Accuracy,0.9648,9,Relative Entropy,Generative,y
+9,Accuracy,0.9648,9,Relative Entropy,Generative,y
+10,Accuracy,0.9648,9,Relative Entropy,Generative,y
+11,Accuracy,0.9648,9,Relative Entropy,Generative,y
+12,Accuracy,0.9648,9,Relative Entropy,Generative,y
+13,Accuracy,0.9648,9,Relative Entropy,Generative,y
+14,Accuracy,0.9648,9,Relative Entropy,Generative,y
+15,Accuracy,0.9648,9,Relative Entropy,Generative,y
+16,Accuracy,0.9648,9,Relative Entropy,Generative,y
+17,Accuracy,0.9648,9,Relative Entropy,Generative,y
+18,Accuracy,0.9648,9,Relative Entropy,Generative,y
+19,Accuracy,0.9648,9,Relative Entropy,Generative,y
+20,Accuracy,0.9648,9,Relative Entropy,Generative,y
+21,Accuracy,0.9648,9,Relative Entropy,Generative,y
+22,Accuracy,0.9648,9,Relative Entropy,Generative,y
+23,Accuracy,0.9648,9,Relative Entropy,Generative,y
+24,Accuracy,0.9648,9,Relative Entropy,Generative,y
+25,Accuracy,0.9648,9,Relative Entropy,Generative,y
+26,Accuracy,0.9648,9,Relative Entropy,Generative,y
+27,Accuracy,0.9648,9,Relative Entropy,Generative,y
+28,Accuracy,0.9648,9,Relative Entropy,Generative,y
+29,Accuracy,0.9648,9,Relative Entropy,Generative,y
+30,Accuracy,0.9648,9,Relative Entropy,Generative,y
+0,Accuracy,0.8906,0,Relative Entropy,Discriminative,y
+1,Accuracy,0.9758,0,Relative Entropy,Discriminative,y
+2,Accuracy,0.9753,0,Relative Entropy,Discriminative,y
+3,Accuracy,0.9727,0,Relative Entropy,Discriminative,y
+4,Accuracy,0.9771,0,Relative Entropy,Discriminative,y
+5,Accuracy,0.9776,0,Relative Entropy,Discriminative,y
+6,Accuracy,0.9766,0,Relative Entropy,Discriminative,y
+7,Accuracy,0.9776,0,Relative Entropy,Discriminative,y
+8,Accuracy,0.9766,0,Relative Entropy,Discriminative,y
+9,Accuracy,0.9772,0,Relative Entropy,Discriminative,y
+10,Accuracy,0.9768,0,Relative Entropy,Discriminative,y
+11,Accuracy,0.9771,0,Relative Entropy,Discriminative,y
+12,Accuracy,0.9771,0,Relative Entropy,Discriminative,y
+13,Accuracy,0.9777,0,Relative Entropy,Discriminative,y
+14,Accuracy,0.9778,0,Relative Entropy,Discriminative,y
+15,Accuracy,0.9778,0,Relative Entropy,Discriminative,y
+16,Accuracy,0.9775,0,Relative Entropy,Discriminative,y
+17,Accuracy,0.9773,0,Relative Entropy,Discriminative,y
+18,Accuracy,0.9771,0,Relative Entropy,Discriminative,y
+19,Accuracy,0.977,0,Relative Entropy,Discriminative,y
+20,Accuracy,0.9765,0,Relative Entropy,Discriminative,y
+21,Accuracy,0.9776,0,Relative Entropy,Discriminative,y
+22,Accuracy,0.9776,0,Relative Entropy,Discriminative,y
+23,Accuracy,0.9777,0,Relative Entropy,Discriminative,y
+24,Accuracy,0.9776,0,Relative Entropy,Discriminative,y
+25,Accuracy,0.9775,0,Relative Entropy,Discriminative,y
+26,Accuracy,0.9773,0,Relative Entropy,Discriminative,y
+27,Accuracy,0.9778,0,Relative Entropy,Discriminative,y
+28,Accuracy,0.9774,0,Relative Entropy,Discriminative,y
+29,Accuracy,0.9781,0,Relative Entropy,Discriminative,y
+30,Accuracy,0.9777,0,Relative Entropy,Discriminative,y
+0,Accuracy,0.8876,1,Relative Entropy,Discriminative,y
+1,Accuracy,0.9751,1,Relative Entropy,Discriminative,y
+2,Accuracy,0.9761,1,Relative Entropy,Discriminative,y
+3,Accuracy,0.9655,1,Relative Entropy,Discriminative,y
+4,Accuracy,0.9607,1,Relative Entropy,Discriminative,y
+5,Accuracy,0.9612,1,Relative Entropy,Discriminative,y
+6,Accuracy,0.9654,1,Relative Entropy,Discriminative,y
+7,Accuracy,0.9635,1,Relative Entropy,Discriminative,y
+8,Accuracy,0.9736,1,Relative Entropy,Discriminative,y
+9,Accuracy,0.9769,1,Relative Entropy,Discriminative,y
+10,Accuracy,0.9776,1,Relative Entropy,Discriminative,y
+11,Accuracy,0.9769,1,Relative Entropy,Discriminative,y
+12,Accuracy,0.9746,1,Relative Entropy,Discriminative,y
+13,Accuracy,0.9768,1,Relative Entropy,Discriminative,y
+14,Accuracy,0.9771,1,Relative Entropy,Discriminative,y
+15,Accuracy,0.9777,1,Relative Entropy,Discriminative,y
+16,Accuracy,0.9777,1,Relative Entropy,Discriminative,y
+17,Accuracy,0.9776,1,Relative Entropy,Discriminative,y
+18,Accuracy,0.9779,1,Relative Entropy,Discriminative,y
+19,Accuracy,0.9772,1,Relative Entropy,Discriminative,y
+20,Accuracy,0.9775,1,Relative Entropy,Discriminative,y
+21,Accuracy,0.9773,1,Relative Entropy,Discriminative,y
+22,Accuracy,0.9779,1,Relative Entropy,Discriminative,y
+23,Accuracy,0.9777,1,Relative Entropy,Discriminative,y
+24,Accuracy,0.9777,1,Relative Entropy,Discriminative,y
+25,Accuracy,0.978,1,Relative Entropy,Discriminative,y
+26,Accuracy,0.9779,1,Relative Entropy,Discriminative,y
+27,Accuracy,0.9772,1,Relative Entropy,Discriminative,y
+28,Accuracy,0.9773,1,Relative Entropy,Discriminative,y
+29,Accuracy,0.9775,1,Relative Entropy,Discriminative,y
+30,Accuracy,0.9777,1,Relative Entropy,Discriminative,y
+0,Accuracy,0.8743,2,Relative Entropy,Discriminative,y
+1,Accuracy,0.9727,2,Relative Entropy,Discriminative,y
+2,Accuracy,0.9761,2,Relative Entropy,Discriminative,y
+3,Accuracy,0.9725,2,Relative Entropy,Discriminative,y
+4,Accuracy,0.9771,2,Relative Entropy,Discriminative,y
+5,Accuracy,0.9776,2,Relative Entropy,Discriminative,y
+6,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+7,Accuracy,0.9776,2,Relative Entropy,Discriminative,y
+8,Accuracy,0.9769,2,Relative Entropy,Discriminative,y
+9,Accuracy,0.977,2,Relative Entropy,Discriminative,y
+10,Accuracy,0.9774,2,Relative Entropy,Discriminative,y
+11,Accuracy,0.9767,2,Relative Entropy,Discriminative,y
+12,Accuracy,0.9769,2,Relative Entropy,Discriminative,y
+13,Accuracy,0.9767,2,Relative Entropy,Discriminative,y
+14,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+15,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+16,Accuracy,0.9767,2,Relative Entropy,Discriminative,y
+17,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+18,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+19,Accuracy,0.9771,2,Relative Entropy,Discriminative,y
+20,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+21,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+22,Accuracy,0.977,2,Relative Entropy,Discriminative,y
+23,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+24,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+25,Accuracy,0.976,2,Relative Entropy,Discriminative,y
+26,Accuracy,0.9768,2,Relative Entropy,Discriminative,y
+27,Accuracy,0.9761,2,Relative Entropy,Discriminative,y
+28,Accuracy,0.975,2,Relative Entropy,Discriminative,y
+29,Accuracy,0.9762,2,Relative Entropy,Discriminative,y
+30,Accuracy,0.9753,2,Relative Entropy,Discriminative,y
+0,Accuracy,0.8723,3,Relative Entropy,Discriminative,y
+1,Accuracy,0.9704,3,Relative Entropy,Discriminative,y
+2,Accuracy,0.9766,3,Relative Entropy,Discriminative,y
+3,Accuracy,0.9724,3,Relative Entropy,Discriminative,y
+4,Accuracy,0.9771,3,Relative Entropy,Discriminative,y
+5,Accuracy,0.9741,3,Relative Entropy,Discriminative,y
+6,Accuracy,0.9767,3,Relative Entropy,Discriminative,y
+7,Accuracy,0.9775,3,Relative Entropy,Discriminative,y
+8,Accuracy,0.9769,3,Relative Entropy,Discriminative,y
+9,Accuracy,0.9751,3,Relative Entropy,Discriminative,y
+10,Accuracy,0.9769,3,Relative Entropy,Discriminative,y
+11,Accuracy,0.9769,3,Relative Entropy,Discriminative,y
+12,Accuracy,0.9756,3,Relative Entropy,Discriminative,y
+13,Accuracy,0.9752,3,Relative Entropy,Discriminative,y
+14,Accuracy,0.9769,3,Relative Entropy,Discriminative,y
+15,Accuracy,0.9768,3,Relative Entropy,Discriminative,y
+16,Accuracy,0.9771,3,Relative Entropy,Discriminative,y
+17,Accuracy,0.977,3,Relative Entropy,Discriminative,y
+18,Accuracy,0.9772,3,Relative Entropy,Discriminative,y
+19,Accuracy,0.9773,3,Relative Entropy,Discriminative,y
+20,Accuracy,0.9775,3,Relative Entropy,Discriminative,y
+21,Accuracy,0.9779,3,Relative Entropy,Discriminative,y
+22,Accuracy,0.9779,3,Relative Entropy,Discriminative,y
+23,Accuracy,0.9774,3,Relative Entropy,Discriminative,y
+24,Accuracy,0.9777,3,Relative Entropy,Discriminative,y
+25,Accuracy,0.9773,3,Relative Entropy,Discriminative,y
+26,Accuracy,0.9778,3,Relative Entropy,Discriminative,y
+27,Accuracy,0.9771,3,Relative Entropy,Discriminative,y
+28,Accuracy,0.977,3,Relative Entropy,Discriminative,y
+29,Accuracy,0.9777,3,Relative Entropy,Discriminative,y
+30,Accuracy,0.9772,3,Relative Entropy,Discriminative,y
+0,Accuracy,0.88,4,Relative Entropy,Discriminative,y
+1,Accuracy,0.9465,4,Relative Entropy,Discriminative,y
+2,Accuracy,0.9755,4,Relative Entropy,Discriminative,y
+3,Accuracy,0.9728,4,Relative Entropy,Discriminative,y
+4,Accuracy,0.9721,4,Relative Entropy,Discriminative,y
+5,Accuracy,0.9719,4,Relative Entropy,Discriminative,y
+6,Accuracy,0.9767,4,Relative Entropy,Discriminative,y
+7,Accuracy,0.9755,4,Relative Entropy,Discriminative,y
+8,Accuracy,0.9754,4,Relative Entropy,Discriminative,y
+9,Accuracy,0.975,4,Relative Entropy,Discriminative,y
+10,Accuracy,0.9748,4,Relative Entropy,Discriminative,y
+11,Accuracy,0.977,4,Relative Entropy,Discriminative,y
+12,Accuracy,0.9779,4,Relative Entropy,Discriminative,y
+13,Accuracy,0.9778,4,Relative Entropy,Discriminative,y
+14,Accuracy,0.9772,4,Relative Entropy,Discriminative,y
+15,Accuracy,0.9772,4,Relative Entropy,Discriminative,y
+16,Accuracy,0.9774,4,Relative Entropy,Discriminative,y
+17,Accuracy,0.9765,4,Relative Entropy,Discriminative,y
+18,Accuracy,0.9775,4,Relative Entropy,Discriminative,y
+19,Accuracy,0.9774,4,Relative Entropy,Discriminative,y
+20,Accuracy,0.9773,4,Relative Entropy,Discriminative,y
+21,Accuracy,0.9774,4,Relative Entropy,Discriminative,y
+22,Accuracy,0.9767,4,Relative Entropy,Discriminative,y
+23,Accuracy,0.9765,4,Relative Entropy,Discriminative,y
+24,Accuracy,0.9767,4,Relative Entropy,Discriminative,y
+25,Accuracy,0.9765,4,Relative Entropy,Discriminative,y
+26,Accuracy,0.9761,4,Relative Entropy,Discriminative,y
+27,Accuracy,0.9761,4,Relative Entropy,Discriminative,y
+28,Accuracy,0.976,4,Relative Entropy,Discriminative,y
+29,Accuracy,0.977,4,Relative Entropy,Discriminative,y
+30,Accuracy,0.9774,4,Relative Entropy,Discriminative,y
+0,Accuracy,0.8824,5,Relative Entropy,Discriminative,y
+1,Accuracy,0.9741,5,Relative Entropy,Discriminative,y
+2,Accuracy,0.8798,5,Relative Entropy,Discriminative,y
+3,Accuracy,0.9019,5,Relative Entropy,Discriminative,y
+4,Accuracy,0.9265,5,Relative Entropy,Discriminative,y
+5,Accuracy,0.9604,5,Relative Entropy,Discriminative,y
+6,Accuracy,0.9642,5,Relative Entropy,Discriminative,y
+7,Accuracy,0.9671,5,Relative Entropy,Discriminative,y
+8,Accuracy,0.9696,5,Relative Entropy,Discriminative,y
+9,Accuracy,0.9767,5,Relative Entropy,Discriminative,y
+10,Accuracy,0.9746,5,Relative Entropy,Discriminative,y
+11,Accuracy,0.9778,5,Relative Entropy,Discriminative,y
+12,Accuracy,0.9756,5,Relative Entropy,Discriminative,y
+13,Accuracy,0.9772,5,Relative Entropy,Discriminative,y
+14,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+15,Accuracy,0.9778,5,Relative Entropy,Discriminative,y
+16,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+17,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+18,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+19,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+20,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+21,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+22,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+23,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+24,Accuracy,0.9771,5,Relative Entropy,Discriminative,y
+25,Accuracy,0.9773,5,Relative Entropy,Discriminative,y
+26,Accuracy,0.9769,5,Relative Entropy,Discriminative,y
+27,Accuracy,0.9772,5,Relative Entropy,Discriminative,y
+28,Accuracy,0.9772,5,Relative Entropy,Discriminative,y
+29,Accuracy,0.9772,5,Relative Entropy,Discriminative,y
+30,Accuracy,0.9773,5,Relative Entropy,Discriminative,y
+0,Accuracy,0.8919,6,Relative Entropy,Discriminative,y
+1,Accuracy,0.9758,6,Relative Entropy,Discriminative,y
+2,Accuracy,0.9761,6,Relative Entropy,Discriminative,y
+3,Accuracy,0.9653,6,Relative Entropy,Discriminative,y
+4,Accuracy,0.9662,6,Relative Entropy,Discriminative,y
+5,Accuracy,0.9673,6,Relative Entropy,Discriminative,y
+6,Accuracy,0.9627,6,Relative Entropy,Discriminative,y
+7,Accuracy,0.9614,6,Relative Entropy,Discriminative,y
+8,Accuracy,0.9644,6,Relative Entropy,Discriminative,y
+9,Accuracy,0.9631,6,Relative Entropy,Discriminative,y
+10,Accuracy,0.9713,6,Relative Entropy,Discriminative,y
+11,Accuracy,0.9743,6,Relative Entropy,Discriminative,y
+12,Accuracy,0.9736,6,Relative Entropy,Discriminative,y
+13,Accuracy,0.9752,6,Relative Entropy,Discriminative,y
+14,Accuracy,0.9769,6,Relative Entropy,Discriminative,y
+15,Accuracy,0.9771,6,Relative Entropy,Discriminative,y
+16,Accuracy,0.9777,6,Relative Entropy,Discriminative,y
+17,Accuracy,0.9777,6,Relative Entropy,Discriminative,y
+18,Accuracy,0.978,6,Relative Entropy,Discriminative,y
+19,Accuracy,0.9775,6,Relative Entropy,Discriminative,y
+20,Accuracy,0.9776,6,Relative Entropy,Discriminative,y
+21,Accuracy,0.977,6,Relative Entropy,Discriminative,y
+22,Accuracy,0.9776,6,Relative Entropy,Discriminative,y
+23,Accuracy,0.9776,6,Relative Entropy,Discriminative,y
+24,Accuracy,0.9772,6,Relative Entropy,Discriminative,y
+25,Accuracy,0.9777,6,Relative Entropy,Discriminative,y
+26,Accuracy,0.9776,6,Relative Entropy,Discriminative,y
+27,Accuracy,0.9777,6,Relative Entropy,Discriminative,y
+28,Accuracy,0.9778,6,Relative Entropy,Discriminative,y
+29,Accuracy,0.9775,6,Relative Entropy,Discriminative,y
+30,Accuracy,0.9773,6,Relative Entropy,Discriminative,y
+0,Accuracy,0.9213,7,Relative Entropy,Discriminative,y
+1,Accuracy,0.9771,7,Relative Entropy,Discriminative,y
+2,Accuracy,0.9756,7,Relative Entropy,Discriminative,y
+3,Accuracy,0.9726,7,Relative Entropy,Discriminative,y
+4,Accuracy,0.9772,7,Relative Entropy,Discriminative,y
+5,Accuracy,0.9774,7,Relative Entropy,Discriminative,y
+6,Accuracy,0.9767,7,Relative Entropy,Discriminative,y
+7,Accuracy,0.9741,7,Relative Entropy,Discriminative,y
+8,Accuracy,0.9741,7,Relative Entropy,Discriminative,y
+9,Accuracy,0.9745,7,Relative Entropy,Discriminative,y
+10,Accuracy,0.9745,7,Relative Entropy,Discriminative,y
+11,Accuracy,0.9746,7,Relative Entropy,Discriminative,y
+12,Accuracy,0.9752,7,Relative Entropy,Discriminative,y
+13,Accuracy,0.975,7,Relative Entropy,Discriminative,y
+14,Accuracy,0.9747,7,Relative Entropy,Discriminative,y
+15,Accuracy,0.9751,7,Relative Entropy,Discriminative,y
+16,Accuracy,0.9751,7,Relative Entropy,Discriminative,y
+17,Accuracy,0.9751,7,Relative Entropy,Discriminative,y
+18,Accuracy,0.9753,7,Relative Entropy,Discriminative,y
+19,Accuracy,0.9755,7,Relative Entropy,Discriminative,y
+20,Accuracy,0.9759,7,Relative Entropy,Discriminative,y
+21,Accuracy,0.9759,7,Relative Entropy,Discriminative,y
+22,Accuracy,0.9761,7,Relative Entropy,Discriminative,y
+23,Accuracy,0.976,7,Relative Entropy,Discriminative,y
+24,Accuracy,0.9764,7,Relative Entropy,Discriminative,y
+25,Accuracy,0.9764,7,Relative Entropy,Discriminative,y
+26,Accuracy,0.9762,7,Relative Entropy,Discriminative,y
+27,Accuracy,0.9768,7,Relative Entropy,Discriminative,y
+28,Accuracy,0.9766,7,Relative Entropy,Discriminative,y
+29,Accuracy,0.9766,7,Relative Entropy,Discriminative,y
+30,Accuracy,0.9758,7,Relative Entropy,Discriminative,y
+0,Accuracy,0.9015,8,Relative Entropy,Discriminative,y
+1,Accuracy,0.9772,8,Relative Entropy,Discriminative,y
+2,Accuracy,0.9767,8,Relative Entropy,Discriminative,y
+3,Accuracy,0.9657,8,Relative Entropy,Discriminative,y
+4,Accuracy,0.9659,8,Relative Entropy,Discriminative,y
+5,Accuracy,0.9675,8,Relative Entropy,Discriminative,y
+6,Accuracy,0.9683,8,Relative Entropy,Discriminative,y
+7,Accuracy,0.9649,8,Relative Entropy,Discriminative,y
+8,Accuracy,0.9654,8,Relative Entropy,Discriminative,y
+9,Accuracy,0.9657,8,Relative Entropy,Discriminative,y
+10,Accuracy,0.9657,8,Relative Entropy,Discriminative,y
+11,Accuracy,0.9663,8,Relative Entropy,Discriminative,y
+12,Accuracy,0.9670000000000001,8,Relative Entropy,Discriminative,y
+13,Accuracy,0.9677,8,Relative Entropy,Discriminative,y
+14,Accuracy,0.968,8,Relative Entropy,Discriminative,y
+15,Accuracy,0.9686,8,Relative Entropy,Discriminative,y
+16,Accuracy,0.9657,8,Relative Entropy,Discriminative,y
+17,Accuracy,0.9658,8,Relative Entropy,Discriminative,y
+18,Accuracy,0.9664,8,Relative Entropy,Discriminative,y
+19,Accuracy,0.9667,8,Relative Entropy,Discriminative,y
+20,Accuracy,0.9674,8,Relative Entropy,Discriminative,y
+21,Accuracy,0.9679,8,Relative Entropy,Discriminative,y
+22,Accuracy,0.9684,8,Relative Entropy,Discriminative,y
+23,Accuracy,0.9682,8,Relative Entropy,Discriminative,y
+24,Accuracy,0.9686,8,Relative Entropy,Discriminative,y
+25,Accuracy,0.966,8,Relative Entropy,Discriminative,y
+26,Accuracy,0.9667,8,Relative Entropy,Discriminative,y
+27,Accuracy,0.9670000000000001,8,Relative Entropy,Discriminative,y
+28,Accuracy,0.9671,8,Relative Entropy,Discriminative,y
+29,Accuracy,0.9679,8,Relative Entropy,Discriminative,y
+30,Accuracy,0.968,8,Relative Entropy,Discriminative,y
+0,Accuracy,0.9114,9,Relative Entropy,Discriminative,y
+1,Accuracy,0.9779,9,Relative Entropy,Discriminative,y
+2,Accuracy,0.9767,9,Relative Entropy,Discriminative,y
+3,Accuracy,0.9657,9,Relative Entropy,Discriminative,y
+4,Accuracy,0.9664,9,Relative Entropy,Discriminative,y
+5,Accuracy,0.9672,9,Relative Entropy,Discriminative,y
+6,Accuracy,0.9683,9,Relative Entropy,Discriminative,y
+7,Accuracy,0.9771,9,Relative Entropy,Discriminative,y
+8,Accuracy,0.9773,9,Relative Entropy,Discriminative,y
+9,Accuracy,0.9763,9,Relative Entropy,Discriminative,y
+10,Accuracy,0.9761,9,Relative Entropy,Discriminative,y
+11,Accuracy,0.9756,9,Relative Entropy,Discriminative,y
+12,Accuracy,0.9748,9,Relative Entropy,Discriminative,y
+13,Accuracy,0.9749,9,Relative Entropy,Discriminative,y
+14,Accuracy,0.9734,9,Relative Entropy,Discriminative,y
+15,Accuracy,0.9727,9,Relative Entropy,Discriminative,y
+16,Accuracy,0.9727,9,Relative Entropy,Discriminative,y
+17,Accuracy,0.9723,9,Relative Entropy,Discriminative,y
+18,Accuracy,0.9723,9,Relative Entropy,Discriminative,y
+19,Accuracy,0.9755,9,Relative Entropy,Discriminative,y
+20,Accuracy,0.9743,9,Relative Entropy,Discriminative,y
+21,Accuracy,0.9748,9,Relative Entropy,Discriminative,y
+22,Accuracy,0.9738,9,Relative Entropy,Discriminative,y
+23,Accuracy,0.9731,9,Relative Entropy,Discriminative,y
+24,Accuracy,0.9754,9,Relative Entropy,Discriminative,y
+25,Accuracy,0.9756,9,Relative Entropy,Discriminative,y
+26,Accuracy,0.9756,9,Relative Entropy,Discriminative,y
+27,Accuracy,0.9755,9,Relative Entropy,Discriminative,y
+28,Accuracy,0.9755,9,Relative Entropy,Discriminative,y
+29,Accuracy,0.9755,9,Relative Entropy,Discriminative,y
+30,Accuracy,0.9767,9,Relative Entropy,Discriminative,y
+0,Accuracy,0.9015,0,Hybrid,Generative,y
+1,Accuracy,0.9015,0,Hybrid,Generative,y
+2,Accuracy,0.9015,0,Hybrid,Generative,y
+3,Accuracy,0.9015,0,Hybrid,Generative,y
+4,Accuracy,0.9015,0,Hybrid,Generative,y
+5,Accuracy,0.9015,0,Hybrid,Generative,y
+6,Accuracy,0.9015,0,Hybrid,Generative,y
+7,Accuracy,0.9015,0,Hybrid,Generative,y
+8,Accuracy,0.9015,0,Hybrid,Generative,y
+9,Accuracy,0.9015,0,Hybrid,Generative,y
+10,Accuracy,0.6523,0,Hybrid,Generative,y
+11,Accuracy,0.8199,0,Hybrid,Generative,y
+12,Accuracy,0.9017,0,Hybrid,Generative,y
+13,Accuracy,0.9018,0,Hybrid,Generative,y
+14,Accuracy,0.9018,0,Hybrid,Generative,y
+15,Accuracy,0.9018,0,Hybrid,Generative,y
+16,Accuracy,0.9018,0,Hybrid,Generative,y
+17,Accuracy,0.8203,0,Hybrid,Generative,y
+18,Accuracy,0.6524,0,Hybrid,Generative,y
+19,Accuracy,0.8204,0,Hybrid,Generative,y
+20,Accuracy,0.9021,0,Hybrid,Generative,y
+21,Accuracy,0.9021,0,Hybrid,Generative,y
+22,Accuracy,0.9021,0,Hybrid,Generative,y
+23,Accuracy,0.9022,0,Hybrid,Generative,y
+24,Accuracy,0.8207,0,Hybrid,Generative,y
+25,Accuracy,0.8207,0,Hybrid,Generative,y
+26,Accuracy,0.9024,0,Hybrid,Generative,y
+27,Accuracy,0.9024,0,Hybrid,Generative,y
+28,Accuracy,0.9024,0,Hybrid,Generative,y
+29,Accuracy,0.7159,0,Hybrid,Generative,y
+30,Accuracy,0.6527,0,Hybrid,Generative,y
+0,Accuracy,0.8189,1,Hybrid,Generative,y
+1,Accuracy,0.9015,1,Hybrid,Generative,y
+2,Accuracy,0.9015,1,Hybrid,Generative,y
+3,Accuracy,0.8192,1,Hybrid,Generative,y
+4,Accuracy,0.9015,1,Hybrid,Generative,y
+5,Accuracy,0.9015,1,Hybrid,Generative,y
+6,Accuracy,0.9015,1,Hybrid,Generative,y
+7,Accuracy,0.9015,1,Hybrid,Generative,y
+8,Accuracy,0.9015,1,Hybrid,Generative,y
+9,Accuracy,0.9015,1,Hybrid,Generative,y
+10,Accuracy,0.6525,1,Hybrid,Generative,y
+11,Accuracy,0.6525,1,Hybrid,Generative,y
+12,Accuracy,0.7147,1,Hybrid,Generative,y
+13,Accuracy,0.6525,1,Hybrid,Generative,y
+14,Accuracy,0.6525,1,Hybrid,Generative,y
+15,Accuracy,0.6525,1,Hybrid,Generative,y
+16,Accuracy,0.9017,1,Hybrid,Generative,y
+17,Accuracy,0.9018,1,Hybrid,Generative,y
+18,Accuracy,0.9642,1,Hybrid,Generative,y
+19,Accuracy,0.9019,1,Hybrid,Generative,y
+20,Accuracy,0.9019,1,Hybrid,Generative,y
+21,Accuracy,0.6526,1,Hybrid,Generative,y
+22,Accuracy,0.6526,1,Hybrid,Generative,y
+23,Accuracy,0.902,1,Hybrid,Generative,y
+24,Accuracy,0.8206,1,Hybrid,Generative,y
+25,Accuracy,0.8207,1,Hybrid,Generative,y
+26,Accuracy,0.902,1,Hybrid,Generative,y
+27,Accuracy,0.9021,1,Hybrid,Generative,y
+28,Accuracy,0.9021,1,Hybrid,Generative,y
+29,Accuracy,0.9021,1,Hybrid,Generative,y
+30,Accuracy,0.9021,1,Hybrid,Generative,y
+0,Accuracy,0.9015,2,Hybrid,Generative,y
+1,Accuracy,0.819,2,Hybrid,Generative,y
+2,Accuracy,0.9015,2,Hybrid,Generative,y
+3,Accuracy,0.9015,2,Hybrid,Generative,y
+4,Accuracy,0.9015,2,Hybrid,Generative,y
+5,Accuracy,0.9015,2,Hybrid,Generative,y
+6,Accuracy,0.9015,2,Hybrid,Generative,y
+7,Accuracy,0.9015,2,Hybrid,Generative,y
+8,Accuracy,0.8197,2,Hybrid,Generative,y
+9,Accuracy,0.9015,2,Hybrid,Generative,y
+10,Accuracy,0.6525,2,Hybrid,Generative,y
+11,Accuracy,0.6525,2,Hybrid,Generative,y
+12,Accuracy,0.9017,2,Hybrid,Generative,y
+13,Accuracy,0.9017,2,Hybrid,Generative,y
+14,Accuracy,0.7147,2,Hybrid,Generative,y
+15,Accuracy,0.8204,2,Hybrid,Generative,y
+16,Accuracy,0.9018,2,Hybrid,Generative,y
+17,Accuracy,0.9018,2,Hybrid,Generative,y
+18,Accuracy,0.9018,2,Hybrid,Generative,y
+19,Accuracy,0.9018,2,Hybrid,Generative,y
+20,Accuracy,0.9018,2,Hybrid,Generative,y
+21,Accuracy,0.724,2,Hybrid,Generative,y
+22,Accuracy,0.9019,2,Hybrid,Generative,y
+23,Accuracy,0.7152,2,Hybrid,Generative,y
+24,Accuracy,0.902,2,Hybrid,Generative,y
+25,Accuracy,0.8212,2,Hybrid,Generative,y
+26,Accuracy,0.8213,2,Hybrid,Generative,y
+27,Accuracy,0.9021,2,Hybrid,Generative,y
+28,Accuracy,0.9021,2,Hybrid,Generative,y
+29,Accuracy,0.9021,2,Hybrid,Generative,y
+30,Accuracy,0.9021,2,Hybrid,Generative,y
+0,Accuracy,0.8189,3,Hybrid,Generative,y
+1,Accuracy,0.9016,3,Hybrid,Generative,y
+2,Accuracy,0.8189,3,Hybrid,Generative,y
+3,Accuracy,0.6512,3,Hybrid,Generative,y
+4,Accuracy,0.6512,3,Hybrid,Generative,y
+5,Accuracy,0.6512,3,Hybrid,Generative,y
+6,Accuracy,0.9019,3,Hybrid,Generative,y
+7,Accuracy,0.6513,3,Hybrid,Generative,y
+8,Accuracy,0.8192,3,Hybrid,Generative,y
+9,Accuracy,0.902,3,Hybrid,Generative,y
+10,Accuracy,0.902,3,Hybrid,Generative,y
+11,Accuracy,0.902,3,Hybrid,Generative,y
+12,Accuracy,0.715,3,Hybrid,Generative,y
+13,Accuracy,0.6516,3,Hybrid,Generative,y
+14,Accuracy,0.9021,3,Hybrid,Generative,y
+15,Accuracy,0.9021,3,Hybrid,Generative,y
+16,Accuracy,0.9021,3,Hybrid,Generative,y
+17,Accuracy,0.9021,3,Hybrid,Generative,y
+18,Accuracy,0.8201,3,Hybrid,Generative,y
+19,Accuracy,0.9021,3,Hybrid,Generative,y
+20,Accuracy,0.9021,3,Hybrid,Generative,y
+21,Accuracy,0.9021,3,Hybrid,Generative,y
+22,Accuracy,0.8204,3,Hybrid,Generative,y
+23,Accuracy,0.9022,3,Hybrid,Generative,y
+24,Accuracy,0.9022,3,Hybrid,Generative,y
+25,Accuracy,0.8207,3,Hybrid,Generative,y
+26,Accuracy,0.6526,3,Hybrid,Generative,y
+27,Accuracy,0.9023,3,Hybrid,Generative,y
+28,Accuracy,0.9023,3,Hybrid,Generative,y
+29,Accuracy,0.9023,3,Hybrid,Generative,y
+30,Accuracy,0.9023,3,Hybrid,Generative,y
+0,Accuracy,0.9015,4,Hybrid,Generative,y
+1,Accuracy,0.9015,4,Hybrid,Generative,y
+2,Accuracy,0.9015,4,Hybrid,Generative,y
+3,Accuracy,0.9015,4,Hybrid,Generative,y
+4,Accuracy,0.9015,4,Hybrid,Generative,y
+5,Accuracy,0.9015,4,Hybrid,Generative,y
+6,Accuracy,0.9015,4,Hybrid,Generative,y
+7,Accuracy,0.9015,4,Hybrid,Generative,y
+8,Accuracy,0.9015,4,Hybrid,Generative,y
+9,Accuracy,0.9637,4,Hybrid,Generative,y
+10,Accuracy,0.9016,4,Hybrid,Generative,y
+11,Accuracy,0.7157,4,Hybrid,Generative,y
+12,Accuracy,0.6524,4,Hybrid,Generative,y
+13,Accuracy,0.6524,4,Hybrid,Generative,y
+14,Accuracy,0.9017,4,Hybrid,Generative,y
+15,Accuracy,0.9017,4,Hybrid,Generative,y
+16,Accuracy,0.9017,4,Hybrid,Generative,y
+17,Accuracy,0.6527,4,Hybrid,Generative,y
+18,Accuracy,0.9018,4,Hybrid,Generative,y
+19,Accuracy,0.8206,4,Hybrid,Generative,y
+20,Accuracy,0.9018,4,Hybrid,Generative,y
+21,Accuracy,0.8208,4,Hybrid,Generative,y
+22,Accuracy,0.9018,4,Hybrid,Generative,y
+23,Accuracy,0.9019,4,Hybrid,Generative,y
+24,Accuracy,0.821,4,Hybrid,Generative,y
+25,Accuracy,0.6532,4,Hybrid,Generative,y
+26,Accuracy,0.7153,4,Hybrid,Generative,y
+27,Accuracy,0.902,4,Hybrid,Generative,y
+28,Accuracy,0.9021,4,Hybrid,Generative,y
+29,Accuracy,0.9021,4,Hybrid,Generative,y
+30,Accuracy,0.9022,4,Hybrid,Generative,y
+0,Accuracy,0.9015,5,Hybrid,Generative,y
+1,Accuracy,0.9015,5,Hybrid,Generative,y
+2,Accuracy,0.9015,5,Hybrid,Generative,y
+3,Accuracy,0.8192,5,Hybrid,Generative,y
+4,Accuracy,0.9015,5,Hybrid,Generative,y
+5,Accuracy,0.8194,5,Hybrid,Generative,y
+6,Accuracy,0.9015,5,Hybrid,Generative,y
+7,Accuracy,0.9015,5,Hybrid,Generative,y
+8,Accuracy,0.9016,5,Hybrid,Generative,y
+9,Accuracy,0.8197,5,Hybrid,Generative,y
+10,Accuracy,0.9017,5,Hybrid,Generative,y
+11,Accuracy,0.9017,5,Hybrid,Generative,y
+12,Accuracy,0.9017,5,Hybrid,Generative,y
+13,Accuracy,0.9017,5,Hybrid,Generative,y
+14,Accuracy,0.6526,5,Hybrid,Generative,y
+15,Accuracy,0.9638,5,Hybrid,Generative,y
+16,Accuracy,0.6526,5,Hybrid,Generative,y
+17,Accuracy,0.902,5,Hybrid,Generative,y
+18,Accuracy,0.902,5,Hybrid,Generative,y
+19,Accuracy,0.902,5,Hybrid,Generative,y
+20,Accuracy,0.9021,5,Hybrid,Generative,y
+21,Accuracy,0.8208,5,Hybrid,Generative,y
+22,Accuracy,0.9021,5,Hybrid,Generative,y
+23,Accuracy,0.821,5,Hybrid,Generative,y
+24,Accuracy,0.9021,5,Hybrid,Generative,y
+25,Accuracy,0.9021,5,Hybrid,Generative,y
+26,Accuracy,0.9021,5,Hybrid,Generative,y
+27,Accuracy,0.9021,5,Hybrid,Generative,y
+28,Accuracy,0.9021,5,Hybrid,Generative,y
+29,Accuracy,0.9021,5,Hybrid,Generative,y
+30,Accuracy,0.9022,5,Hybrid,Generative,y
+0,Accuracy,0.9015,6,Hybrid,Generative,y
+1,Accuracy,0.9015,6,Hybrid,Generative,y
+2,Accuracy,0.9015,6,Hybrid,Generative,y
+3,Accuracy,0.9015,6,Hybrid,Generative,y
+4,Accuracy,0.9015,6,Hybrid,Generative,y
+5,Accuracy,0.9015,6,Hybrid,Generative,y
+6,Accuracy,0.9015,6,Hybrid,Generative,y
+7,Accuracy,0.9637,6,Hybrid,Generative,y
+8,Accuracy,0.9015,6,Hybrid,Generative,y
+9,Accuracy,0.9015,6,Hybrid,Generative,y
+10,Accuracy,0.9015,6,Hybrid,Generative,y
+11,Accuracy,0.6525,6,Hybrid,Generative,y
+12,Accuracy,0.6525,6,Hybrid,Generative,y
+13,Accuracy,0.7148,6,Hybrid,Generative,y
+14,Accuracy,0.9017,6,Hybrid,Generative,y
+15,Accuracy,0.9017,6,Hybrid,Generative,y
+16,Accuracy,0.9017,6,Hybrid,Generative,y
+17,Accuracy,0.9018,6,Hybrid,Generative,y
+18,Accuracy,0.9018,6,Hybrid,Generative,y
+19,Accuracy,0.9018,6,Hybrid,Generative,y
+20,Accuracy,0.9018,6,Hybrid,Generative,y
+21,Accuracy,0.9018,6,Hybrid,Generative,y
+22,Accuracy,0.8208,6,Hybrid,Generative,y
+23,Accuracy,0.9018,6,Hybrid,Generative,y
+24,Accuracy,0.9018,6,Hybrid,Generative,y
+25,Accuracy,0.9018,6,Hybrid,Generative,y
+26,Accuracy,0.9018,6,Hybrid,Generative,y
+27,Accuracy,0.9018,6,Hybrid,Generative,y
+28,Accuracy,0.9018,6,Hybrid,Generative,y
+29,Accuracy,0.8215,6,Hybrid,Generative,y
+30,Accuracy,0.8216,6,Hybrid,Generative,y
+0,Accuracy,0.9015,7,Hybrid,Generative,y
+1,Accuracy,0.9015,7,Hybrid,Generative,y
+2,Accuracy,0.9015,7,Hybrid,Generative,y
+3,Accuracy,0.9015,7,Hybrid,Generative,y
+4,Accuracy,0.9015,7,Hybrid,Generative,y
+5,Accuracy,0.9015,7,Hybrid,Generative,y
+6,Accuracy,0.9015,7,Hybrid,Generative,y
+7,Accuracy,0.9015,7,Hybrid,Generative,y
+8,Accuracy,0.9015,7,Hybrid,Generative,y
+9,Accuracy,0.9015,7,Hybrid,Generative,y
+10,Accuracy,0.6525,7,Hybrid,Generative,y
+11,Accuracy,0.7157,7,Hybrid,Generative,y
+12,Accuracy,0.6526,7,Hybrid,Generative,y
+13,Accuracy,0.6526,7,Hybrid,Generative,y
+14,Accuracy,0.6526,7,Hybrid,Generative,y
+15,Accuracy,0.9019,7,Hybrid,Generative,y
+16,Accuracy,0.9019,7,Hybrid,Generative,y
+17,Accuracy,0.9019,7,Hybrid,Generative,y
+18,Accuracy,0.8205,7,Hybrid,Generative,y
+19,Accuracy,0.902,7,Hybrid,Generative,y
+20,Accuracy,0.902,7,Hybrid,Generative,y
+21,Accuracy,0.902,7,Hybrid,Generative,y
+22,Accuracy,0.8209,7,Hybrid,Generative,y
+23,Accuracy,0.902,7,Hybrid,Generative,y
+24,Accuracy,0.902,7,Hybrid,Generative,y
+25,Accuracy,0.902,7,Hybrid,Generative,y
+26,Accuracy,0.902,7,Hybrid,Generative,y
+27,Accuracy,0.902,7,Hybrid,Generative,y
+28,Accuracy,0.8215,7,Hybrid,Generative,y
+29,Accuracy,0.902,7,Hybrid,Generative,y
+30,Accuracy,0.902,7,Hybrid,Generative,y
+0,Accuracy,0.9015,8,Hybrid,Generative,y
+1,Accuracy,0.8189,8,Hybrid,Generative,y
+2,Accuracy,0.819,8,Hybrid,Generative,y
+3,Accuracy,0.9016,8,Hybrid,Generative,y
+4,Accuracy,0.9016,8,Hybrid,Generative,y
+5,Accuracy,0.8192,8,Hybrid,Generative,y
+6,Accuracy,0.9017,8,Hybrid,Generative,y
+7,Accuracy,0.9017,8,Hybrid,Generative,y
+8,Accuracy,0.8195,8,Hybrid,Generative,y
+9,Accuracy,0.9017,8,Hybrid,Generative,y
+10,Accuracy,0.9017,8,Hybrid,Generative,y
+11,Accuracy,0.9017,8,Hybrid,Generative,y
+12,Accuracy,0.8199,8,Hybrid,Generative,y
+13,Accuracy,0.6524,8,Hybrid,Generative,y
+14,Accuracy,0.9018,8,Hybrid,Generative,y
+15,Accuracy,0.9018,8,Hybrid,Generative,y
+16,Accuracy,0.9018,8,Hybrid,Generative,y
+17,Accuracy,0.9018,8,Hybrid,Generative,y
+18,Accuracy,0.9018,8,Hybrid,Generative,y
+19,Accuracy,0.8206,8,Hybrid,Generative,y
+20,Accuracy,0.9018,8,Hybrid,Generative,y
+21,Accuracy,0.9018,8,Hybrid,Generative,y
+22,Accuracy,0.9018,8,Hybrid,Generative,y
+23,Accuracy,0.9018,8,Hybrid,Generative,y
+24,Accuracy,0.9018,8,Hybrid,Generative,y
+25,Accuracy,0.9018,8,Hybrid,Generative,y
+26,Accuracy,0.8212,8,Hybrid,Generative,y
+27,Accuracy,0.8213,8,Hybrid,Generative,y
+28,Accuracy,0.7157,8,Hybrid,Generative,y
+29,Accuracy,0.902,8,Hybrid,Generative,y
+30,Accuracy,0.902,8,Hybrid,Generative,y
+0,Accuracy,0.9637,9,Hybrid,Generative,y
+1,Accuracy,0.9016,9,Hybrid,Generative,y
+2,Accuracy,0.9016,9,Hybrid,Generative,y
+3,Accuracy,0.9016,9,Hybrid,Generative,y
+4,Accuracy,0.9016,9,Hybrid,Generative,y
+5,Accuracy,0.9016,9,Hybrid,Generative,y
+6,Accuracy,0.9016,9,Hybrid,Generative,y
+7,Accuracy,0.9016,9,Hybrid,Generative,y
+8,Accuracy,0.9016,9,Hybrid,Generative,y
+9,Accuracy,0.9016,9,Hybrid,Generative,y
+10,Accuracy,0.9016,9,Hybrid,Generative,y
+11,Accuracy,0.6525,9,Hybrid,Generative,y
+12,Accuracy,0.9017,9,Hybrid,Generative,y
+13,Accuracy,0.9018,9,Hybrid,Generative,y
+14,Accuracy,0.9018,9,Hybrid,Generative,y
+15,Accuracy,0.8204,9,Hybrid,Generative,y
+16,Accuracy,0.8205,9,Hybrid,Generative,y
+17,Accuracy,0.9637,9,Hybrid,Generative,y
+18,Accuracy,0.9018,9,Hybrid,Generative,y
+19,Accuracy,0.9018,9,Hybrid,Generative,y
+20,Accuracy,0.9018,9,Hybrid,Generative,y
+21,Accuracy,0.9018,9,Hybrid,Generative,y
+22,Accuracy,0.9018,9,Hybrid,Generative,y
+23,Accuracy,0.821,9,Hybrid,Generative,y
+24,Accuracy,0.9018,9,Hybrid,Generative,y
+25,Accuracy,0.9018,9,Hybrid,Generative,y
+26,Accuracy,0.8213,9,Hybrid,Generative,y
+27,Accuracy,0.8214,9,Hybrid,Generative,y
+28,Accuracy,0.9019,9,Hybrid,Generative,y
+29,Accuracy,0.9019,9,Hybrid,Generative,y
+30,Accuracy,0.9019,9,Hybrid,Generative,y
+0,Accuracy,0.9139,0,Hybrid,Discriminative,y
+5,Accuracy,0.8772,0,Hybrid,Discriminative,y
+10,Accuracy,0.8375,0,Hybrid,Discriminative,y
+15,Accuracy,0.8719,0,Hybrid,Discriminative,y
+20,Accuracy,0.853,0,Hybrid,Discriminative,y
+25,Accuracy,0.8433,0,Hybrid,Discriminative,y
+30,Accuracy,0.6877,0,Hybrid,Discriminative,y
+0,Accuracy,0.8966,1,Hybrid,Discriminative,y
+5,Accuracy,0.8645,1,Hybrid,Discriminative,y
+10,Accuracy,0.7918,1,Hybrid,Discriminative,y
+15,Accuracy,0.9299,1,Hybrid,Discriminative,y
+20,Accuracy,0.8704,1,Hybrid,Discriminative,y
+25,Accuracy,0.852,1,Hybrid,Discriminative,y
+30,Accuracy,0.866,1,Hybrid,Discriminative,y
+0,Accuracy,0.9087,2,Hybrid,Discriminative,y
+5,Accuracy,0.8573,2,Hybrid,Discriminative,y
+10,Accuracy,0.7434,2,Hybrid,Discriminative,y
+15,Accuracy,0.8598,2,Hybrid,Discriminative,y
+20,Accuracy,0.863,2,Hybrid,Discriminative,y
+25,Accuracy,0.8463,2,Hybrid,Discriminative,y
+30,Accuracy,0.8702,2,Hybrid,Discriminative,y
+0,Accuracy,0.8603,3,Hybrid,Discriminative,y
+5,Accuracy,0.8594,3,Hybrid,Discriminative,y
+10,Accuracy,0.8782,3,Hybrid,Discriminative,y
+15,Accuracy,0.8672,3,Hybrid,Discriminative,y
+20,Accuracy,0.8696,3,Hybrid,Discriminative,y
+25,Accuracy,0.8484,3,Hybrid,Discriminative,y
+30,Accuracy,0.8528,3,Hybrid,Discriminative,y
+0,Accuracy,0.8774,4,Hybrid,Discriminative,y
+5,Accuracy,0.8567,4,Hybrid,Discriminative,y
+10,Accuracy,0.8633,4,Hybrid,Discriminative,y
+15,Accuracy,0.8579,4,Hybrid,Discriminative,y
+20,Accuracy,0.8807,4,Hybrid,Discriminative,y
+25,Accuracy,0.7202,4,Hybrid,Discriminative,y
+30,Accuracy,0.8938,4,Hybrid,Discriminative,y
+0,Accuracy,0.906,5,Hybrid,Discriminative,y
+5,Accuracy,0.8526,5,Hybrid,Discriminative,y
+10,Accuracy,0.8547,5,Hybrid,Discriminative,y
+15,Accuracy,0.9177,5,Hybrid,Discriminative,y
+20,Accuracy,0.8731,5,Hybrid,Discriminative,y
+25,Accuracy,0.856,5,Hybrid,Discriminative,y
+30,Accuracy,0.8755,5,Hybrid,Discriminative,y
+0,Accuracy,0.8882,6,Hybrid,Discriminative,y
+5,Accuracy,0.8817,6,Hybrid,Discriminative,y
+10,Accuracy,0.8713,6,Hybrid,Discriminative,y
+15,Accuracy,0.8643,6,Hybrid,Discriminative,y
+20,Accuracy,0.854,6,Hybrid,Discriminative,y
+25,Accuracy,0.8679,6,Hybrid,Discriminative,y
+30,Accuracy,0.8444,6,Hybrid,Discriminative,y
+0,Accuracy,0.9068,7,Hybrid,Discriminative,y
+5,Accuracy,0.8651,7,Hybrid,Discriminative,y
+10,Accuracy,0.7519,7,Hybrid,Discriminative,y
+15,Accuracy,0.8745,7,Hybrid,Discriminative,y
+20,Accuracy,0.886,7,Hybrid,Discriminative,y
+25,Accuracy,0.8529,7,Hybrid,Discriminative,y
+30,Accuracy,0.8526,7,Hybrid,Discriminative,y
+0,Accuracy,0.8855,8,Hybrid,Discriminative,y
+5,Accuracy,0.849,8,Hybrid,Discriminative,y
+10,Accuracy,0.8652,8,Hybrid,Discriminative,y
+15,Accuracy,0.8551,8,Hybrid,Discriminative,y
+20,Accuracy,0.8646,8,Hybrid,Discriminative,y
+25,Accuracy,0.8665,8,Hybrid,Discriminative,y
+30,Accuracy,0.8594,8,Hybrid,Discriminative,y
+0,Accuracy,0.9445,9,Hybrid,Discriminative,y
+5,Accuracy,0.8679,9,Hybrid,Discriminative,y
+10,Accuracy,0.8572,9,Hybrid,Discriminative,y
+15,Accuracy,0.8433,9,Hybrid,Discriminative,y
+20,Accuracy,0.8551,9,Hybrid,Discriminative,y
+25,Accuracy,0.8547,9,Hybrid,Discriminative,y
+30,Accuracy,0.8477,9,Hybrid,Discriminative,y

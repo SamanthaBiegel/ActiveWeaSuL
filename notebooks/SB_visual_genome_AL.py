@@ -14,7 +14,7 @@
 # ---
 
 # +
-DAP = True
+DAP = False
     
 if DAP:
     # ! pip install -r ../requirements.txt
@@ -126,10 +126,12 @@ pred_list = ['carrying',
 
 # +
 # df_vis.to_csv(path_prefix + "data/siton_dataset.csv", index=False)
-# -
 
+# +
 import ast
-df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+# df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+
+df_vis = pd.read_csv("../data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
 # +
 # all_img = list(df_vis.source_img.drop_duplicates())
@@ -379,17 +381,22 @@ metrics_vis_re_gen = visual_genome_experiment(50, 5, 0)
 
 # +
 # metrics_vis_random = visual_genome_experiment(30, 10, 1)
-
-# +
-# import pickle
-# with open("results/al_metrics_vis_split.pkl", "rb") as f:
-#     metrics_vis_re = pickle.load(f)
 # -
 
 import pickle
-with open("results/al_metrics_vis_gen_2.pickle", "wb") as f:
-    pickle.dump(metrics_vis_re_gen, f)
+with open("results/al_metrics_vis_split.pkl", "rb") as f:
+    metrics_vis_re_gen = pickle.load(f)
 
+import pickle
+with open("results/al_metrics_vis_gen_2.pickle", "rb") as f:
+    metrics_vis_re_gen = pickle.load(f)
+
+
+# +
+# import pickle
+# with open("results/al_metrics_vis_gen.pickle", "wb") as f:
+#     pickle.dump(metrics_vis_re_gen, f)
+# -
 
 def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_string):
     joined_metrics = pd.DataFrame()
@@ -408,11 +415,42 @@ def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_
     return joined_metrics
 
 
-metrics_joined = pd.concat([create_metric_df(metrics_vis_re_gen, 5, "lm_metrics", "train", "Generative"),
+all_metrics_joined = pd.concat([create_metric_df(metrics_vis_re_gen, 5, "lm_metrics", "train", "Generative"),
                            create_metric_df(metrics_vis_re_gen, 5, "lm_test_metrics", "test", "Generative")])
-#                            create_metric_df(metrics_vis_re_gen, 5, "fm_metrics", "train", "Discriminative"),
-#                            create_metric_df(metrics_vis_re_gen, 5, "fm_test_metrics", "test", "Discriminative")])
 
+metrics_vis_re_gen["lm_metrics"].keys()
+
+# +
+import pickle
+with open("results/al_metrics_vis_split.pkl", "rb") as f:
+    metrics_vis_re_gen = pickle.load(f)
+
+metrics_joined = pd.concat([create_metric_df(metrics_vis_re_gen, 1, "lm_metrics", "train", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "lm_test_metrics", "test", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_metrics", "train", "Discriminative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_test_metrics", "test", "Discriminative")])
+
+
+# +
+with open("results/al_metrics_vis_split_2.pkl", "rb") as f:
+    metrics_vis_re_gen = pickle.load(f)
+
+metrics_joined_2 = pd.concat([create_metric_df(metrics_vis_re_gen, 1, "lm_metrics", "train", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "lm_test_metrics", "test", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_metrics", "train", "Discriminative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_test_metrics", "test", "Discriminative")])
+
+# +
+with open("results/al_metrics_vis_split_3.pkl", "rb") as f:
+    metrics_vis_re_gen = pickle.load(f)
+
+metrics_joined_3 = pd.concat([create_metric_df(metrics_vis_re_gen, 1, "lm_metrics", "train", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "lm_test_metrics", "test", "Generative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_metrics", "train", "Discriminative"),
+                           create_metric_df(metrics_vis_re_gen, 1, "fm_test_metrics", "test", "Discriminative")])
+# -
+
+all_metrics_joined = pd.concat([metrics_joined_2, metrics_joined_3])
 
 metrics_joined = pd.concat([metrics_joined, pd.read_csv("results/vis_re.csv")])
 
@@ -420,7 +458,9 @@ metrics_joined = pd.concat([metrics_joined, pd.read_csv("results/vis_re.csv")])
 # metrics_joined.to_csv("results/vis_re.csv")
 # -
 
-metrics_joined = pd.read_csv("results/vis_re.csv")
+all_metrics_joined = pd.read_csv("results/vis_re.csv")
+
+metrics_joined
 
 sns.set_theme(style="white")
 colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
@@ -431,9 +471,29 @@ sns.set(style="whitegrid", palette=sns.color_palette(colors))
 #                  ci=68, n_boot=1000, estimator="mean", kind="line", legend=False)
 # ax.axes[0][0].set_ylim((0.2,0.9))
 # plt.show()
-# -
 
-metrics_joined
+# +
+colors = ["#2b4162", "#721817", "#e9c46a", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf", "#368f8b", "#ec7357"]
+
+pick_colors = [colors[9], colors[10]]
+
+all_metrics_joined = all_metrics_joined.rename(columns={"Active Learning Iteration": "Number of labeled points"})
+
+sns.set(style="whitegrid")
+ax = sns.relplot(data=all_metrics_joined, x="Number of labeled points", y="Value", col="Metric", row="Model",
+                 kind="line", estimator="mean", ci=68, hue="Set", style="Label",legend=False, palette=sns.color_palette(pick_colors))
+
+show_handles = [ax.axes[0][0].lines[0], ax.axes[0][0].lines[1]]
+show_labels = ["train", "test"]
+ax.axes[0][3].legend(handles=show_handles, labels=show_labels, loc="lower right")
+
+ax.set_ylabels("")
+ax.set_titles("{col_name}")
+# plt.savefig("plots/vis_gen_metrics.png")
+plt.show()
+# fig = ax.get_figure()
+
+# -
 
 ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", hue = "Set", row="Model",
                  ci=None, estimator="mean",kind="line", legend=False)
@@ -578,30 +638,6 @@ plot_train_loss(vc_al_losses)
 # for image in df_vis_final["source_img"]:
 # #     ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/subset_VG/$image
 # -
-
-from scipy.stats import entropy
-entropy([1/2, 1/2], qk=[0.99, 0.01])
-
-entropy(pk=[0.55, 0.45], qk=[0.5, 0.5])
-
-entropy(pk=[1-1e-4, 1e-4], qk=[1-1e-5, 1e-5])
-
-entropy(qk=[0.5, 0.5], pk=[0.6,0.4])
-
-lm_posteriors = al.unique_prob_dict[0]
-lm_posteriors = np.concatenate([1-lm_posteriors[:, None], lm_posteriors[:, None]], axis=1).clip(1e-6, 1-1e-6)
-
-len(lm_posteriors)
-
-bucket_gt = al.ground_truth_labels[np.where(al.unique_inverse == 1)]
-
-bucket_gt[bucket_gt != -1].size
-
-
-
-al.unique_inverse
-
-df_vis_final
 
 
 

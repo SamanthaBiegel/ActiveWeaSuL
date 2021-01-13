@@ -14,7 +14,7 @@
 # ---
 
 # +
-DAP = True
+DAP = False
     
 if DAP:
 # #     ! pip install -r ../requirements.txt
@@ -161,7 +161,7 @@ def lf_xdist(x):
     return SITON
 
 def lf_dist(x):
-    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 500:
+    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
         return OTHER
     return SITON
 
@@ -175,8 +175,8 @@ def lf_area(x):
 
 
 # +
-# lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
-lfs = [lf_siton_object, lf_dist, lf_area]
+lfs = [lf_siton_object, lf_not_person, lf_ydist, lf_dist, lf_area]
+# lfs = [lf_siton_object, lf_dist, lf_area]
 # lfs = [lf_wear_object, lf_dist, lf_area, lf_ydist]
 
 L_train = apply_lfs(df_train, lfs)
@@ -192,8 +192,8 @@ analyze_lfs(L_test, df_test["y"], lfs)
 # +
 class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
 
-# cliques=[[0,1],[2,3],[4]]
-cliques=[[0],[1,2]]
+cliques=[[0,1],[2,3],[4]]
+# cliques=[[0],[1,2]]
 
 
 # -
@@ -254,12 +254,12 @@ al_metrics["lm_test_metrics"] = {}
 al_metrics["fm_metrics"] = {}
 al_metrics["fm_test_metrics"] = {}
 
-for i in range(4):
+for i in range(10):
     it = 50
     query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
-                                final_model=VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+#                                 final_model=VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                 **al_kwargs,
                                 image_dir=path_prefix + "data/images/train_images",
                                 query_strategy=query_strategy,
@@ -270,10 +270,8 @@ for i in range(4):
     al.label_model.print_metrics()
     al_metrics["lm_metrics"][i] = al.metrics
     al_metrics["lm_test_metrics"][i] = al.test_metrics
-    al_metrics["fm_metrics"][i] = al.final_metrics
-    al_metrics["fm_test_metrics"][i] = al.final_test_metrics
-
-
+#     al_metrics["fm_metrics"][i] = al.final_metrics
+#     al_metrics["fm_test_metrics"][i] = al.final_test_metrics
 # -
 def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_string):
     joined_metrics = pd.DataFrame()
@@ -290,18 +288,27 @@ def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string, model_
     joined_metrics["Label"] = "AL"
     
     return joined_metrics
+# metrics_joined = pd.concat([create_metric_df(al_metrics, 4, "lm_metrics", "train", "Generative"),
+#                            create_metric_df(al_metrics, 4, "lm_test_metrics", "test", "Generative"),
+#                            create_metric_df(al_metrics, 4, "fm_metrics", "train", "Discriminative"),
+#                            create_metric_df(al_metrics, 4, "fm_test_metrics", "test", "Discriminative"),
+#                            pd.read_csv("results/vrd_incl_optimal.csv")])
+# metrics_joined_test = pd.read_csv("results/vrd_incl_optimal_10_trials.csv")
 
 
-metrics_joined = pd.concat([create_metric_df(al_metrics, 4, "lm_metrics", "train", "Generative"),
-                           create_metric_df(al_metrics, 4, "lm_test_metrics", "test", "Generative"),
-                           create_metric_df(al_metrics, 4, "fm_metrics", "train", "Discriminative"),
-                           create_metric_df(al_metrics, 4, "fm_test_metrics", "test", "Discriminative"),
-                           pd.read_csv("results/vrd_incl_optimal.csv")])
+metrics_joined_re = pd.concat([create_metric_df(al_metrics, 10, "lm_metrics", "train", "Generative"),
+                           create_metric_df(al_metrics, 10, "lm_test_metrics", "test", "Generative")])
 
-metrics_joined_test = pd.read_csv("results/vrd_incl_optimal_10_trials.csv")
+metrics_joined_marg = pd.concat([create_metric_df(al_metrics, 10, "lm_metrics", "train", "Generative"),
+                           create_metric_df(al_metrics, 10, "lm_test_metrics", "test", "Generative")])
 
-metrics_joined_test
+metrics_joined_random = pd.concat([create_metric_df(al_metrics, 10, "lm_metrics", "train", "Generative"),
+                           create_metric_df(al_metrics, 10, "lm_test_metrics", "test", "Generative")])
 
+metrics_joined_re["Strategy"] = "MaxKL"
+metrics_joined_marg["Strategy"] = "Margin"
+
+metrics_joined = pd.concat([metrics_joined_re, metrics_joined_marg])
 # +
 # metrics_joined.to_csv("results/vrd_incl_optimal_10_trials.csv", index=False)
 # -
@@ -311,6 +318,10 @@ colors = ["#086788",  "#e3b505","#ef7b45",  "#739e82", "#d88c9a"]
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
 al.label_model._analyze(true_test, df_test.y.values)
+
+al.label_model.predict_true()
+
+lm.predict_true()
 
 lm_train = al.label_model._analyze(al.label_model.predict_true(), df_train["y"].values)
 # lm_test = al.label_model._analyze(true_test, df_test.y.values)
@@ -339,26 +350,44 @@ def create_optimal_df(perf_dict, model_string, set_string, label_string):
     return optimal_lm
 
 optimals_df = pd.concat([create_optimal_df(lm_train, "Generative", "train", "*"),
-           create_optimal_df(lm_test, "Generative", "test", "*"),
-          create_optimal_df(fm_train, "Discriminative", "train", "*"),
-          create_optimal_df(fm_test, "Discriminative", "test", "*"),
-          create_optimal_df(fm_train_full, "Discriminative", "train", "**"),
-          create_optimal_df(fm_test_full, "Discriminative", "test", "**")])
+           create_optimal_df(lm_test, "Generative", "test", "*")])
+#           create_optimal_df(fm_train, "Discriminative", "train", "*"),
+#           create_optimal_df(fm_test, "Discriminative", "test", "*"),
+#           create_optimal_df(fm_train_full, "Discriminative", "train", "**"),
+#           create_optimal_df(fm_test_full, "Discriminative", "test", "**")])
 # -
 
 metrics_joined_optimal = pd.concat([metrics_joined, optimals_df])
 
-ax = sns.relplot(data=metrics_joined_optimal, x="Active Learning Iteration", y="Value", col="Metric", row="Model", kind="line", ci=68, n_boot=1000, hue="Set", style="Label",legend=True)
+metrics_joined = pd.read_csv("results/vrd_incl_optimal_10_trials.csv")
+
+ax = sns.relplot(data=metrics_joined_optimal, x="Active Learning Iteration", y="Value", col="Metric", kind="line", ci=68, n_boot=1000, hue="Set", style="Label",legend=True)
 (ax.set_titles("{col_name}"))
 
-# +
-
-ax = sns.relplot(data=metrics_joined, x="Active Learning Iteration", y="Value", col="Metric", row="Model", kind="line", ci=68, n_boot=1000, hue="Set", style="Label",legend=True)
-(ax.set_titles("{col_name}"))
-# -
+optimals_df
 
 metrics_joined
 
+# +
+colors = ["#2b4162", "#721817", "#e9c46a", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf", "#368f8b", "#ec7357"]
+
+pick_colors = [colors[9], colors[10]]
+
+metrics_joined_optimal = metrics_joined_optimal.rename(columns={"Active Learning Iteration": "Number of labeled points"})
+
+sns.set(style="whitegrid")
+ax = sns.relplot(data=metrics_joined_optimal, x="Number of labeled points", y="Value", col="Metric", row="Set",
+                 kind="line", ci=68, n_boot=100, hue="Strategy", style="Label",legend=False, palette=sns.color_palette(pick_colors))
+
+show_handles = [ax.axes[0][0].lines[0], ax.axes[0][0].lines[1]]
+show_labels = ["MaxKL", "Margin"]
+ax.axes[1][3].legend(handles=show_handles, labels=show_labels, loc="lower right")
+
+ax.set_ylabels("")
+ax.set_titles("{col_name}")
+plt.show()
+# fig = ax.get_figure()
+# ax.savefig("plots/vrd_metrics.png")
 # +
 it = 30
 query_strategy = "relative_entropy"
@@ -707,6 +736,7 @@ dl_al_test = DataLoader(dataset_al, shuffle=False, batch_size=batch_size)
 vc_al = VisualRelationClassifier(pretrained_model, dl_al_test, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
 probs_final_al = vc_al.fit(dl_al).predict()
+probs_final_test = vc_al._predict(dl_al_test)
 
 vc_al.analyze()
 
@@ -736,5 +766,152 @@ vc_true.print_metrics()
 al.label_model._analyze(Y_probs, al.y)
 
 
+
+# ## Active learning
+
+# +
+
+df_train
+# -
+
+random.seed(None)
+df_1 = df_train.iloc[random.sample(range(len(df_train)),2)]
+
+random.sample(range(len(df_train)),2)
+
+df_1
+
+df_train
+
+df_1
+
+Y_probs[df_1.index].clone().clamp(0,1).detach().numpy()
+
+# +
+initial_seed = random.sample(range(len(df_train)),80)
+df_1 = df_train.iloc[initial_seed]
+
+labels = df_1.y.values
+df_1.index = range(len(df_1))
+
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_1,
+                      Y=labels)
+
+dl = DataLoader(dataset, shuffle=True, batch_size=10)
+vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
+
+probs_final = vc.fit(dl)._predict(dl_train)
+# probs_final_test = vc._predict(dl_test)
+
+vc.analyze()
+
+vc.print_metrics()
+# -
+
+vc._analyze(probs_final, df_train.y.values)
+
+# +
+# from tqdm import tqdm_notebook as tqdm
+
+
+# dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
+#                           df=df_test,
+#                           Y=df_test["y"].values)
+# dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+
+# dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+#                       df=df_train,
+#                       Y=df_train["y"].values)
+# dl_train = DataLoader(dataset, shuffle=False, batch_size=100)
+
+
+# accuracy_dict = {}
+# for j in tqdm(range(1)):
+#     accuracies = []
+#     accuracies_test = []
+    
+#     random.seed(None)
+#     initial_seed = random.sample(range(len(df_train)),2)
+#     df_1 = df_train.iloc[initial_seed]
+#     print(df_1)
+#     queried = initial_seed
+    
+#     labels = df_1.y.values
+#     df_1.index = range(len(df_1))
+
+#     dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+#                           df=df_1,
+#                           Y=labels)
+
+#     dl = DataLoader(dataset, shuffle=True, batch_size=len(queried))
+#     vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
+
+#     probs_final = vc.fit(dl)._predict(dl_train)
+# #     probs_final_test = vc._predict(dl_test)
+
+#     accuracy = vc._analyze(probs_final, df_train.y.values)["Accuracy"]
+#     print(accuracy)
+
+#     accuracies.append(accuracy)
+# #     accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
+
+for i in tqdm(range(30,60)):
+    dist_boundary = torch.abs(probs_final[:, 1] - probs_final[:, 0])
+    dist_boundary[queried] = 1
+    queried.append(torch.argmin(dist_boundary).item())
+
+    df_1 = df_train.iloc[queried]
+
+    labels = df_1.y.values
+    df_1.index = range(len(df_1))
+
+    dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_1,
+                      Y=labels)
+
+    dl = DataLoader(dataset, shuffle=True, batch_size=len(queried))
+    vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
+
+    probs_final = vc.fit(dl)._predict(dl_train)
+#             probs_final_test = vc._predict(dl_test)
+
+    accuracy = vc._analyze(probs_final, df_train.y.values)["Accuracy"]
+    print(accuracy)
+
+    accuracies.append(accuracy)
+    #         accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
+
+#         accuracy_dict[j] = accuracies
+
+# +
+accuracy_df = pd.DataFrame.from_dict(accuracy_dict)
+accuracy_df = accuracy_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Run", 0: "Accuracy"})
+
+accuracy_df["Metric"] = "Accuracy"
+accuracy_df["Strategy"] = "Active Learning"
+accuracy_df["Model"] = "Discriminative"
+
+# +
+accuracy_df = accuracy_df.rename(columns={"Active Learning Iteration": "Number of labeled points"})
+
+colors = ["#2b4162", "#ec7357", "#368f8b", "#2b4162", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors), rc={'figure.figsize':(15,10)})
+ax = sns.lineplot(data=accuracy_df, x="Number of labeled points", y="Accuracy", hue="Strategy", ci=68, legend=False)
+show_handles = [ax.axes.lines[0], ax.axes.lines[1]]
+show_labels = ["AWSL", "Active Learning"]
+ax.axes.legend(handles=show_handles, labels=show_labels, loc="lower right")
+# plt.show()
+
+fig = ax.get_figure()
+# -
+
+df_train.iloc[queried]
+
+np.unique(queried)
+
+df_train.mean()
+
+probs_final
 
 

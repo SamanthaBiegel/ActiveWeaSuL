@@ -48,6 +48,7 @@ np.set_printoptions(suppress=True, precision=16)
 
 # # Create data
 
+# +
 N = 10000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 p_z = 0.5
@@ -59,8 +60,11 @@ df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
-df = pd.read_csv("../../data/synthetic_dataset_3.csv")
 label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
+
+# +
+# df = pd.read_csv("../../data/synthetic_dataset_3.csv")
+# label_matrix = np.array(df[["wl1", "wl2", "wl3", "y"]])
 
 # +
 final_model_kwargs = {'input_dim': 2,
@@ -71,6 +75,8 @@ final_model_kwargs = {'input_dim': 2,
 
 class_balance = np.array([0.5,0.5])
 cliques=[[0],[1,2],[3]]
+# cliques=[[0,3],[1,2,3]]
+
 
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
@@ -78,6 +84,25 @@ al_kwargs = {'add_prob_loss': False,
              'df': df,
              "lr": 1e-1
             }
+
+# +
+it = 1000
+query_strategy = "margin"
+
+L = label_matrix[:, :-1]
+
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            n_epochs=200,
+                            query_strategy=query_strategy,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
+# -
+
+al.plot_metrics(al.metrics)
+
+al.plot_probabilistic_labels()
 
 # +
 al_metrics = {}
@@ -102,9 +127,10 @@ for j in tqdm(range(10)):
     al_metrics["fm_metrics"][j] = al.final_metrics
     print("Accuracy:", al.label_model._accuracy(Y_probs_al, df["y"].values))
     al.plot_metrics()
-
-
 # -
+
+al.cov_AL
+
 
 def create_metric_df(al_metrics, nr_runs, metric_string, strategy_string):
     joined_metrics = pd.DataFrame()

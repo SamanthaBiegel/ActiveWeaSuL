@@ -95,30 +95,11 @@ lm = LabelModel(df=df,
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
 lm.print_metrics()
+
+
 # -
 
 # ### Bucket entropy over time
-
-# +
-it = 30
-query_strategy = "relative_entropy"
-L = label_matrix[:, :-1]
-
-al = ActiveLearningPipeline(it=it,
-                            **al_kwargs,
-                            query_strategy=query_strategy,
-                            randomness=0)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance)
-
-# entropy_sampled_buckets = []
-
-# for j in range(it):
-#     bucket_list = al.unique_inverse[al.queried[:j+1]]
-#     entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
-
-
-# -
 
 def bucket_entropy_experiment(strategy, randomness):
 
@@ -146,6 +127,28 @@ def bucket_entropy_experiment(strategy, randomness):
     return entropies
 
 
+def diversity_experiment(strategy, randomness):
+
+    entropies = {}
+    for i in tqdm(range(1), desc="Repetitions"):
+        it = 30
+        query_strategy = strategy
+        L = label_matrix[:, :-1]
+
+        al = ActiveLearningPipeline(it=it,
+                                    **al_kwargs,
+                                    query_strategy=query_strategy,
+                                    randomness=randomness)
+
+        Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
+        
+    return Y_probs_al, al.queried
+
+
+probs_marg, queried_marg = diversity_experiment("margin", 0)
+probs_re, queried_re = diversity_experiment("relative_entropy", 0)
+probs_random, queried_random = diversity_experiment("margin", 1)
+
 entropies_marg = bucket_entropy_experiment("margin", 0)
 entropies_re = bucket_entropy_experiment("relative_entropy", 0)
 entropies_random = bucket_entropy_experiment("margin", 1)
@@ -169,12 +172,15 @@ entropies_joined = entropies_joined.rename(columns={"Number of points acquired":
 
 # +
 # entropies_joined.to_csv("results/bucket_entropies.csv", index=False)
+# -
+
+entropies_joined = pd.read_csv("results/bucket_entropies.csv")
+entropies_joined = entropies_joined.rename(columns={"Number of points acquired": "Number of labeled points"})
 
 # +
-# entropies_joined = pd.read_csv("results/bucket_entropies.csv")
+sns.set_context("paper")
 
-# +
-colors = ["#d88c9a",  "#086788",  "#e3b505","#ef7b45",  "#739e82"]
+colors = ["#368f8b", "#2b4162", "#ec7357", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
 
 sns.set(rc={'figure.figsize':(15, 10)}, style="whitegrid", palette=sns.color_palette(colors))
 ax = sns.lineplot(data=entropies_joined, x="Number of labeled points", y="Entropy", hue="Strategy", ci=68, n_boot=10000, hue_order=["Random", "Relative Entropy", "Margin"])
@@ -182,19 +188,112 @@ handles,labels = ax.axes.get_legend_handles_labels()
 labels = ["Random", "MaxKL", "Margin"]
 plt.legend(handles=handles, labels=labels, loc="lower right")
 plt.show()
-# fig = ax.get_figure()
-# fig.savefig("plots/entropies.png")
+fig = ax.get_figure()
+# fig.savefig("plots/entropies-2.png")
+# -
+
+import matplotlib.colors as clr
+import matplotlib.cm
+cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
+matplotlib.cm.register_cmap("mycolormap", cmap)
+
+# +
+sns.set(style="white",rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_marg[:,1].detach().numpy(), s=75, edgecolor="black", linewidth=0.5, cmap=cmap)
+plt.scatter(x=df.iloc[queried_marg]["x1"], y=df.iloc[queried_marg]["x2"], s=75, color="black", linewidth=0.5)
+
+plt.xlim(-3.6,2.9)
+plt.ylim(-3,3.5)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+# +
+sns.set(style="white",rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_re[:,1].detach().numpy(), s=75, edgecolor="black", linewidth=0.5, cmap=cmap)
+plt.scatter(x=df.iloc[queried_re]["x1"], y=df.iloc[queried_re]["x2"], s=75, color="black", linewidth=0.5)
+
+plt.xlim(-3.6,2.9)
+plt.ylim(-3,3.5)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+# +
+sns.set(style="white",rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_random[:,1].detach().numpy(), s=75, edgecolor="black", linewidth=0.5, cmap=cmap)
+plt.scatter(x=df.iloc[queried_random]["x1"], y=df.iloc[queried_random]["x2"], s=75, color="black", linewidth=0.5)
+
+plt.xlim(-3.6,2.9)
+plt.ylim(-3,3.5)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+# -
+
+# ### Acquisition function values over time
+
+# +
+it = 30
+query_strategy = "relative_entropy"
+L = label_matrix[:, :-1]
+
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
 # -
 
 entropy_df = pd.DataFrame.from_dict(al.bucket_AL_values).stack().reset_index().rename(columns={"level_0": "WL bucket", "level_1": "Active Learning Iteration", 0: "KL divergence"})
+entropy_df["WL bucket"] = entropy_df["WL bucket"].map(al.confs)
 
+# +
+sns.set(rc={'figure.figsize':(15,10)})
+sns.set_theme(style="whitegrid")
+
+colors = ["#2b4162", "#e9c46a", "#721817", "#fa9f42", "#368f8b", "#ec7357", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+
+divergence_plot = sns.lineplot(data=entropy_df, x="Active Learning Iteration", y="KL divergence", hue="WL bucket", palette=sns.color_palette(colors[:6]))
+handles,labels = divergence_plot.axes.get_legend_handles_labels()
+plt.legend(handles=handles, labels=labels, loc="upper right")
+plt.xlabel("Number of labeled points")
+plt.ylabel("Kullback-Leibler divergence")
+plt.show()
+# fig = divergence_plot.get_figure()
+# fig.savefig("plots/divergence_plot.png")
+
+# +
+it = 30
+query_strategy = "margin"
+L = label_matrix[:, :-1]
+
+al = ActiveLearningPipeline(it=it,
+                            **al_kwargs,
+                            query_strategy=query_strategy,
+                            randomness=0)
+
+Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
+# -
+
+entropy_df = pd.DataFrame.from_dict(al.bucket_AL_values).stack().reset_index().rename(columns={"level_0": "WL bucket", "level_1": "Active Learning Iteration", 0: "KL divergence"})
 entropy_df["WL bucket"] = entropy_df["WL bucket"].map(al.confs)
 
 sns.set(rc={'figure.figsize':(15,10)})
 sns.set_theme(style="whitegrid")
-divergence_plot = sns.lineplot(data=entropy_df, x="Active Learning Iteration", y="KL divergence", hue="WL bucket", palette="Set2")
-# fig = divergence_plot.get_figure()
-# fig.savefig("plots/divergence_plot.png")
+divergence_plot = sns.lineplot(data=entropy_df, x="Active Learning Iteration", y="KL divergence", hue="WL bucket", palette=sns.color_palette(colors[:6]))
+handles,labels = divergence_plot.axes.get_legend_handles_labels()
+plt.legend(handles=handles, labels=labels, loc="upper right")
+
+
+# ### Penalty parameter
 
 def active_learning_experiment(nr_al_it, nr_runs, al_approach, query_strategy, randomness, penalty_strength):
     al_metrics = {}
@@ -392,6 +491,8 @@ fm.print_metrics()
 
 plot_train_loss(fm.losses)
 
+# ### Active learning
+
 df = pd.read_csv("../data/synthetic_dataset_3.csv")
 
 random.seed(None)
@@ -406,14 +507,6 @@ fm._analyze(probs_final, df["y"].values)
 fm = DiscriminativeModel(df_1, **final_model_kwargs, soft_labels=False)
 probs_final = fm.fit(features=df_1[["x1", "x2"]].values[None, :], labels=np.array(df_1["y"])[None])._predict(torch.Tensor(df[["x1", "x2"]].values))
 fm._analyze(probs_final, df["y"].values)["Accuracy"]
-
-torch.argmin(torch.abs(probs_final[:, 1] - probs_final[:, 0])).item()
-
-probs_final[6977]
-
-final_model_kwargs
-
-final_model_kwargs["batch_size"] = 1
 
 # +
 
@@ -444,19 +537,44 @@ for j in tqdm(range(10)):
     accuracy_dict[j] = accuracies
 
 
-# -
-
+# +
 accuracy_df = pd.DataFrame.from_dict(accuracy_dict)
-
 accuracy_df = accuracy_df.stack().reset_index().rename(columns={"level_0": "Active Learning Iteration", "level_1": "Run", 0: "Accuracy"})
 
-accuracy_df
+accuracy_df["Metric"] = "Accuracy"
+accuracy_df["Strategy"] = "Active Learning"
+accuracy_df["Model"] = "Discriminative"
 
 # +
 # accuracy_df.to_csv("results/accuracy_only_AL.csv")
 # -
 
-sns.lineplot(data=accuracy_df, x="Active Learning Iteration", y="Accuracy", ci=68)
+accuracy_df = pd.read_csv("results/accuracy_only_AL.csv")
+
+probs_approach_df = pd.read_csv("results/re_marg_random_joined.csv")
+
+probs_approach_df = probs_approach_df[(probs_approach_df["Model"] == "Discriminative") & (probs_approach_df["Strategy"] == "Margin")]
+# probs_approach_df[probs_approach_df["Strategy"] == "Relative Entropy"]
+
+
+
+
+joined_al = pd.concat([probs_approach_df, accuracy_df])
+
+# +
+joined_al = joined_al.rename(columns={"Active Learning Iteration": "Number of labeled points"})
+
+colors = ["#2b4162", "#ec7357", "#368f8b", "#2b4162", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+sns.set(style="whitegrid", palette=sns.color_palette(colors), rc={'figure.figsize':(15,10)})
+ax = sns.lineplot(data=joined_al, x="Number of labeled points", y="Accuracy", hue="Strategy", ci=68, legend=False)
+show_handles = [ax.axes.lines[0], ax.axes.lines[1]]
+show_labels = ["AWSL", "Active Learning"]
+ax.axes.legend(handles=show_handles, labels=show_labels, loc="lower right")
+# plt.show()
+
+fig = ax.get_figure()
+fig.savefig("plots/ws-al-2.png")
+# -
 
 plot_probs(df, probs, add_labeled_points=queried)
 

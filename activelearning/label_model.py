@@ -272,8 +272,8 @@ class LabelModel(PerformanceMixin):
                 self.mask[:, self.al_idx] = 0
 
                 E_AL_Y = self.E_O.copy()
-                # E_AL_Y = self.psi[:, self.al_idx].mean(axis=0)
                 E_AL_Y[self.al_idx[0]] = 0
+                
                 self.cov_AL = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
 
                 # self.cov_AL_3 = torch.Tensor(E_AL_Y[self.al_idx] - self.psi[:, self.al_idx].mean(axis=0)*self.E_S)
@@ -292,8 +292,8 @@ class LabelModel(PerformanceMixin):
 
                 # self.cov_AL = torch.cat((self.cov_AL_3, self.cov_AL_03, self.cov_AL_13, self.cov_AL_23, self.cov_AL_123))
 
-        # if self.z is None:
-        self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
+        if self.z is None:
+            self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
 
         if self.cov_O_inverse.shape[0] != self.z.shape[0]:
             self.z = nn.Parameter(torch.cat((self.z, torch.normal(0, 1, size=(self.y_dim, self.y_dim - 1)))), requires_grad=True)

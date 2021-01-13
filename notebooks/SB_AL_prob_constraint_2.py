@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -51,22 +52,486 @@ N = 10000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 p_z = 0.5
 
-# data = SyntheticData(N, p_z, centroids)
-# df = data.sample_data_set().create_df()
+data = SyntheticData(N, p_z, centroids)
+df = data.sample_data_set().create_df()
 
-# df.loc[:, "wl1"] = (df["x2"]<0.4)*1
-# df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
-# df.loc[:, "wl3"] = (df["x1"]<-1)*1
+df.loc[:, "wl1"] = (df["x2"]<0.4)*1
+df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
+df.loc[:, "wl3"] = (df["x1"]<-1)*1
 # df.loc[:, "wl4"] = (df["x2"]<-0.5)*1
 # df.loc[:, "wl5"] = (df["x1"]<0)*1
 
-# label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 # -
 
-df = pd.read_csv("../data/synthetic_dataset_3.csv")
+df_big=df
+
+df = pd.read_csv("../data/synthetic_small.csv")
+
+df["u"] = "?"
+
+# +
+# df.to_csv("../data/synthetic_small.csv", index=False)
+# -
+
+df_big = pd.read_csv("../data/synthetic_dataset_3.csv")
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 
-plot_probs(df, probs=data.y, soft_labels=False)
+# +
+# sub_df = df.sample(100)
+# -
+
+_, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
+
+# +
+bp1 = centroids.sum(axis=0)/2
+
+# vector between cluster means
+diff = centroids[1,:]-centroids[0,:]
+
+# slope of decision boundary is perpendicular to slope of line that goes through the cluster means
+slope = diff[1]/diff[0]
+perp_slope = -1/slope
+
+# solve for intercept using slope and middle point
+b = bp1[1] - perp_slope*bp1[0]
+
+coef = [b, perp_slope, -1]
+
+
+x_dec = np.linspace(centroids[0,0]-4, centroids[1,0]+4, 1000)
+y_dec = (- coef[0] - coef[1]*x_dec)/coef[2]
+# -
+
+centroids
+
+# +
+import matplotlib.colors as clr
+import matplotlib.cm
+
+some_matrix = np.linspace(0,1,200)[None,:]
+
+cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
+matplotlib.cm.register_cmap("mycolormap", cmap)
+
+
+plt.matshow(some_matrix, cmap=cmap)
+
+plt.show()
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.y, s=(700), edgecolor="black")
+# g.set(yticks=[], xticks=[])
+plt.scatter(x=df.x1, y=df.x2, c=df.y, s=(700), edgecolor="black", cmap=cmap)
+plt.plot(x_dec, y_dec, color="black")
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(labels=[0,1],loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("plots/truelabels.png")
+
+# +
+sns.set_context("paper")
+
+colors = ["#BBBBBB", "#368f8b", "#ec7357"]
+# colors = ["#368f8b", "#ec7357"]
+
+sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
+plt.scatter(x=df.x1, y=df.x2, c="#BBBBBB", s=(700), edgecolor="black", cmap=cmap)
+plt.legend(labels="?", loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+plt.savefig("plots/missinglabels.png")
+
+# +
+L = df[["wl1", "wl2", "wl3"]].values
+
+lm = LabelModel(df=df,
+                active_learning=False,
+                add_cliques=True,
+                add_prob_loss=False,
+                n_epochs=200,
+                lr=1e-1)
+    
+Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
+# lm.analyze()
+# lm.print_metrics()
+# -
+
+np.unique(lm.predict_true().detach().numpy(), axis=0)
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
+
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl1, s=(700), edgecolor="black")
+plt.scatter(x=df.x1, y=df.x2, c=df.wl1, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+# g.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("plots/wl1.png")
+
+# +
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl2, s=(700), edgecolor="black")
+plt.scatter(x=df.x1, y=df.x2, c=df.wl2, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+# g.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("plots/wl2.png")
+
+# +
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl3, s=(700), edgecolor="black")
+plt.scatter(x=df.x1, y=df.x2, c=df.wl3, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+# g.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("plots/wl3.png")
+# -
+
+_, unique_idx, unique_inverse = np.unique(Y_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
+confs = {range(len(unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(L[unique_idx, :])}
+conf_list = np.vectorize(confs.get)(unique_inverse)
+
+L = df[["wl1", "wl2", "wl3"]].values
+psi,_ = lm._get_psi(L, cliques, 3)
+true_test = lm._predict(L, psi, lm.get_true_mu()[:, 1][:, None], df["y"].mean())
+
+len(unique_inverse)
+
+Y_probs[unique_idx]
+
+
+
+sampled_idx = random.sample(list(df[unique_inverse == 1].index), 5)
+
+df["u"] = 0.5
+
+df.loc[sampled_idx, "u"] = df.loc[sampled_idx, "y"]
+
+df.iloc[sampled_idx]
+
+# +
+# colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+# colors = ["#368F8B", "#3EA39E", "#43B1AC", "#F1937E", "#EF846C", "#EC7357"]
+colors = ["#368F8B", "#43B1AC", "#5CC1BC", "#F5B2A3", "#F1937E", "#EC7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=6), rc={'figure.figsize':(15,15)})
+
+fig, ax = plt.subplots()
+
+scatter = plt.scatter(x=df.x1, y=df.x2, c=df.u, s=(700), edgecolor="black", cmap=cmap)
+# plt.legend(labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=Y_probs.detach().numpy()[:,1], s=(700), edgecolor="black",
+#                     palette=sns.color_palette("mycolormap", n_colors=6))
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+plt.clim(0,1)
+
+handles, labels = scatter.legend_elements()
+
+legend1 = ax.legend(handles=[handles[i] for i in [0,2]], labels=[0, 1],
+                    loc="upper left", title="", fontsize="large")
+ax.add_artist(legend1)
+
+
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+# plt.colorbar(sm)
+
+plt.savefig("plots/sample-examples.png")
+
+# +
+# colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+# colors = ["#368F8B", "#3EA39E", "#43B1AC", "#F1937E", "#EF846C", "#EC7357"]
+colors = ["#368F8B", "#43B1AC", "#5CC1BC", "#F5B2A3", "#F1937E", "#EC7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=6), rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=Y_probs.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+labels=["0-0-0", "0-1-0", "1-0-0", "0-1-1", "1-1-0", "1-1-1"]
+# plt.legend(labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+# g = sns.scatterplot(x=df.x1, y=df.x2, hue=Y_probs.detach().numpy()[:,1], s=(700), edgecolor="black",
+#                     palette=sns.color_palette("mycolormap", n_colors=6))
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+plt.clim(0,1)
+
+# g.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# handles,labels = plt.axes.get_legend_handles_labels()
+
+
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+# cbar = plt.colorbar(sm)
+# cbar.ax.set_title(r"P(Y=1|λ)", fontsize=30, y=1.02)
+# cbar.ax.tick_params(labelsize=20)
+# plt.savefig("plots/configurations_colorbar.png")
+
+# plt.show()
+# plt.savefig("plots/configurations.png")
+# fig = g.get_figure()
+# fig.savefig("plots/configurations.png")
+# -
+
+np.unique(Y_probs.detach().numpy(), axis=0)
+
+# +
+# colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+# colors = ["#368F8B", "#3EA39E", "#43B1AC", "#F1937E", "#EF846C", "#EC7357"]
+colors = ["#368F8B", "#43B1AC", "#5CC1BC", "#F5B2A3", "#F1937E", "#EC7357"]
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=6), rc={'figure.figsize':(15,15)})
+
+g = sns.scatterplot(x=df_big.x1, y=df_big.x2, hue=lm.predict_true().detach().numpy()[:,1], s=(700), edgecolor="black",
+                    palette=sns.color_palette("mycolormap", n_colors=6))
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+g.set(yticks=[], xticks=[])
+handles,labels = g.axes.get_legend_handles_labels()
+labels=["0-0-0", "0-1-0", "1-0-0", "0-1-1", "1-1-0", "1-1-1"]
+plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+
+plt.show()
+fig = g.get_figure()
+fig.savefig("plots/configurations.png")
+# -
+
+
+
+df_big.iloc[[2641, 8953, 7495]]
+
+(1.169919-1.355350)/(-0.495345--0.533058)
+
+1.355350-(-0.533058*-4.9168986821520395)
+
+-1.265642177710602+(-2.5*-4.9168986821520395)
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=200), rc={'figure.figsize':(17,15)})
+# sns.set(style="white", palette=sns.color_palette("Set2"), rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_final.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-2.5, 1.7],[y1, y2], linewidth=5, color="black")
+# p.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+# plt.gca().set_aspect('equal', adjustable='box')
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+cbar = plt.colorbar(sm)
+cbar.ax.set_title(r"P(Y=1|X)", fontsize=30, y=1.02)
+cbar.ax.tick_params(labelsize=20)
+plt.savefig("plots/decboundary_colorbar.png")
+
+
+# plt.savefig("plots/decboundary.png")
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=200), rc={'figure.figsize':(17,15)})
+# sns.set(style="white", palette=sns.color_palette("Set2"), rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_final_al.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-2.5, 1.7],[y1_al, y2_al], linewidth=5, color="black")
+# plt.plot([-0.263722, -0.577264],[0.320930, 0.572447], linewidth=5, color="black")
+# p.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+# plt.gca().set_aspect('equal', adjustable='box')
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+cbar = plt.colorbar(sm)
+cbar.ax.set_title(r"P(Y=1|X)", fontsize=30, y=1.02)
+cbar.ax.tick_params(labelsize=20)
+plt.savefig("plots/decboundary_al_colorbar.png")
+
+
+# plt.savefig("plots/decboundary.png")
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=200), rc={'figure.figsize':(15,15)})
+# sns.set(style="white", palette=sns.color_palette("Set2"), rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_final.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-2.5, 1.7],[y1, y2], linewidth=5, color="black")
+
+# p.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+# plt.colorbar(sm)
+
+plt.savefig("plots/decboundary.png")
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=200), rc={'figure.figsize':(15,15)})
+# sns.set(style="white", palette=sns.color_palette("Set2"), rc={'figure.figsize':(15,15)})
+
+plt.scatter(x=df.x1, y=df.x2, c=probs_final_al.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-2.5, 1.7],[y1_al, y2_al], linewidth=5, color="black")
+
+# p.set(yticks=[], xticks=[])
+# handles,labels = g.axes.get_legend_handles_labels()
+# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+# plt.colorbar(sm)
+
+plt.savefig("plots/decboundary_al.png")
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+fig, ax = plt.subplots(figsize=(17,15))
+
+scatter = ax.scatter(x=df.x1, y=df.x2, c=true_test.detach().numpy()[:,1], s=(700), edgecolor="black", cmap=cmap)
+labels=["0-0-0", "0-1-0", "0-1-1", "1-0-0", "1-1-0", "1-1-1"]
+# plt.legend()
+handles, _ = scatter.legend_elements()
+
+legend1 = ax.legend(handles=handles, labels=labels,
+                    loc="upper left", title="", fontsize="large")
+ax.add_artist(legend1)
+
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+# scatter.clim(0,1)
+
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+plt.colorbar(sm)
+
+
+plt.savefig("plots/trueproblabels.png")
+# -
+
+df[["x1","x2"]].values.shape
+
 
 
 # +
@@ -114,6 +579,7 @@ class_balance = np.array([1 - p_z, p_z])
 cliques=[[0],[1,2]]
 # cliques=[[0],[1],[2]]
 
+
 al_kwargs = {'add_prob_loss': False,
              'add_cliques': True,
              'active_learning': "probs",
@@ -125,9 +591,9 @@ al_kwargs = {'add_prob_loss': False,
 # # Margin strategy
 
 # +
-L = label_matrix[:, :-1]
+L = df_big[["wl1", "wl2", "wl3"]].values
 
-lm = LabelModel(df=df,
+lm = LabelModel(df=df_big,
                 active_learning=False,
                 add_cliques=True,
                 add_prob_loss=False,
@@ -139,22 +605,29 @@ lm.analyze()
 lm.print_metrics()
 # -
 
-lm.mu
+Y_probs=lm._predict(L, psi, lm.mu, df.y.mean())
 
-Y_probs
+probs_final_big = fm._predict(torch.Tensor(df_big[["x1","x2"]].values))
+decbound_points = df_big.iloc[np.argsort(np.abs(probs_final_big[:,1]-0.5))[:2]][["x1", "x2"]].values
+a = (decbound_points[1,1] - decbound_points[0,1])/(decbound_points[1,0] - decbound_points[0,0])
+b = decbound_points[0,1] - decbound_points[0,0]*a
+y1 = a*-2.5 + b
+y2 = a*1.7 + b
 
-# +
+probs_final_big = fm_al._predict(torch.Tensor(df_big[["x1","x2"]].values))
+decbound_points = df_big.iloc[np.argsort(np.abs(probs_final_big[:,1]-0.5))[:2]][["x1", "x2"]].values
+a = (decbound_points[1,1] - decbound_points[0,1])/(decbound_points[1,0] - decbound_points[0,0])
+b = decbound_points[0,1] - decbound_points[0,0]*a
+y1_al = a*-2.5 + b
+y2_al = a*1.7 + b
 
-df
-# -
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=df_big[["x1","x2"]].values, labels=Y_probs.detach().numpy())._predict(torch.Tensor(df[["x1","x2"]].values))
+# fm.analyze()
+# fm.print_metrics()
 
-0.0843*0.2818/0.5/0.1106
-
-((0.0843/0.5)*(0.2818/0.5)*0.5)/0.1106
-
-lm.wl_idx
-
-lm.P_lambda
+fm_al = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final_al = fm_al.fit(features=df_big[["x1","x2"]].values, labels=Y_probs_al.detach().numpy())._predict(torch.Tensor(df[["x1","x2"]].values))
 
 # +
 true_probs, uniqueidx = np.unique(lm.predict_true()[:, 1], return_index=True)
@@ -274,11 +747,18 @@ diff_probs = np.abs(np.array([item for sublist in true_probs_list for item in su
 fig = go.Figure(go.Scatter(x=[item for sublist in P_lambda_list for item in sublist], y=diff_probs, mode="markers"))
 fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
 fig.show()
+# -
+
+al_kwargs["df"] = df_big
+
+df_big[["wl1", "wl2", "wl3"]].values
+
+al_kwargs["df"] = df_big
 
 # +
-it = 20
+it = 30
 query_strategy = "relative_entropy"
-L = label_matrix[:, :-1]
+# L = label_matrix[:, :-1]
 al_kwargs["active_learning"] = "probs"
 
 al = ActiveLearningPipeline(it=it,
@@ -287,11 +767,11 @@ al = ActiveLearningPipeline(it=it,
                             query_strategy=query_strategy,
                             randomness=0)
 
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L_test, y_test=df_test["y"].values)
+Y_probs_al = al.refine_probabilities(label_matrix=df_big[["wl1", "wl2", "wl3"]].values, cliques=cliques, class_balance=class_balance, label_matrix_test=df[["wl1", "wl2", "wl3"]].values, y_test=df["y"].values)
 al.label_model.print_metrics()
 # -
 
-al.test_performance
+al.plot_metrics(al.metrics)
 
 al.label_model.predict()
 
