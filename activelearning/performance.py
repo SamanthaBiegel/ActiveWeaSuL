@@ -23,7 +23,8 @@ class PerformanceMixin:
         return {"MCC": self.MCC(TP, TN, FP, FN),
                 "Precision": self.precision(TP, FP),
                 "Recall": self.recall(TP, FN),
-                "Accuracy": self._accuracy(prob_labels, y)}
+                "Accuracy": self._accuracy(prob_labels, y),
+                "F1": self.F1(TP, FP, FN)}
 
     def accuracy(self):
         """Compute overall accuracy from label predictions"""
@@ -51,6 +52,10 @@ class PerformanceMixin:
         """Fraction of true class 1 and predicted class 1"""
 
         return TP / (TP + FP)
+
+    def F1(self, TP, FP, FN):
+
+        return TP / (TP + 0.5*(FP + FN))
 
     def print_metrics(self):
         """Pretty print metric dict"""
