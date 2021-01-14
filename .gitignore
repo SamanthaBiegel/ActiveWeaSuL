@@ -1,6 +1,8 @@
 *.ipynb
 *__pycache__
-**/data/
+**/data/*
+!**data/spouse/
+*.pkl
 **/checkpoint/
 *.ipynb_checkpoints/
 connect-s3.sh
@@ -13,3 +15,6 @@ connect-s3.sh
 .Rhistory
 *core*
 *models/
+notebooks/results/cov_probs_3.pickle
+notebooks/results/cov_probs_2.pickle
+notebooks/results/cov_probs.pickle

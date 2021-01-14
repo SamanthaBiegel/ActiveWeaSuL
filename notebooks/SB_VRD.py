@@ -259,7 +259,7 @@ for i in range(10):
     query_strategy = "relative_entropy"
 
     al = ActiveLearningPipeline(it=it,
-#                                 final_model=VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
+                                final_model=VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix),
                                 **al_kwargs,
                                 image_dir=path_prefix + "data/images/train_images",
                                 query_strategy=query_strategy,
