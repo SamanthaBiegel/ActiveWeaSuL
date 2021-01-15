@@ -10,7 +10,7 @@ class PerformanceMixin:
 
         self.y = self.y_true
 
-        self.metric_dict = self._analyze(self.preds, self.y)
+        self.metric_dict = self._analyze(self.prob_labels_train, self.y)
         self.metric_dict["Labels"] = self.model_name
 
     def _analyze(self, prob_labels, y):
@@ -29,7 +29,7 @@ class PerformanceMixin:
     def accuracy(self):
         """Compute overall accuracy from label predictions"""
 
-        return self._accuracy(self.preds, self.y)
+        return self._accuracy(self.prob_labels_train, self.y)
 
     def _accuracy(self, prob_labels, y):
 

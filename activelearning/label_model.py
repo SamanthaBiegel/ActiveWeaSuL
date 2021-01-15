@@ -15,29 +15,29 @@ class LabelModel(PerformanceMixin):
                  y_true,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
-                 penalty_strength: float = 1,
                  active_learning: bool = False,
+                 penalty_strength: float = 1e3,
                  hide_progress_bar: bool = False):
-        self.model_name = "Label Model"
+        """Fit label model using Matrix Completion approach (Ratner et al. 2019).
+        Optionally, add penalty for labeled points (active learning).
+
+        Args:
+            y_true (numpy.array): Ground truth labels of training dataset
+            n_epochs (int, optional): Number of epochs
+            lr (float, optional): Learning rate
+            penalty_strength (float, optional): Strength of the active learning penalty
+            active_learning (bool, optional): Add active learning component
+            hide_progress_bar (bool, optional): Hide epoch progress bar
+        """
+
+        self.y_true = y_true
         self.n_epochs = n_epochs
         self.lr = lr
         self.active_learning = active_learning
-        self.hide_progress_bar = hide_progress_bar
-        self.z = None
-        self.y_true = y_true
         self.penalty_strength = penalty_strength
- 
-    def init_properties(self):
-        """Get properties such as dimensions from label matrix"""
-
-        self.N, self.nr_wl = self.label_matrix.shape
-        self.y_set = np.unique(self.label_matrix)  # array of classes
-
-        # Ignore abstain label
-        if self.y_set[0] == -1:
-            self.y_set = self.y_set[1:]
-
-        self.y_dim = len(self.y_set)  # number of classes
+        self.hide_progress_bar = hide_progress_bar
+        
+        self.model_name = "Label Model"
 
     def calculate_mu(self, cov_OS):
         """Compute mu from OS covariance"""
@@ -54,7 +54,7 @@ class LabelModel(PerformanceMixin):
         return cov_OS
 
     def loss_prior_knowledge_probs(self, probs):
-        """Compute probabilistic label loss for sampled data points"""
+        """Add penalty to loss for sampled data points"""
 
         # Label to probabilistic label (eg 1 to (0 1))
         # probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
@@ -96,6 +96,7 @@ class LabelModel(PerformanceMixin):
         mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
 
         for key in self.wl_idx.keys():
+            # Mask diagonal blocks
             mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
 
             key = key.split("_")
@@ -107,6 +108,7 @@ class LabelModel(PerformanceMixin):
             # Create all pairs of subsets of clique
             clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
 
+            # Mask all pairs of subsets that are in the same clique
             for pair in clique_pairs:
                 i = self.wl_idx[pair[0]]
                 j = self.wl_idx[pair[1]]
@@ -119,11 +121,22 @@ class LabelModel(PerformanceMixin):
         return self._get_psi(self.label_matrix, self.cliques, self.nr_wl)
 
     def _get_psi(self, label_matrix, cliques, nr_wl):
-        """Transform label matrix to indicator variables"""
+        """Compute psi from given label matrix and cliques
+
+        Args:
+            label_matrix ([numpy.array): Array with labeling function outputs on dataset
+            cliques ([type]): [description]
+            nr_wl ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
 
         psi_list = []
         col_counter = 0
         wl_idx = {}
+
+        # Compute psi for individual weak labels
         for i in range(nr_wl):
             wl = label_matrix[:, i]
             wl_onehot = (wl[:, None] == self.y_set)*1
@@ -133,12 +146,16 @@ class LabelModel(PerformanceMixin):
 
         psi = np.hstack(psi_list)
 
+        # Compute psi for cliques
         psi_int_list = []
         clique_idx = {}
+        # Iterate over maximal cliques
         for clique in cliques:
+            # Compute set of all subcliques with at least 2 variables in maximal clique
             clique_comb = itertools.chain.from_iterable(
                 itertools.combinations(clique, r) for r in range(len(clique)+1) if r > 1)
             for i, comb in enumerate(clique_comb):
+                # Compute psi for clique of 2 variables
                 if len(comb) == 2:
                     idx1 = wl_idx[str(comb[0])]
                     idx2 = wl_idx[str(comb[1])]
@@ -150,7 +167,8 @@ class LabelModel(PerformanceMixin):
                     psi_int_list.append(wl_int_onehot)
                     clique_idx[comb] = i
                     wl_idx[str(comb[0]) + "_" + str(comb[1])] = list(range(col_counter, col_counter+wl_int_onehot.shape[1]))
-
+                
+                # Compute psi for clique of 3 variables
                 if len(comb) == 3:
                     idx3 = wl_idx[str(comb[2])]
                     wl_int_onehot = (
@@ -163,14 +181,30 @@ class LabelModel(PerformanceMixin):
 
                 col_counter += wl_int_onehot.shape[1]
 
+        # Concatenate different clique sizes
         if psi_int_list:
             psi_2 = np.hstack(psi_int_list)
             psi = np.concatenate([psi, psi_2], axis=1)
 
         return psi, wl_idx
+        
+    def init_label_model(self, label_matrix, cliques, class_balance):
+        """Initialize label model"""
 
-    def init_cov_exp(self):
-        "Compute expectations and covariances for observed set and separator set"
+        self.label_matrix = label_matrix
+        self.cliques = cliques
+        self.class_balance = class_balance
+
+        self.N, self.nr_wl = label_matrix.shape
+        self.y_set = np.unique(label_matrix)  # array of classes
+
+        # Ignore abstain label
+        if self.y_set[0] == -1:
+            self.y_set = self.y_set[1:]
+
+        self.y_dim = len(self.y_set)  # number of classes
+
+        self.psi, self.wl_idx = self.get_psi()
 
         # Compute observed expectations and covariances
         self.E_O = self.psi.mean(axis=0)
@@ -184,40 +218,41 @@ class LabelModel(PerformanceMixin):
         # In the rank-one setting we only consider one column of psi(Y)
         self.cov_S = self.cov_Y[-1, -1]
 
+        self.mask = self.create_mask()
+
     def fit(self,
             label_matrix,
             cliques,
             class_balance,
-            ground_truth_labels: Optional[np.array] = None,
-            last_posteriors: Optional[np.array] = None):
-        """Fit label model"""
-        
-        self.label_matrix = label_matrix
-        self.cliques = cliques
-        self.class_balance = class_balance
+            ground_truth_labels: Optional[np.array] = None):
+            # last_posteriors: Optional[np.array] = None):
+        """Fit label model
 
-        self.losses = []
+        Args:
+            label_matrix ([numpy.array): Array with labeling function outputs on train set
+            cliques (list): List of lists of maximal cliques (column indices of label matrix)
+            class_balance (numpy.array): Array with true class distribution
+            ground_truth_labels (numpy.array, optional): Array with -1 or ground truth label for each point in train set
 
-        self.init_properties()
+        Returns:
+            [type]: [description]
+        """
 
-        # Transform label matrix to indicator variables
-        self.psi, self.wl_idx = self.get_psi()
-        self.init_cov_exp()
-
-        self.mask = self.create_mask()
+        self.init_label_model(label_matrix, cliques, class_balance)
 
         if self.active_learning:
             # Calculate known covariance for active learning weak label
             self.ground_truth_labels = ground_truth_labels
-            self.last_posteriors = last_posteriors
+            # self.last_posteriors = last_posteriors
             _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)
 
-        if self.z is None:
+        if not self.active_learning:
             self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
 
-        # Find optimal z
+        self.losses = []
+        # Find z with SGD
         for epoch in tqdm(range(self.n_epochs), disable=self.hide_progress_bar):
             optimizer.zero_grad()
             loss = self.loss_func()
@@ -231,21 +266,30 @@ class LabelModel(PerformanceMixin):
         if self.calculate_cov_OS()[1] < 0:
             self.z = nn.Parameter(-self.z, requires_grad=True)
 
-        # Compute covariances and label model probabilities from optimal z
+        # Compute covariances and label model probabilities from z
         self.cov_OS = self.calculate_cov_OS()
         self.mu = self.calculate_mu(self.cov_OS)#.clamp(0, 1)
 
         return self
 
     def predict(self):
-        """Predict training labels"""
+        """Predict probabilistic training labels"""
 
-        self.preds = self._predict(self.label_matrix, self.mu, torch.tensor(self.E_S))
+        self.prob_labels_train = self._predict(self.label_matrix, self.mu, torch.tensor(self.E_S))
 
-        return self.preds
+        return self.prob_labels_train
 
     def _predict(self, L_matrix, mu, P_Y):
-        """Predict labels from given parameters and class balance"""
+        """Predict labels for a dataset from given parameters and class balance
+
+        Args:
+            L_matrix (numpy.array): Array with labeling function outputs on dataset
+            mu (torch.Tensor): Tensor with label model parameters
+            P_Y (float): Estimated probability of Y=1 for dataset
+
+        Returns:
+            torch.Tensor: Tensor with probabilistic labels for given dataset
+        """
 
         N = L_matrix.shape[0]
         psi, _ = self._get_psi(L_matrix, self.cliques, self.nr_wl)
@@ -287,16 +331,18 @@ class LabelModel(PerformanceMixin):
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
 
-        preds = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
+        labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
-        return preds
+        return labels.detach()
 
     def predict_true(self):
-        """Obtain optimal training labels from ground truth labels"""
-        
+        """Obtain training labels from optimal label model using ground truth labels"""
+
         return self._predict(self.label_matrix, self.get_true_mu()[:, 1][:, None], self.y_true)
 
     def predict_true_counts(self):
+        """Obtain optimal training labels using ground truth labels"""
+
         lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
         P_Y_lambda = np.zeros((self.N, 2))
@@ -308,7 +354,7 @@ class LabelModel(PerformanceMixin):
         return torch.Tensor(P_Y_lambda)
 
     def get_true_mu(self):
-        """Obtain actual label model parameters from data and ground truth labels"""
+        """Obtain optimal label model parameters from data and ground truth labels"""
 
         exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
         for i in range(0, self.y_dim):
@@ -318,6 +364,7 @@ class LabelModel(PerformanceMixin):
         return torch.Tensor(exp_mu)
 
     def get_true_cov_OS(self):
+        """Obtain true covariance between cliques and Y using ground truth labels"""
 
         y_onehot = ((self.y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
         psi_y = np.concatenate([self.psi, y_onehot], axis=1)

@@ -1,0 +1,1435 @@
+Number of labeled points,Metric,Accuracy,Run,Approach,Model,Dash
+0,Accuracy,0.9015,0,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,0,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+3,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+4,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+5,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+6,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+7,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+8,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+9,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+12,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+13,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,0,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,1,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+3,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+4,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+6,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+7,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+8,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+9,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+11,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+13,Accuracy,0.9637,1,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,1,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,2,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+3,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+4,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+5,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+6,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+7,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+8,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+9,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+12,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+13,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+25,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,2,Active WeaSuL,Generative,n
+27,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+28,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+29,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+30,Accuracy,0.9637,2,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,3,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+3,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+4,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+6,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+7,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+8,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+9,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+13,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+14,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+15,Accuracy,0.9637,3,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,3,Active WeaSuL,Generative,n
+0,Accuracy,0.8189,4,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,4,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+3,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+4,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+5,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+6,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+7,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+8,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+9,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+12,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+13,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,4,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,5,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+2,Accuracy,0.9015,5,Active WeaSuL,Generative,n
+3,Accuracy,0.9015,5,Active WeaSuL,Generative,n
+4,Accuracy,0.9015,5,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+6,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+7,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+8,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+9,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,5,Active WeaSuL,Generative,n
+13,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,5,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,6,Active WeaSuL,Generative,n
+1,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+3,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+4,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+6,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+7,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+8,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+9,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+10,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+11,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+13,Accuracy,0.9637,6,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,6,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,7,Active WeaSuL,Generative,n
+1,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+3,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+4,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+5,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+6,Accuracy,0.9648,7,Active WeaSuL,Generative,n
+7,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+8,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+9,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+10,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+11,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+13,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+14,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+15,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+16,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+17,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+18,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+19,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+20,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+21,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+22,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+23,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+24,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+25,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+26,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+27,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+28,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+29,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+30,Accuracy,0.9637,7,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,8,Active WeaSuL,Generative,n
+1,Accuracy,0.9648,8,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,8,Active WeaSuL,Generative,n
+3,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+4,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+6,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+7,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+8,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+9,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+10,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+11,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+12,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+13,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+14,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+15,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+16,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+17,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+18,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+19,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+20,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+21,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+22,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+23,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+24,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+25,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+26,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+27,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+28,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+29,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+30,Accuracy,0.9637,8,Active WeaSuL,Generative,n
+0,Accuracy,0.9015,9,Active WeaSuL,Generative,n
+1,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+2,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+3,Accuracy,0.9637,9,Active WeaSuL,Generative,n
+4,Accuracy,0.9637,9,Active WeaSuL,Generative,n
+5,Accuracy,0.9637,9,Active WeaSuL,Generative,n
+6,Accuracy,0.9637,9,Active WeaSuL,Generative,n
+7,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+8,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+9,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+10,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+11,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+12,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+13,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+14,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+15,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+16,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+17,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+18,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+19,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+20,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+21,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+22,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+23,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+24,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+25,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+26,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+27,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+28,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+29,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+30,Accuracy,0.9648,9,Active WeaSuL,Generative,n
+0,Accuracy,0.8906,0,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9758,0,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9753,0,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9727,0,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9771,0,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9776,0,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9766,0,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9776,0,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9766,0,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9772,0,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9768,0,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9771,0,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9771,0,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9777,0,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9778,0,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9778,0,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9775,0,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9773,0,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9771,0,Active WeaSuL,Discriminative,n
+19,Accuracy,0.977,0,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9765,0,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9776,0,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9776,0,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9777,0,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9776,0,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9775,0,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9773,0,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9778,0,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9774,0,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9781,0,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9777,0,Active WeaSuL,Discriminative,n
+0,Accuracy,0.8876,1,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9751,1,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9761,1,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9655,1,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9607,1,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9612,1,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9654,1,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9635,1,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9736,1,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9769,1,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9776,1,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9769,1,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9746,1,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9768,1,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9771,1,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9777,1,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9777,1,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9776,1,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9779,1,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9772,1,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9775,1,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9773,1,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9779,1,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9777,1,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9777,1,Active WeaSuL,Discriminative,n
+25,Accuracy,0.978,1,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9779,1,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9772,1,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9773,1,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9775,1,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9777,1,Active WeaSuL,Discriminative,n
+0,Accuracy,0.8743,2,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9727,2,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9761,2,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9725,2,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9771,2,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9776,2,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9776,2,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9769,2,Active WeaSuL,Discriminative,n
+9,Accuracy,0.977,2,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9774,2,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9767,2,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9769,2,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9767,2,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9767,2,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9771,2,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+22,Accuracy,0.977,2,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+25,Accuracy,0.976,2,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9768,2,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9761,2,Active WeaSuL,Discriminative,n
+28,Accuracy,0.975,2,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9762,2,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9753,2,Active WeaSuL,Discriminative,n
+0,Accuracy,0.8723,3,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9704,3,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9766,3,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9724,3,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9771,3,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9741,3,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9767,3,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9775,3,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9769,3,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9751,3,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9769,3,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9769,3,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9756,3,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9752,3,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9769,3,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9768,3,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9771,3,Active WeaSuL,Discriminative,n
+17,Accuracy,0.977,3,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9772,3,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9773,3,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9775,3,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9779,3,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9779,3,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9774,3,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9777,3,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9773,3,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9778,3,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9771,3,Active WeaSuL,Discriminative,n
+28,Accuracy,0.977,3,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9777,3,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9772,3,Active WeaSuL,Discriminative,n
+0,Accuracy,0.88,4,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9465,4,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9755,4,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9728,4,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9721,4,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9719,4,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9767,4,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9755,4,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9754,4,Active WeaSuL,Discriminative,n
+9,Accuracy,0.975,4,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9748,4,Active WeaSuL,Discriminative,n
+11,Accuracy,0.977,4,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9779,4,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9778,4,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9772,4,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9772,4,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9774,4,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9765,4,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9775,4,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9774,4,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9773,4,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9774,4,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9767,4,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9765,4,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9767,4,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9765,4,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9761,4,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9761,4,Active WeaSuL,Discriminative,n
+28,Accuracy,0.976,4,Active WeaSuL,Discriminative,n
+29,Accuracy,0.977,4,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9774,4,Active WeaSuL,Discriminative,n
+0,Accuracy,0.8824,5,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9741,5,Active WeaSuL,Discriminative,n
+2,Accuracy,0.8798,5,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9019,5,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9265,5,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9604,5,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9642,5,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9671,5,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9696,5,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9767,5,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9746,5,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9778,5,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9756,5,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9772,5,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9778,5,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9771,5,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9773,5,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9769,5,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9772,5,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9772,5,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9772,5,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9773,5,Active WeaSuL,Discriminative,n
+0,Accuracy,0.8919,6,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9758,6,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9761,6,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9653,6,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9662,6,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9673,6,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9627,6,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9614,6,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9644,6,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9631,6,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9713,6,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9743,6,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9736,6,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9752,6,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9769,6,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9771,6,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9777,6,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9777,6,Active WeaSuL,Discriminative,n
+18,Accuracy,0.978,6,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9775,6,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9776,6,Active WeaSuL,Discriminative,n
+21,Accuracy,0.977,6,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9776,6,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9776,6,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9772,6,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9777,6,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9776,6,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9777,6,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9778,6,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9775,6,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9773,6,Active WeaSuL,Discriminative,n
+0,Accuracy,0.9213,7,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9771,7,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9756,7,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9726,7,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9772,7,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9774,7,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9767,7,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9741,7,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9741,7,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9745,7,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9745,7,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9746,7,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9752,7,Active WeaSuL,Discriminative,n
+13,Accuracy,0.975,7,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9747,7,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9751,7,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9751,7,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9751,7,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9753,7,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9755,7,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9759,7,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9759,7,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9761,7,Active WeaSuL,Discriminative,n
+23,Accuracy,0.976,7,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9764,7,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9764,7,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9762,7,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9768,7,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9766,7,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9766,7,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9758,7,Active WeaSuL,Discriminative,n
+0,Accuracy,0.9015,8,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9772,8,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9767,8,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9657,8,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9659,8,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9675,8,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9683,8,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9649,8,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9654,8,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9657,8,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9657,8,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9663,8,Active WeaSuL,Discriminative,n
+12,Accuracy,0.967,8,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9677,8,Active WeaSuL,Discriminative,n
+14,Accuracy,0.968,8,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9686,8,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9657,8,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9658,8,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9664,8,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9667,8,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9674,8,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9679,8,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9684,8,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9682,8,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9686,8,Active WeaSuL,Discriminative,n
+25,Accuracy,0.966,8,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9667,8,Active WeaSuL,Discriminative,n
+27,Accuracy,0.967,8,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9671,8,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9679,8,Active WeaSuL,Discriminative,n
+30,Accuracy,0.968,8,Active WeaSuL,Discriminative,n
+0,Accuracy,0.9114,9,Active WeaSuL,Discriminative,n
+1,Accuracy,0.9779,9,Active WeaSuL,Discriminative,n
+2,Accuracy,0.9767,9,Active WeaSuL,Discriminative,n
+3,Accuracy,0.9657,9,Active WeaSuL,Discriminative,n
+4,Accuracy,0.9664,9,Active WeaSuL,Discriminative,n
+5,Accuracy,0.9672,9,Active WeaSuL,Discriminative,n
+6,Accuracy,0.9683,9,Active WeaSuL,Discriminative,n
+7,Accuracy,0.9771,9,Active WeaSuL,Discriminative,n
+8,Accuracy,0.9773,9,Active WeaSuL,Discriminative,n
+9,Accuracy,0.9763,9,Active WeaSuL,Discriminative,n
+10,Accuracy,0.9761,9,Active WeaSuL,Discriminative,n
+11,Accuracy,0.9756,9,Active WeaSuL,Discriminative,n
+12,Accuracy,0.9748,9,Active WeaSuL,Discriminative,n
+13,Accuracy,0.9749,9,Active WeaSuL,Discriminative,n
+14,Accuracy,0.9734,9,Active WeaSuL,Discriminative,n
+15,Accuracy,0.9727,9,Active WeaSuL,Discriminative,n
+16,Accuracy,0.9727,9,Active WeaSuL,Discriminative,n
+17,Accuracy,0.9723,9,Active WeaSuL,Discriminative,n
+18,Accuracy,0.9723,9,Active WeaSuL,Discriminative,n
+19,Accuracy,0.9755,9,Active WeaSuL,Discriminative,n
+20,Accuracy,0.9743,9,Active WeaSuL,Discriminative,n
+21,Accuracy,0.9748,9,Active WeaSuL,Discriminative,n
+22,Accuracy,0.9738,9,Active WeaSuL,Discriminative,n
+23,Accuracy,0.9731,9,Active WeaSuL,Discriminative,n
+24,Accuracy,0.9754,9,Active WeaSuL,Discriminative,n
+25,Accuracy,0.9756,9,Active WeaSuL,Discriminative,n
+26,Accuracy,0.9756,9,Active WeaSuL,Discriminative,n
+27,Accuracy,0.9755,9,Active WeaSuL,Discriminative,n
+28,Accuracy,0.9755,9,Active WeaSuL,Discriminative,n
+29,Accuracy,0.9755,9,Active WeaSuL,Discriminative,n
+30,Accuracy,0.9767,9,Active WeaSuL,Discriminative,n
+0,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+3,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+8,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+9,Accuracy,0.9015,0,Nashaat et al.,Generative,n
+10,Accuracy,0.6523,0,Nashaat et al.,Generative,n
+11,Accuracy,0.8199,0,Nashaat et al.,Generative,n
+12,Accuracy,0.9017,0,Nashaat et al.,Generative,n
+13,Accuracy,0.9018,0,Nashaat et al.,Generative,n
+14,Accuracy,0.9018,0,Nashaat et al.,Generative,n
+15,Accuracy,0.9018,0,Nashaat et al.,Generative,n
+16,Accuracy,0.9018,0,Nashaat et al.,Generative,n
+17,Accuracy,0.8203,0,Nashaat et al.,Generative,n
+18,Accuracy,0.6524,0,Nashaat et al.,Generative,n
+19,Accuracy,0.8204,0,Nashaat et al.,Generative,n
+20,Accuracy,0.9021,0,Nashaat et al.,Generative,n
+21,Accuracy,0.9021,0,Nashaat et al.,Generative,n
+22,Accuracy,0.9021,0,Nashaat et al.,Generative,n
+23,Accuracy,0.9022,0,Nashaat et al.,Generative,n
+24,Accuracy,0.8207,0,Nashaat et al.,Generative,n
+25,Accuracy,0.8207,0,Nashaat et al.,Generative,n
+26,Accuracy,0.9024,0,Nashaat et al.,Generative,n
+27,Accuracy,0.9024,0,Nashaat et al.,Generative,n
+28,Accuracy,0.9024,0,Nashaat et al.,Generative,n
+29,Accuracy,0.7159,0,Nashaat et al.,Generative,n
+30,Accuracy,0.6527,0,Nashaat et al.,Generative,n
+0,Accuracy,0.8189,1,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+3,Accuracy,0.8192,1,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+8,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+9,Accuracy,0.9015,1,Nashaat et al.,Generative,n
+10,Accuracy,0.6525,1,Nashaat et al.,Generative,n
+11,Accuracy,0.6525,1,Nashaat et al.,Generative,n
+12,Accuracy,0.7147,1,Nashaat et al.,Generative,n
+13,Accuracy,0.6525,1,Nashaat et al.,Generative,n
+14,Accuracy,0.6525,1,Nashaat et al.,Generative,n
+15,Accuracy,0.6525,1,Nashaat et al.,Generative,n
+16,Accuracy,0.9017,1,Nashaat et al.,Generative,n
+17,Accuracy,0.9018,1,Nashaat et al.,Generative,n
+18,Accuracy,0.9642,1,Nashaat et al.,Generative,n
+19,Accuracy,0.9019,1,Nashaat et al.,Generative,n
+20,Accuracy,0.9019,1,Nashaat et al.,Generative,n
+21,Accuracy,0.6526,1,Nashaat et al.,Generative,n
+22,Accuracy,0.6526,1,Nashaat et al.,Generative,n
+23,Accuracy,0.902,1,Nashaat et al.,Generative,n
+24,Accuracy,0.8206,1,Nashaat et al.,Generative,n
+25,Accuracy,0.8207,1,Nashaat et al.,Generative,n
+26,Accuracy,0.902,1,Nashaat et al.,Generative,n
+27,Accuracy,0.9021,1,Nashaat et al.,Generative,n
+28,Accuracy,0.9021,1,Nashaat et al.,Generative,n
+29,Accuracy,0.9021,1,Nashaat et al.,Generative,n
+30,Accuracy,0.9021,1,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+1,Accuracy,0.8190000000000001,2,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+3,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+8,Accuracy,0.8197,2,Nashaat et al.,Generative,n
+9,Accuracy,0.9015,2,Nashaat et al.,Generative,n
+10,Accuracy,0.6525,2,Nashaat et al.,Generative,n
+11,Accuracy,0.6525,2,Nashaat et al.,Generative,n
+12,Accuracy,0.9017,2,Nashaat et al.,Generative,n
+13,Accuracy,0.9017,2,Nashaat et al.,Generative,n
+14,Accuracy,0.7147,2,Nashaat et al.,Generative,n
+15,Accuracy,0.8204,2,Nashaat et al.,Generative,n
+16,Accuracy,0.9018,2,Nashaat et al.,Generative,n
+17,Accuracy,0.9018,2,Nashaat et al.,Generative,n
+18,Accuracy,0.9018,2,Nashaat et al.,Generative,n
+19,Accuracy,0.9018,2,Nashaat et al.,Generative,n
+20,Accuracy,0.9018,2,Nashaat et al.,Generative,n
+21,Accuracy,0.7240000000000001,2,Nashaat et al.,Generative,n
+22,Accuracy,0.9019,2,Nashaat et al.,Generative,n
+23,Accuracy,0.7152,2,Nashaat et al.,Generative,n
+24,Accuracy,0.902,2,Nashaat et al.,Generative,n
+25,Accuracy,0.8212,2,Nashaat et al.,Generative,n
+26,Accuracy,0.8213,2,Nashaat et al.,Generative,n
+27,Accuracy,0.9021,2,Nashaat et al.,Generative,n
+28,Accuracy,0.9021,2,Nashaat et al.,Generative,n
+29,Accuracy,0.9021,2,Nashaat et al.,Generative,n
+30,Accuracy,0.9021,2,Nashaat et al.,Generative,n
+0,Accuracy,0.8189,3,Nashaat et al.,Generative,n
+1,Accuracy,0.9016,3,Nashaat et al.,Generative,n
+2,Accuracy,0.8189,3,Nashaat et al.,Generative,n
+3,Accuracy,0.6512,3,Nashaat et al.,Generative,n
+4,Accuracy,0.6512,3,Nashaat et al.,Generative,n
+5,Accuracy,0.6512,3,Nashaat et al.,Generative,n
+6,Accuracy,0.9019,3,Nashaat et al.,Generative,n
+7,Accuracy,0.6513,3,Nashaat et al.,Generative,n
+8,Accuracy,0.8192,3,Nashaat et al.,Generative,n
+9,Accuracy,0.902,3,Nashaat et al.,Generative,n
+10,Accuracy,0.902,3,Nashaat et al.,Generative,n
+11,Accuracy,0.902,3,Nashaat et al.,Generative,n
+12,Accuracy,0.715,3,Nashaat et al.,Generative,n
+13,Accuracy,0.6516,3,Nashaat et al.,Generative,n
+14,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+15,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+16,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+17,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+18,Accuracy,0.8201,3,Nashaat et al.,Generative,n
+19,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+20,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+21,Accuracy,0.9021,3,Nashaat et al.,Generative,n
+22,Accuracy,0.8204,3,Nashaat et al.,Generative,n
+23,Accuracy,0.9022,3,Nashaat et al.,Generative,n
+24,Accuracy,0.9022,3,Nashaat et al.,Generative,n
+25,Accuracy,0.8207,3,Nashaat et al.,Generative,n
+26,Accuracy,0.6526,3,Nashaat et al.,Generative,n
+27,Accuracy,0.9023,3,Nashaat et al.,Generative,n
+28,Accuracy,0.9023,3,Nashaat et al.,Generative,n
+29,Accuracy,0.9023,3,Nashaat et al.,Generative,n
+30,Accuracy,0.9023,3,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+3,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+8,Accuracy,0.9015,4,Nashaat et al.,Generative,n
+9,Accuracy,0.9637,4,Nashaat et al.,Generative,n
+10,Accuracy,0.9016,4,Nashaat et al.,Generative,n
+11,Accuracy,0.7157,4,Nashaat et al.,Generative,n
+12,Accuracy,0.6524,4,Nashaat et al.,Generative,n
+13,Accuracy,0.6524,4,Nashaat et al.,Generative,n
+14,Accuracy,0.9017,4,Nashaat et al.,Generative,n
+15,Accuracy,0.9017,4,Nashaat et al.,Generative,n
+16,Accuracy,0.9017,4,Nashaat et al.,Generative,n
+17,Accuracy,0.6527,4,Nashaat et al.,Generative,n
+18,Accuracy,0.9018,4,Nashaat et al.,Generative,n
+19,Accuracy,0.8206,4,Nashaat et al.,Generative,n
+20,Accuracy,0.9018,4,Nashaat et al.,Generative,n
+21,Accuracy,0.8208,4,Nashaat et al.,Generative,n
+22,Accuracy,0.9018,4,Nashaat et al.,Generative,n
+23,Accuracy,0.9019,4,Nashaat et al.,Generative,n
+24,Accuracy,0.821,4,Nashaat et al.,Generative,n
+25,Accuracy,0.6532,4,Nashaat et al.,Generative,n
+26,Accuracy,0.7153,4,Nashaat et al.,Generative,n
+27,Accuracy,0.902,4,Nashaat et al.,Generative,n
+28,Accuracy,0.9021,4,Nashaat et al.,Generative,n
+29,Accuracy,0.9021,4,Nashaat et al.,Generative,n
+30,Accuracy,0.9022,4,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+3,Accuracy,0.8192,5,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+5,Accuracy,0.8194,5,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,5,Nashaat et al.,Generative,n
+8,Accuracy,0.9016,5,Nashaat et al.,Generative,n
+9,Accuracy,0.8197,5,Nashaat et al.,Generative,n
+10,Accuracy,0.9017,5,Nashaat et al.,Generative,n
+11,Accuracy,0.9017,5,Nashaat et al.,Generative,n
+12,Accuracy,0.9017,5,Nashaat et al.,Generative,n
+13,Accuracy,0.9017,5,Nashaat et al.,Generative,n
+14,Accuracy,0.6526,5,Nashaat et al.,Generative,n
+15,Accuracy,0.9638,5,Nashaat et al.,Generative,n
+16,Accuracy,0.6526,5,Nashaat et al.,Generative,n
+17,Accuracy,0.902,5,Nashaat et al.,Generative,n
+18,Accuracy,0.902,5,Nashaat et al.,Generative,n
+19,Accuracy,0.902,5,Nashaat et al.,Generative,n
+20,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+21,Accuracy,0.8208,5,Nashaat et al.,Generative,n
+22,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+23,Accuracy,0.821,5,Nashaat et al.,Generative,n
+24,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+25,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+26,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+27,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+28,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+29,Accuracy,0.9021,5,Nashaat et al.,Generative,n
+30,Accuracy,0.9022,5,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+3,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+7,Accuracy,0.9637,6,Nashaat et al.,Generative,n
+8,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+9,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+10,Accuracy,0.9015,6,Nashaat et al.,Generative,n
+11,Accuracy,0.6525,6,Nashaat et al.,Generative,n
+12,Accuracy,0.6525,6,Nashaat et al.,Generative,n
+13,Accuracy,0.7148,6,Nashaat et al.,Generative,n
+14,Accuracy,0.9017,6,Nashaat et al.,Generative,n
+15,Accuracy,0.9017,6,Nashaat et al.,Generative,n
+16,Accuracy,0.9017,6,Nashaat et al.,Generative,n
+17,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+18,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+19,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+20,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+21,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+22,Accuracy,0.8208,6,Nashaat et al.,Generative,n
+23,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+24,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+25,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+26,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+27,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+28,Accuracy,0.9018,6,Nashaat et al.,Generative,n
+29,Accuracy,0.8215,6,Nashaat et al.,Generative,n
+30,Accuracy,0.8216,6,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+1,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+2,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+3,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+4,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+5,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+6,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+7,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+8,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+9,Accuracy,0.9015,7,Nashaat et al.,Generative,n
+10,Accuracy,0.6525,7,Nashaat et al.,Generative,n
+11,Accuracy,0.7157,7,Nashaat et al.,Generative,n
+12,Accuracy,0.6526,7,Nashaat et al.,Generative,n
+13,Accuracy,0.6526,7,Nashaat et al.,Generative,n
+14,Accuracy,0.6526,7,Nashaat et al.,Generative,n
+15,Accuracy,0.9019,7,Nashaat et al.,Generative,n
+16,Accuracy,0.9019,7,Nashaat et al.,Generative,n
+17,Accuracy,0.9019,7,Nashaat et al.,Generative,n
+18,Accuracy,0.8205,7,Nashaat et al.,Generative,n
+19,Accuracy,0.902,7,Nashaat et al.,Generative,n
+20,Accuracy,0.902,7,Nashaat et al.,Generative,n
+21,Accuracy,0.902,7,Nashaat et al.,Generative,n
+22,Accuracy,0.8209,7,Nashaat et al.,Generative,n
+23,Accuracy,0.902,7,Nashaat et al.,Generative,n
+24,Accuracy,0.902,7,Nashaat et al.,Generative,n
+25,Accuracy,0.902,7,Nashaat et al.,Generative,n
+26,Accuracy,0.902,7,Nashaat et al.,Generative,n
+27,Accuracy,0.902,7,Nashaat et al.,Generative,n
+28,Accuracy,0.8215,7,Nashaat et al.,Generative,n
+29,Accuracy,0.902,7,Nashaat et al.,Generative,n
+30,Accuracy,0.902,7,Nashaat et al.,Generative,n
+0,Accuracy,0.9015,8,Nashaat et al.,Generative,n
+1,Accuracy,0.8189,8,Nashaat et al.,Generative,n
+2,Accuracy,0.8190000000000001,8,Nashaat et al.,Generative,n
+3,Accuracy,0.9016,8,Nashaat et al.,Generative,n
+4,Accuracy,0.9016,8,Nashaat et al.,Generative,n
+5,Accuracy,0.8192,8,Nashaat et al.,Generative,n
+6,Accuracy,0.9017,8,Nashaat et al.,Generative,n
+7,Accuracy,0.9017,8,Nashaat et al.,Generative,n
+8,Accuracy,0.8195,8,Nashaat et al.,Generative,n
+9,Accuracy,0.9017,8,Nashaat et al.,Generative,n
+10,Accuracy,0.9017,8,Nashaat et al.,Generative,n
+11,Accuracy,0.9017,8,Nashaat et al.,Generative,n
+12,Accuracy,0.8199,8,Nashaat et al.,Generative,n
+13,Accuracy,0.6524,8,Nashaat et al.,Generative,n
+14,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+15,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+16,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+17,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+18,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+19,Accuracy,0.8206,8,Nashaat et al.,Generative,n
+20,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+21,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+22,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+23,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+24,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+25,Accuracy,0.9018,8,Nashaat et al.,Generative,n
+26,Accuracy,0.8212,8,Nashaat et al.,Generative,n
+27,Accuracy,0.8213,8,Nashaat et al.,Generative,n
+28,Accuracy,0.7157,8,Nashaat et al.,Generative,n
+29,Accuracy,0.902,8,Nashaat et al.,Generative,n
+30,Accuracy,0.902,8,Nashaat et al.,Generative,n
+0,Accuracy,0.9637,9,Nashaat et al.,Generative,n
+1,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+2,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+3,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+4,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+5,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+6,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+7,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+8,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+9,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+10,Accuracy,0.9016,9,Nashaat et al.,Generative,n
+11,Accuracy,0.6525,9,Nashaat et al.,Generative,n
+12,Accuracy,0.9017,9,Nashaat et al.,Generative,n
+13,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+14,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+15,Accuracy,0.8204,9,Nashaat et al.,Generative,n
+16,Accuracy,0.8205,9,Nashaat et al.,Generative,n
+17,Accuracy,0.9637,9,Nashaat et al.,Generative,n
+18,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+19,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+20,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+21,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+22,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+23,Accuracy,0.821,9,Nashaat et al.,Generative,n
+24,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+25,Accuracy,0.9018,9,Nashaat et al.,Generative,n
+26,Accuracy,0.8213,9,Nashaat et al.,Generative,n
+27,Accuracy,0.8214,9,Nashaat et al.,Generative,n
+28,Accuracy,0.9019,9,Nashaat et al.,Generative,n
+29,Accuracy,0.9019,9,Nashaat et al.,Generative,n
+30,Accuracy,0.9019,9,Nashaat et al.,Generative,n
+0,Accuracy,0.9139,0,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8772,0,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8375,0,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8719,0,Nashaat et al.,Discriminative,n
+20,Accuracy,0.853,0,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8433,0,Nashaat et al.,Discriminative,n
+30,Accuracy,0.6877,0,Nashaat et al.,Discriminative,n
+0,Accuracy,0.8966,1,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8645,1,Nashaat et al.,Discriminative,n
+10,Accuracy,0.7918,1,Nashaat et al.,Discriminative,n
+15,Accuracy,0.9299,1,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8704,1,Nashaat et al.,Discriminative,n
+25,Accuracy,0.852,1,Nashaat et al.,Discriminative,n
+30,Accuracy,0.866,1,Nashaat et al.,Discriminative,n
+0,Accuracy,0.9087,2,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8573,2,Nashaat et al.,Discriminative,n
+10,Accuracy,0.7434,2,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8598,2,Nashaat et al.,Discriminative,n
+20,Accuracy,0.863,2,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8463,2,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8702,2,Nashaat et al.,Discriminative,n
+0,Accuracy,0.8603,3,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8594,3,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8782,3,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8672,3,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8696,3,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8484,3,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8528,3,Nashaat et al.,Discriminative,n
+0,Accuracy,0.8774,4,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8567,4,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8633,4,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8579,4,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8807,4,Nashaat et al.,Discriminative,n
+25,Accuracy,0.7202,4,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8938,4,Nashaat et al.,Discriminative,n
+0,Accuracy,0.9059999999999999,5,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8526,5,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8547,5,Nashaat et al.,Discriminative,n
+15,Accuracy,0.9177,5,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8731,5,Nashaat et al.,Discriminative,n
+25,Accuracy,0.856,5,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8755,5,Nashaat et al.,Discriminative,n
+0,Accuracy,0.8882,6,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8817,6,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8713,6,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8643,6,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8540000000000001,6,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8679,6,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8444,6,Nashaat et al.,Discriminative,n
+0,Accuracy,0.9068,7,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8651,7,Nashaat et al.,Discriminative,n
+10,Accuracy,0.7519,7,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8745,7,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8859999999999999,7,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8529,7,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8526,7,Nashaat et al.,Discriminative,n
+0,Accuracy,0.8855,8,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8490000000000001,8,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8652,8,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8551,8,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8646,8,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8665,8,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8594,8,Nashaat et al.,Discriminative,n
+0,Accuracy,0.9445,9,Nashaat et al.,Discriminative,n
+5,Accuracy,0.8679,9,Nashaat et al.,Discriminative,n
+10,Accuracy,0.8572,9,Nashaat et al.,Discriminative,n
+15,Accuracy,0.8433,9,Nashaat et al.,Discriminative,n
+20,Accuracy,0.8551,9,Nashaat et al.,Discriminative,n
+25,Accuracy,0.8547,9,Nashaat et al.,Discriminative,n
+30,Accuracy,0.8477,9,Nashaat et al.,Discriminative,n
+0,Accuracy,0.9088,0,Active Learning,Discriminative,n
+0,Accuracy,0.1276,1,Active Learning,Discriminative,n
+0,Accuracy,0.4954,2,Active Learning,Discriminative,n
+0,Accuracy,0.4954,3,Active Learning,Discriminative,n
+0,Accuracy,0.7483,4,Active Learning,Discriminative,n
+0,Accuracy,0.4715,5,Active Learning,Discriminative,n
+0,Accuracy,0.0957,6,Active Learning,Discriminative,n
+0,Accuracy,0.7966,7,Active Learning,Discriminative,n
+0,Accuracy,0.8416,8,Active Learning,Discriminative,n
+0,Accuracy,0.5098,9,Active Learning,Discriminative,n
+1,Accuracy,0.5057,0,Active Learning,Discriminative,n
+1,Accuracy,0.5895,1,Active Learning,Discriminative,n
+1,Accuracy,0.9496,2,Active Learning,Discriminative,n
+1,Accuracy,0.8353,3,Active Learning,Discriminative,n
+1,Accuracy,0.4954,4,Active Learning,Discriminative,n
+1,Accuracy,0.28,5,Active Learning,Discriminative,n
+1,Accuracy,0.2477,6,Active Learning,Discriminative,n
+1,Accuracy,0.228,7,Active Learning,Discriminative,n
+1,Accuracy,0.8857,8,Active Learning,Discriminative,n
+1,Accuracy,0.777,9,Active Learning,Discriminative,n
+2,Accuracy,0.0923,0,Active Learning,Discriminative,n
+2,Accuracy,0.4954,1,Active Learning,Discriminative,n
+2,Accuracy,0.6335,2,Active Learning,Discriminative,n
+2,Accuracy,0.2341,3,Active Learning,Discriminative,n
+2,Accuracy,0.5046,4,Active Learning,Discriminative,n
+2,Accuracy,0.8994,5,Active Learning,Discriminative,n
+2,Accuracy,0.8336,6,Active Learning,Discriminative,n
+2,Accuracy,0.4752,7,Active Learning,Discriminative,n
+2,Accuracy,0.6262,8,Active Learning,Discriminative,n
+2,Accuracy,0.1423,9,Active Learning,Discriminative,n
+3,Accuracy,0.9318,0,Active Learning,Discriminative,n
+3,Accuracy,0.1381,1,Active Learning,Discriminative,n
+3,Accuracy,0.2718,2,Active Learning,Discriminative,n
+3,Accuracy,0.8634,3,Active Learning,Discriminative,n
+3,Accuracy,0.8967,4,Active Learning,Discriminative,n
+3,Accuracy,0.9351,5,Active Learning,Discriminative,n
+3,Accuracy,0.7291,6,Active Learning,Discriminative,n
+3,Accuracy,0.9105,7,Active Learning,Discriminative,n
+3,Accuracy,0.9172,8,Active Learning,Discriminative,n
+3,Accuracy,0.6299,9,Active Learning,Discriminative,n
+4,Accuracy,0.9057,0,Active Learning,Discriminative,n
+4,Accuracy,0.8228,1,Active Learning,Discriminative,n
+4,Accuracy,0.9448,2,Active Learning,Discriminative,n
+4,Accuracy,0.613,3,Active Learning,Discriminative,n
+4,Accuracy,0.9384,4,Active Learning,Discriminative,n
+4,Accuracy,0.5558,5,Active Learning,Discriminative,n
+4,Accuracy,0.5525,6,Active Learning,Discriminative,n
+4,Accuracy,0.9123,7,Active Learning,Discriminative,n
+4,Accuracy,0.855,8,Active Learning,Discriminative,n
+4,Accuracy,0.5086,9,Active Learning,Discriminative,n
+5,Accuracy,0.0817,0,Active Learning,Discriminative,n
+5,Accuracy,0.8414,1,Active Learning,Discriminative,n
+5,Accuracy,0.52,2,Active Learning,Discriminative,n
+5,Accuracy,0.9695,3,Active Learning,Discriminative,n
+5,Accuracy,0.6804,4,Active Learning,Discriminative,n
+5,Accuracy,0.9472,5,Active Learning,Discriminative,n
+5,Accuracy,0.9393,6,Active Learning,Discriminative,n
+5,Accuracy,0.7813,7,Active Learning,Discriminative,n
+5,Accuracy,0.9736,8,Active Learning,Discriminative,n
+5,Accuracy,0.8466,9,Active Learning,Discriminative,n
+6,Accuracy,0.4675,0,Active Learning,Discriminative,n
+6,Accuracy,0.8168,1,Active Learning,Discriminative,n
+6,Accuracy,0.7489,2,Active Learning,Discriminative,n
+6,Accuracy,0.7779,3,Active Learning,Discriminative,n
+6,Accuracy,0.9025,4,Active Learning,Discriminative,n
+6,Accuracy,0.9573,5,Active Learning,Discriminative,n
+6,Accuracy,0.9465,6,Active Learning,Discriminative,n
+6,Accuracy,0.9591,7,Active Learning,Discriminative,n
+6,Accuracy,0.9507,8,Active Learning,Discriminative,n
+6,Accuracy,0.9268,9,Active Learning,Discriminative,n
+7,Accuracy,0.7976,0,Active Learning,Discriminative,n
+7,Accuracy,0.9389,1,Active Learning,Discriminative,n
+7,Accuracy,0.9319,2,Active Learning,Discriminative,n
+7,Accuracy,0.9324,3,Active Learning,Discriminative,n
+7,Accuracy,0.8543,4,Active Learning,Discriminative,n
+7,Accuracy,0.6195,5,Active Learning,Discriminative,n
+7,Accuracy,0.8859999999999999,6,Active Learning,Discriminative,n
+7,Accuracy,0.865,7,Active Learning,Discriminative,n
+7,Accuracy,0.9722,8,Active Learning,Discriminative,n
+7,Accuracy,0.9473,9,Active Learning,Discriminative,n
+8,Accuracy,0.932,0,Active Learning,Discriminative,n
+8,Accuracy,0.9734,1,Active Learning,Discriminative,n
+8,Accuracy,0.9621,2,Active Learning,Discriminative,n
+8,Accuracy,0.9685,3,Active Learning,Discriminative,n
+8,Accuracy,0.9718,4,Active Learning,Discriminative,n
+8,Accuracy,0.5046,5,Active Learning,Discriminative,n
+8,Accuracy,0.9640000000000001,6,Active Learning,Discriminative,n
+8,Accuracy,0.9281,7,Active Learning,Discriminative,n
+8,Accuracy,0.4954,8,Active Learning,Discriminative,n
+8,Accuracy,0.7686,9,Active Learning,Discriminative,n
+9,Accuracy,0.9620000000000001,0,Active Learning,Discriminative,n
+9,Accuracy,0.8434,1,Active Learning,Discriminative,n
+9,Accuracy,0.9709,2,Active Learning,Discriminative,n
+9,Accuracy,0.9614,3,Active Learning,Discriminative,n
+9,Accuracy,0.9761,4,Active Learning,Discriminative,n
+9,Accuracy,0.9635,5,Active Learning,Discriminative,n
+9,Accuracy,0.9757,6,Active Learning,Discriminative,n
+9,Accuracy,0.968,7,Active Learning,Discriminative,n
+9,Accuracy,0.7599,8,Active Learning,Discriminative,n
+9,Accuracy,0.9663,9,Active Learning,Discriminative,n
+10,Accuracy,0.7724,0,Active Learning,Discriminative,n
+10,Accuracy,0.9049,1,Active Learning,Discriminative,n
+10,Accuracy,0.9315,2,Active Learning,Discriminative,n
+10,Accuracy,0.9688,3,Active Learning,Discriminative,n
+10,Accuracy,0.8818,4,Active Learning,Discriminative,n
+10,Accuracy,0.8008,5,Active Learning,Discriminative,n
+10,Accuracy,0.9461,6,Active Learning,Discriminative,n
+10,Accuracy,0.9528,7,Active Learning,Discriminative,n
+10,Accuracy,0.9506,8,Active Learning,Discriminative,n
+10,Accuracy,0.9629,9,Active Learning,Discriminative,n
+11,Accuracy,0.9608,0,Active Learning,Discriminative,n
+11,Accuracy,0.9724,1,Active Learning,Discriminative,n
+11,Accuracy,0.9731,2,Active Learning,Discriminative,n
+11,Accuracy,0.9123,3,Active Learning,Discriminative,n
+11,Accuracy,0.9657,4,Active Learning,Discriminative,n
+11,Accuracy,0.9702,5,Active Learning,Discriminative,n
+11,Accuracy,0.9725,6,Active Learning,Discriminative,n
+11,Accuracy,0.9492,7,Active Learning,Discriminative,n
+11,Accuracy,0.9514,8,Active Learning,Discriminative,n
+11,Accuracy,0.7845,9,Active Learning,Discriminative,n
+12,Accuracy,0.9654,0,Active Learning,Discriminative,n
+12,Accuracy,0.9582,1,Active Learning,Discriminative,n
+12,Accuracy,0.9692,2,Active Learning,Discriminative,n
+12,Accuracy,0.9361,3,Active Learning,Discriminative,n
+12,Accuracy,0.9369,4,Active Learning,Discriminative,n
+12,Accuracy,0.9767,5,Active Learning,Discriminative,n
+12,Accuracy,0.9623,6,Active Learning,Discriminative,n
+12,Accuracy,0.9539,7,Active Learning,Discriminative,n
+12,Accuracy,0.9534,8,Active Learning,Discriminative,n
+12,Accuracy,0.9259,9,Active Learning,Discriminative,n
+13,Accuracy,0.9082,0,Active Learning,Discriminative,n
+13,Accuracy,0.9725,1,Active Learning,Discriminative,n
+13,Accuracy,0.8765,2,Active Learning,Discriminative,n
+13,Accuracy,0.9722,3,Active Learning,Discriminative,n
+13,Accuracy,0.9719,4,Active Learning,Discriminative,n
+13,Accuracy,0.9732,5,Active Learning,Discriminative,n
+13,Accuracy,0.9749,6,Active Learning,Discriminative,n
+13,Accuracy,0.9743,7,Active Learning,Discriminative,n
+13,Accuracy,0.9678,8,Active Learning,Discriminative,n
+13,Accuracy,0.9531,9,Active Learning,Discriminative,n
+14,Accuracy,0.9620000000000001,0,Active Learning,Discriminative,n
+14,Accuracy,0.9513,1,Active Learning,Discriminative,n
+14,Accuracy,0.9592,2,Active Learning,Discriminative,n
+14,Accuracy,0.9697,3,Active Learning,Discriminative,n
+14,Accuracy,0.9519,4,Active Learning,Discriminative,n
+14,Accuracy,0.9693,5,Active Learning,Discriminative,n
+14,Accuracy,0.9604,6,Active Learning,Discriminative,n
+14,Accuracy,0.9709,7,Active Learning,Discriminative,n
+14,Accuracy,0.9613,8,Active Learning,Discriminative,n
+14,Accuracy,0.963,9,Active Learning,Discriminative,n
+15,Accuracy,0.9717,0,Active Learning,Discriminative,n
+15,Accuracy,0.9078,1,Active Learning,Discriminative,n
+15,Accuracy,0.9738,2,Active Learning,Discriminative,n
+15,Accuracy,0.9751,3,Active Learning,Discriminative,n
+15,Accuracy,0.9646,4,Active Learning,Discriminative,n
+15,Accuracy,0.9769,5,Active Learning,Discriminative,n
+15,Accuracy,0.9761,6,Active Learning,Discriminative,n
+15,Accuracy,0.9741,7,Active Learning,Discriminative,n
+15,Accuracy,0.9242,8,Active Learning,Discriminative,n
+15,Accuracy,0.9449,9,Active Learning,Discriminative,n
+16,Accuracy,0.9598,0,Active Learning,Discriminative,n
+16,Accuracy,0.977,1,Active Learning,Discriminative,n
+16,Accuracy,0.9669,2,Active Learning,Discriminative,n
+16,Accuracy,0.9209,3,Active Learning,Discriminative,n
+16,Accuracy,0.9520000000000001,4,Active Learning,Discriminative,n
+16,Accuracy,0.9744,5,Active Learning,Discriminative,n
+16,Accuracy,0.9615,6,Active Learning,Discriminative,n
+16,Accuracy,0.9694,7,Active Learning,Discriminative,n
+16,Accuracy,0.9044,8,Active Learning,Discriminative,n
+16,Accuracy,0.9608,9,Active Learning,Discriminative,n
+17,Accuracy,0.9602,0,Active Learning,Discriminative,n
+17,Accuracy,0.9726,1,Active Learning,Discriminative,n
+17,Accuracy,0.9743,2,Active Learning,Discriminative,n
+17,Accuracy,0.9765,3,Active Learning,Discriminative,n
+17,Accuracy,0.9734,4,Active Learning,Discriminative,n
+17,Accuracy,0.9711,5,Active Learning,Discriminative,n
+17,Accuracy,0.9663,6,Active Learning,Discriminative,n
+17,Accuracy,0.9722,7,Active Learning,Discriminative,n
+17,Accuracy,0.9709,8,Active Learning,Discriminative,n
+17,Accuracy,0.9537,9,Active Learning,Discriminative,n
+18,Accuracy,0.9727,0,Active Learning,Discriminative,n
+18,Accuracy,0.9673,1,Active Learning,Discriminative,n
+18,Accuracy,0.9494,2,Active Learning,Discriminative,n
+18,Accuracy,0.9737,3,Active Learning,Discriminative,n
+18,Accuracy,0.9726,4,Active Learning,Discriminative,n
+18,Accuracy,0.9771,5,Active Learning,Discriminative,n
+18,Accuracy,0.972,6,Active Learning,Discriminative,n
+18,Accuracy,0.9729,7,Active Learning,Discriminative,n
+18,Accuracy,0.9682,8,Active Learning,Discriminative,n
+18,Accuracy,0.9684,9,Active Learning,Discriminative,n
+19,Accuracy,0.973,0,Active Learning,Discriminative,n
+19,Accuracy,0.943,1,Active Learning,Discriminative,n
+19,Accuracy,0.9688,2,Active Learning,Discriminative,n
+19,Accuracy,0.9777,3,Active Learning,Discriminative,n
+19,Accuracy,0.97,4,Active Learning,Discriminative,n
+19,Accuracy,0.9657,5,Active Learning,Discriminative,n
+19,Accuracy,0.9736,6,Active Learning,Discriminative,n
+19,Accuracy,0.9736,7,Active Learning,Discriminative,n
+19,Accuracy,0.9689,8,Active Learning,Discriminative,n
+19,Accuracy,0.9524,9,Active Learning,Discriminative,n
+20,Accuracy,0.9672,0,Active Learning,Discriminative,n
+20,Accuracy,0.9695,1,Active Learning,Discriminative,n
+20,Accuracy,0.9629,2,Active Learning,Discriminative,n
+20,Accuracy,0.9745,3,Active Learning,Discriminative,n
+20,Accuracy,0.9708,4,Active Learning,Discriminative,n
+20,Accuracy,0.9756,5,Active Learning,Discriminative,n
+20,Accuracy,0.9767,6,Active Learning,Discriminative,n
+20,Accuracy,0.9688,7,Active Learning,Discriminative,n
+20,Accuracy,0.9627,8,Active Learning,Discriminative,n
+20,Accuracy,0.975,9,Active Learning,Discriminative,n
+21,Accuracy,0.9654,0,Active Learning,Discriminative,n
+21,Accuracy,0.9769,1,Active Learning,Discriminative,n
+21,Accuracy,0.9553,2,Active Learning,Discriminative,n
+21,Accuracy,0.9757,3,Active Learning,Discriminative,n
+21,Accuracy,0.9692,4,Active Learning,Discriminative,n
+21,Accuracy,0.9769,5,Active Learning,Discriminative,n
+21,Accuracy,0.9769,6,Active Learning,Discriminative,n
+21,Accuracy,0.9694,7,Active Learning,Discriminative,n
+21,Accuracy,0.9748,8,Active Learning,Discriminative,n
+21,Accuracy,0.9675,9,Active Learning,Discriminative,n
+22,Accuracy,0.9752,0,Active Learning,Discriminative,n
+22,Accuracy,0.9773,1,Active Learning,Discriminative,n
+22,Accuracy,0.9682,2,Active Learning,Discriminative,n
+22,Accuracy,0.9757,3,Active Learning,Discriminative,n
+22,Accuracy,0.9762,4,Active Learning,Discriminative,n
+22,Accuracy,0.9749,5,Active Learning,Discriminative,n
+22,Accuracy,0.9766,6,Active Learning,Discriminative,n
+22,Accuracy,0.9761,7,Active Learning,Discriminative,n
+22,Accuracy,0.9419,8,Active Learning,Discriminative,n
+22,Accuracy,0.963,9,Active Learning,Discriminative,n
+23,Accuracy,0.9658,0,Active Learning,Discriminative,n
+23,Accuracy,0.9749,1,Active Learning,Discriminative,n
+23,Accuracy,0.9716,2,Active Learning,Discriminative,n
+23,Accuracy,0.9762,3,Active Learning,Discriminative,n
+23,Accuracy,0.9649,4,Active Learning,Discriminative,n
+23,Accuracy,0.9762,5,Active Learning,Discriminative,n
+23,Accuracy,0.9751,6,Active Learning,Discriminative,n
+23,Accuracy,0.9728,7,Active Learning,Discriminative,n
+23,Accuracy,0.9736,8,Active Learning,Discriminative,n
+23,Accuracy,0.9714,9,Active Learning,Discriminative,n
+24,Accuracy,0.9621,0,Active Learning,Discriminative,n
+24,Accuracy,0.9775,1,Active Learning,Discriminative,n
+24,Accuracy,0.9766,2,Active Learning,Discriminative,n
+24,Accuracy,0.9737,3,Active Learning,Discriminative,n
+24,Accuracy,0.9740000000000001,4,Active Learning,Discriminative,n
+24,Accuracy,0.9777,5,Active Learning,Discriminative,n
+24,Accuracy,0.9646,6,Active Learning,Discriminative,n
+24,Accuracy,0.9655,7,Active Learning,Discriminative,n
+24,Accuracy,0.9745,8,Active Learning,Discriminative,n
+24,Accuracy,0.9742,9,Active Learning,Discriminative,n
+25,Accuracy,0.9704,0,Active Learning,Discriminative,n
+25,Accuracy,0.9768,1,Active Learning,Discriminative,n
+25,Accuracy,0.9774,2,Active Learning,Discriminative,n
+25,Accuracy,0.9764,3,Active Learning,Discriminative,n
+25,Accuracy,0.977,4,Active Learning,Discriminative,n
+25,Accuracy,0.9774,5,Active Learning,Discriminative,n
+25,Accuracy,0.9742,6,Active Learning,Discriminative,n
+25,Accuracy,0.9740000000000001,7,Active Learning,Discriminative,n
+25,Accuracy,0.9765,8,Active Learning,Discriminative,n
+25,Accuracy,0.9772,9,Active Learning,Discriminative,n
+26,Accuracy,0.9746,0,Active Learning,Discriminative,n
+26,Accuracy,0.9771,1,Active Learning,Discriminative,n
+26,Accuracy,0.9768,2,Active Learning,Discriminative,n
+26,Accuracy,0.9776,3,Active Learning,Discriminative,n
+26,Accuracy,0.9672,4,Active Learning,Discriminative,n
+26,Accuracy,0.9771,5,Active Learning,Discriminative,n
+26,Accuracy,0.9742,6,Active Learning,Discriminative,n
+26,Accuracy,0.9740000000000001,7,Active Learning,Discriminative,n
+26,Accuracy,0.9740000000000001,8,Active Learning,Discriminative,n
+26,Accuracy,0.9752,9,Active Learning,Discriminative,n
+27,Accuracy,0.9757,0,Active Learning,Discriminative,n
+27,Accuracy,0.972,1,Active Learning,Discriminative,n
+27,Accuracy,0.9767,2,Active Learning,Discriminative,n
+27,Accuracy,0.9759,3,Active Learning,Discriminative,n
+27,Accuracy,0.9731,4,Active Learning,Discriminative,n
+27,Accuracy,0.9751,5,Active Learning,Discriminative,n
+27,Accuracy,0.9732,6,Active Learning,Discriminative,n
+27,Accuracy,0.9738,7,Active Learning,Discriminative,n
+27,Accuracy,0.9661,8,Active Learning,Discriminative,n
+27,Accuracy,0.9734,9,Active Learning,Discriminative,n
+28,Accuracy,0.9775,0,Active Learning,Discriminative,n
+28,Accuracy,0.9748,1,Active Learning,Discriminative,n
+28,Accuracy,0.9668,2,Active Learning,Discriminative,n
+28,Accuracy,0.9773,3,Active Learning,Discriminative,n
+28,Accuracy,0.9701,4,Active Learning,Discriminative,n
+28,Accuracy,0.975,5,Active Learning,Discriminative,n
+28,Accuracy,0.9709,6,Active Learning,Discriminative,n
+28,Accuracy,0.9709,7,Active Learning,Discriminative,n
+28,Accuracy,0.9744,8,Active Learning,Discriminative,n
+28,Accuracy,0.9717,9,Active Learning,Discriminative,n
+29,Accuracy,0.9702,0,Active Learning,Discriminative,n
+29,Accuracy,0.9747,1,Active Learning,Discriminative,n
+29,Accuracy,0.9757,2,Active Learning,Discriminative,n
+29,Accuracy,0.9753,3,Active Learning,Discriminative,n
+29,Accuracy,0.976,4,Active Learning,Discriminative,n
+29,Accuracy,0.9708,5,Active Learning,Discriminative,n
+29,Accuracy,0.9729,6,Active Learning,Discriminative,n
+29,Accuracy,0.9763,7,Active Learning,Discriminative,n
+29,Accuracy,0.9755,8,Active Learning,Discriminative,n
+29,Accuracy,0.9684,9,Active Learning,Discriminative,n
+30,Accuracy,0.9739,0,Active Learning,Discriminative,n
+30,Accuracy,0.9773,1,Active Learning,Discriminative,n
+30,Accuracy,0.9737,2,Active Learning,Discriminative,n
+30,Accuracy,0.9753,3,Active Learning,Discriminative,n
+30,Accuracy,0.9763,4,Active Learning,Discriminative,n
+30,Accuracy,0.9670000000000001,5,Active Learning,Discriminative,n
+30,Accuracy,0.9725,6,Active Learning,Discriminative,n
+30,Accuracy,0.9775,7,Active Learning,Discriminative,n
+30,Accuracy,0.9746,8,Active Learning,Discriminative,n
+30,Accuracy,0.9653,9,Active Learning,Discriminative,n
+0,Accuracy,0.9648,0,*,Generative,y
+1,Accuracy,0.9648,0,*,Generative,y
+2,Accuracy,0.9648,0,*,Generative,y
+3,Accuracy,0.9648,0,*,Generative,y
+4,Accuracy,0.9648,0,*,Generative,y
+5,Accuracy,0.9648,0,*,Generative,y
+6,Accuracy,0.9648,0,*,Generative,y
+7,Accuracy,0.9648,0,*,Generative,y
+8,Accuracy,0.9648,0,*,Generative,y
+9,Accuracy,0.9648,0,*,Generative,y
+10,Accuracy,0.9648,0,*,Generative,y
+11,Accuracy,0.9648,0,*,Generative,y
+12,Accuracy,0.9648,0,*,Generative,y
+13,Accuracy,0.9648,0,*,Generative,y
+14,Accuracy,0.9648,0,*,Generative,y
+15,Accuracy,0.9648,0,*,Generative,y
+16,Accuracy,0.9648,0,*,Generative,y
+17,Accuracy,0.9648,0,*,Generative,y
+18,Accuracy,0.9648,0,*,Generative,y
+19,Accuracy,0.9648,0,*,Generative,y
+20,Accuracy,0.9648,0,*,Generative,y
+21,Accuracy,0.9648,0,*,Generative,y
+22,Accuracy,0.9648,0,*,Generative,y
+23,Accuracy,0.9648,0,*,Generative,y
+24,Accuracy,0.9648,0,*,Generative,y
+25,Accuracy,0.9648,0,*,Generative,y
+26,Accuracy,0.9648,0,*,Generative,y
+27,Accuracy,0.9648,0,*,Generative,y
+28,Accuracy,0.9648,0,*,Generative,y
+29,Accuracy,0.9648,0,*,Generative,y
+30,Accuracy,0.9648,0,*,Generative,y
+0,Accuracy,0.9759,0,*,Discriminative,y
+1,Accuracy,0.9759,0,*,Discriminative,y
+2,Accuracy,0.9759,0,*,Discriminative,y
+3,Accuracy,0.9759,0,*,Discriminative,y
+4,Accuracy,0.9759,0,*,Discriminative,y
+5,Accuracy,0.9759,0,*,Discriminative,y
+6,Accuracy,0.9759,0,*,Discriminative,y
+7,Accuracy,0.9759,0,*,Discriminative,y
+8,Accuracy,0.9759,0,*,Discriminative,y
+9,Accuracy,0.9759,0,*,Discriminative,y
+10,Accuracy,0.9759,0,*,Discriminative,y
+11,Accuracy,0.9759,0,*,Discriminative,y
+12,Accuracy,0.9759,0,*,Discriminative,y
+13,Accuracy,0.9759,0,*,Discriminative,y
+14,Accuracy,0.9759,0,*,Discriminative,y
+15,Accuracy,0.9759,0,*,Discriminative,y
+16,Accuracy,0.9759,0,*,Discriminative,y
+17,Accuracy,0.9759,0,*,Discriminative,y
+18,Accuracy,0.9759,0,*,Discriminative,y
+19,Accuracy,0.9759,0,*,Discriminative,y
+20,Accuracy,0.9759,0,*,Discriminative,y
+21,Accuracy,0.9759,0,*,Discriminative,y
+22,Accuracy,0.9759,0,*,Discriminative,y
+23,Accuracy,0.9759,0,*,Discriminative,y
+24,Accuracy,0.9759,0,*,Discriminative,y
+25,Accuracy,0.9759,0,*,Discriminative,y
+26,Accuracy,0.9759,0,*,Discriminative,y
+27,Accuracy,0.9759,0,*,Discriminative,y
+28,Accuracy,0.9759,0,*,Discriminative,y
+29,Accuracy,0.9759,0,*,Discriminative,y
+30,Accuracy,0.9759,0,*,Discriminative,y
+0,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+1,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+2,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+3,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+4,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+5,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+6,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+7,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+8,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+9,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+10,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+11,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+12,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+13,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+14,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+15,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+16,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+17,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+18,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+19,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+20,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+21,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+22,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+23,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+24,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+25,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+26,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+27,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+28,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+29,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+30,Accuracy,0.8932400000000001,0,Weak Supervision,Generative,n
+0,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+1,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+2,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+3,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+4,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+5,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+6,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+7,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+8,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+9,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+10,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+11,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+12,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+13,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+14,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+15,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+16,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+17,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+18,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+19,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+20,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+21,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+22,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+23,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+24,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+25,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+26,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+27,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+28,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+29,Accuracy,0.89133,0,Weak Supervision,Discriminative,n
+30,Accuracy,0.89133,0,Weak Supervision,Discriminative,n

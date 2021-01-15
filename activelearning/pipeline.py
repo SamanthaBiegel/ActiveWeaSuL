@@ -146,6 +146,10 @@ class ActiveLearningPipeline(PlotMixin):
             if -1 not in list(bucket_items):
                 rel_entropy[i] = 0
 
+            bucket_labels = self.y_true[np.where(self.unique_inverse == i)[0]][bucket_items == -1]
+            if (1 not in list(bucket_labels)) and (0 not in list(bucket_labels)):
+                rel_entropy[i] = 0
+
         self.bucket_values = rel_entropy
 
         # Pick bucket 
@@ -154,7 +158,7 @@ class ActiveLearningPipeline(PlotMixin):
         pick_bucket = random.choice(max_buckets)
 
         # Pick point from bucket
-        return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) & ~self.all_abstain)[0]
+        return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) & ~self.all_abstain & (self.y_true != -1))[0]
 
     def query(self, probs, iteration):
         """Choose data point to label following query strategy
@@ -196,8 +200,8 @@ class ActiveLearningPipeline(PlotMixin):
         """Iteratively label points, refit label model and return adjusted probabilistic labels
 
         Args:
-            label_matrix (numpy.array): Array with labeling function outputs of train set
-            cliques (list): List of lists of cliques (column indices of label matrix)
+            label_matrix (numpy.array): Array with labeling function outputs on train set
+            cliques (list): List of lists of maximal cliques (column indices of label matrix)
             class_balance (numpy.array): Array with true class distribution
             label_matrix_test (numpy.array): Array with labeling function outputs on test set
             y_test (numpy.array): Ground truth labels of test set
