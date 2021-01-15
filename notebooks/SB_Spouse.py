@@ -70,7 +70,7 @@ y_test = y_test[~all_abstain]
 y_dev.mean()
 
 # +
-class_balance = np.array([0.93,0.07])
+class_balance = np.array([0.82,0.18])
 
 cliques = [[0],[1],[2],[3],[4],[5],[6],[7],[8]]
 # -
@@ -83,34 +83,37 @@ lm = LabelModel(y_true=y_dev,
                 lr=1e-1)
 
 # Fit and predict on train set
-Y_probs = lm.fit(label_matrix=L_dev, cliques=cliques, class_balance=class_balance).predict()
+Y_probs = lm.fit(label_matrix=L_dev,
+                 cliques=cliques,
+                 class_balance=class_balance).predict()
+
 # Predict on test set
 Y_probs_test = lm._predict(L_test, lm.mu, 0.07)
+
 # Analyze test set performance
 lm._analyze(Y_probs_test, y_test)
 # -
 
 # ## Active learning pipeline
 
-al_kwargs = {'active_learning': "probs",
-             'y_true': y_dev,
+al_kwargs = {'y_true': y_dev,
              'n_epochs': 200
             }
 
 # +
 it = 30
 # Choose strategy from ["maxkl", "margin", "nashaat"]
-query_strategy = "margin"
+query_strategy = "maxkl"
 
 al = ActiveLearningPipeline(it=it,
                             **al_kwargs,
                             query_strategy=query_strategy)
 
-Y_probs_al = al.refine_probabilities(label_matrix=L_dev,
-                                     cliques=cliques,
-                                     class_balance=class_balance,
-                                     label_matrix_test=L_test,
-                                     y_test=y_test)
+Y_probs_al = al.run_active_learning(label_matrix=L_dev,
+                                    cliques=cliques,
+                                    class_balance=class_balance,
+                                    label_matrix_test=L_test,
+                                    y_test=y_test)
 # -
 
 # ## Analyze results

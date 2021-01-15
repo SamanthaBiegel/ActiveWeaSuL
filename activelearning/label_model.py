@@ -79,7 +79,7 @@ class LabelModel(PerformanceMixin):
 
         loss = torch.norm((self.cov_O_inverse + self.z @ self.z.T)[torch.BoolTensor(self.mask)]) ** 2
 
-        if self.active_learning == "probs":
+        if self.active_learning:
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
             tmp_probs = self._predict(self.label_matrix, tmp_mu, torch.tensor(self.E_S))
