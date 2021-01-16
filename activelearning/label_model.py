@@ -36,8 +36,6 @@ class LabelModel(PerformanceMixin):
         self.active_learning = active_learning
         self.penalty_strength = penalty_strength
         self.hide_progress_bar = hide_progress_bar
-        
-        self.model_name = "Label Model"
 
     def calculate_mu(self, cov_OS):
         """Compute mu from OS covariance"""
@@ -333,7 +331,7 @@ class LabelModel(PerformanceMixin):
 
         labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
-        return labels.detach()
+        return labels
 
     def predict_true(self):
         """Obtain training labels from optimal label model using ground truth labels"""

@@ -3,10 +3,11 @@ import pandas as pd
 
 
 class SyntheticData:
-    def __init__(self, N, p_z, centroids):
+    def __init__(self, N, p_z, centroids, seed=456):
         self.N = N
         self.p_z = p_z
         self.centroids = centroids
+        np.random.seed(seed)
 
     def sample_y(self):
         
@@ -23,20 +24,10 @@ class SyntheticData:
 
         return X
 
-    def sample_data_set(self):
+    def sample_dataset(self):
 
         self.y = self.sample_y()
         self.X = self.sample_features(self.y)
-
-        return self
-
-    def apply_lf(self, wl_dict):
-
-        self.wl_df = pd.DataFrame()
-
-        for axis, wls in wl_dict.items():
-            for i, wl in enumerate(wls):
-                self.wl_df["wl_"+str(axis)+"_"+str(i)] = (self.X[:, axis] < wl)*1
 
         return self
 

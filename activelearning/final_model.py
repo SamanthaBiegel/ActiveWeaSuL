@@ -17,7 +17,6 @@ class LogisticRegression(nn.Module):
 
 class DiscriminativeModel(PerformanceMixin, LogisticRegression):
     def __init__(self, df, input_dim, output_dim, lr, batch_size, n_epochs, soft_labels=True, subset=None):
-        self.model_name = "Discriminative Model"
         self.lr = lr
         self.batch_size = batch_size
         self.n_epochs = n_epochs

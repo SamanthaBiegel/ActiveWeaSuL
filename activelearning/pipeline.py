@@ -118,7 +118,7 @@ class ActiveLearningPipeline(PlotMixin):
         """
         
         # Label model distributions
-        lm_posteriors = self.unique_prob_dict[iteration]
+        lm_posteriors = self.probs["bucket_labels_train"][iteration]
         lm_posteriors = np.concatenate([1-lm_posteriors[:, None], lm_posteriors[:, None]], axis=1).clip(1e-5, 1-1e-5)
 
         # Sample distributions
@@ -132,7 +132,7 @@ class ActiveLearningPipeline(PlotMixin):
             # Collect labeled points in bucket
             bucket_gt = bucket_items[bucket_items != -1]
             # Add initial labeled point
-            bucket_gt = np.array(list(bucket_gt) + [np.round(self.unique_prob_dict[0][i])])
+            bucket_gt = np.array(list(bucket_gt) + [np.round(self.probs["bucket_labels_train"][0][i])])
 
             # Bucket distribution, clip to avoid D_KL undefined
             eps = 1e-2/(len(bucket_gt))
@@ -254,7 +254,7 @@ class ActiveLearningPipeline(PlotMixin):
         self.confs = {range(len(self.unique_idx))[i]:
                       "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
         
-        self.log(count=0, probs=prob_labels_train, test_probs=prob_labels_test, final_probs=preds_train, final_test_probs=preds_test)
+        self.log(count=0, lm_train=prob_labels_train, lm_test=prob_labels_test, fm_train=preds_train, fm_test=preds_test)
         
         for i in tqdm(range(self.it), desc="Active Learning Iterations"):
             # Switch to active learning mode
@@ -265,6 +265,7 @@ class ActiveLearningPipeline(PlotMixin):
             sel_idx = self.query(prob_labels_train, i)
             self.ground_truth_labels[sel_idx] = self.y_true[sel_idx]
             if self.query_strategy == "nashaat":
+                self.label_model.active_learning = False
                 # Nashaat et al. replace labeling function outputs by ground truth
                 self.label_matrix[sel_idx, :] = self.y_true[sel_idx]
 
@@ -297,38 +298,43 @@ class ActiveLearningPipeline(PlotMixin):
                 preds_train = None
                 preds_test = None
 
-            self.log(count=i+1, probs=prob_labels_train, test_probs=prob_labels_test, final_probs=preds_train,
-                     final_test_probs=preds_test, selected_point=sel_idx)
+            self.log(count=i+1, lm_train=prob_labels_train, lm_test=prob_labels_test, fm_train=preds_train,
+                     fm_test=preds_test, selected_point=sel_idx)
 
         return prob_labels_train
 
-    def log(self, count, probs, test_probs, final_probs, final_test_probs, selected_point=None):
+    def log(self, count, lm_train, lm_test, fm_train, fm_test, selected_point=None):
         """Keep track of performance metrics and label predictions"""
 
         if count == 0:
             self.metrics = {}
-            self.test_metrics = {}
-            self.final_metrics = {}
-            self.final_test_metrics = {}
+            self.metrics["label_model_train"] = {}
+            self.metrics["label_model_test"] = {}
+            self.metrics["final_model_train"] = {}
+            self.metrics["final_model_test"] = {}
             self.queried = []
-            self.prob_dict = {}
-            self.final_prob_dict = {}
-            self.unique_prob_dict = {}
+            self.probs = {}
+            self.probs["label_model_train"] = {}
+            self.probs["label_model_test"] = {}
+            self.probs["final_model_train"] = {}
+            self.probs["final_model_test"] = {}
+            self.probs["bucket_labels_train"] = {}
             self.mu_dict = {}
             self.bucket_AL_values = {}
 
         self.label_model.analyze()
-        self.metrics[count] = self.label_model.metric_dict
-        self.test_metrics[count] = self.label_model._analyze(test_probs, self.y_test)
-        self.prob_dict[count] = probs[:, 1].clone().detach().numpy()
-        self.unique_prob_dict[count] = self.prob_dict[count][self.unique_idx]
+        self.metrics["label_model_train"][count] = self.label_model.metric_dict
+        self.metrics["label_model_test"][count] = self.label_model._analyze(lm_test, self.y_test)
+        self.probs["label_model_train"][count] = lm_train[:, 1].clone().detach().numpy()
+        self.probs["label_model_test"][count] = lm_test[:, 1].clone().detach().numpy()
+        self.probs["bucket_labels_train"][count] = self.probs["label_model_train"][count][self.unique_idx]
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
         if not not self.final_model and count % self.discr_model_frequency == 0:
-            # self.final_model.analyze()
-            self.final_metrics[count] = self.final_model._analyze(final_probs, self.y_true)
-            self.final_test_metrics[count] = self.final_model._analyze(final_test_probs, self.y_test)
-            self.final_prob_dict[count] = final_probs[:, 1].clone().cpu().detach().numpy()
+            self.metrics["final_model_train"][count] = self.final_model._analyze(fm_train, self.y_true)
+            self.metrics["final_model_test"][count] = self.final_model._analyze(fm_test, self.y_test)
+            self.probs["final_model_train"][count] = fm_train[:, 1].clone().cpu().detach().numpy()
+            self.probs["final_model_test"][count] = fm_test[:, 1].clone().cpu().detach().numpy()
 
         if selected_point is not None:
             self.queried.append(selected_point)
