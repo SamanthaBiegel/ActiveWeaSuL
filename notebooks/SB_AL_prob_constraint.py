@@ -127,10 +127,7 @@ al_kwargs = {'add_prob_loss': False,
 # +
 L = label_matrix[:, :-1]
 
-lm = LabelModel(df=df,
-                active_learning=False,
-                add_cliques=True,
-                add_prob_loss=False,
+lm = LabelModel(y_true=df.y.values,
                 n_epochs=200,
                 lr=1e-1)
     
@@ -139,7 +136,9 @@ lm.analyze()
 lm.print_metrics()
 # -
 
-lm.mu
+Y_probs.detach()
+
+type(lm.mu)
 
 Y_probs
 
@@ -738,6 +737,7 @@ al.plot_iterations()
 al.get_true_mu().numpy()
 
 al.mu
+
 
 
 

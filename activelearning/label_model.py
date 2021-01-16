@@ -227,7 +227,7 @@ class LabelModel(PerformanceMixin):
         """Fit label model
 
         Args:
-            label_matrix ([numpy.array): Array with labeling function outputs on train set
+            label_matrix (numpy.array): Array with labeling function outputs on train set
             cliques (list): List of lists of maximal cliques (column indices of label matrix)
             class_balance (numpy.array): Array with true class distribution
             ground_truth_labels (numpy.array, optional): Array with -1 or ground truth label for each point in train set
@@ -239,7 +239,6 @@ class LabelModel(PerformanceMixin):
         self.init_label_model(label_matrix, cliques, class_balance)
 
         if self.active_learning:
-            # Calculate known covariance for active learning weak label
             self.ground_truth_labels = ground_truth_labels
             # self.last_posteriors = last_posteriors
             _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)

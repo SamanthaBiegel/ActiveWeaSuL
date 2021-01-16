@@ -40,7 +40,7 @@ from data import SyntheticData
 from final_model import DiscriminativeModel
 from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from pipeline import ActiveWeaSuLPipeline
 # -
 
 pd.options.display.expand_frame_repr = False 
@@ -51,21 +51,21 @@ N = 10000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 p_z = 0.5
 
-# data = SyntheticData(N, p_z, centroids)
-# df = data.sample_data_set().create_df()
+# data = SyntheticData(N, p_z, centroids, seed=123)
+# df = data.sample_dataset().create_df()
 
 # df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 # df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
 # df.loc[:, "wl3"] = (df["x1"]<-1)*1
 
-# label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+# L = np.array(df[["wl1", "wl2", "wl3"]])
 
 # +
 # df.to_csv("../data/synthetic_dataset_3.csv", index=False)
 # -
 
 df = pd.read_csv("../data/synthetic_dataset_3.csv")
-label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
+L = np.array(df[["wl1", "wl2", "wl3"]])
 
 # +
 final_model_kwargs = {'input_dim': 2,
@@ -75,53 +75,37 @@ final_model_kwargs = {'input_dim': 2,
                       'n_epochs': 100}
 
 class_balance = np.array([1 - p_z, p_z])
-cliques=[[0],[1,2]]
+cliques=[[0],[1],[2]]
 
-al_kwargs = {'add_prob_loss': False,
-             'add_cliques': True,
-             'active_learning': "probs",
-             'df': df,
+al_kwargs = {'df': df,
              'n_epochs': 200
             }
 
 # +
-L = label_matrix[:, :-1]
-al_kwargs["active_learning"] = "probs"    
 
-al = ActiveLearningPipeline(it=10,
-#                             final_model = DiscriminativeModel(df, **final_model_kwargs),
-                            penalty_strength=1,
-                            **al_kwargs,
-                            query_strategy="relative_entropy",
-                            randomness=0)
-
-Y_probs_al = al.refine_probabilities(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
-al.label_model.print_metrics()
-# -
-
-al.plot_metrics(al.metrics)
-
-al.final_probs
-
-fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
-probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=Y_probs_al.detach().numpy()).predict()
-fm.analyze()
-fm.accuracy()
-
-# +
-L = label_matrix[:, :-1]
-
-lm = LabelModel(df=df,
-                active_learning=False,
-                add_cliques=True,
-                add_prob_loss=False,
+lm = LabelModel(y_true=df.y.values,
                 n_epochs=200,
                 lr=1e-1)
 
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze()
 lm.print_metrics()
+
+# +
+al = ActiveWeaSuLPipeline(it=2,
+                            final_model = DiscriminativeModel(df, **final_model_kwargs),
+                            y_true=df.y.values,
+                            **al_kwargs,
+                            query_strategy="maxkl")
+
+Y_probs_al = al.run_active_weasul(label_matrix=L, cliques=cliques, class_balance=class_balance, label_matrix_test=L, y_test=df.y.values)
+al.label_model.print_metrics()
 # -
+
+fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
+probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=Y_probs_al.detach().numpy()).predict()
+fm.analyze()
+fm.accuracy()
 
 fm = DiscriminativeModel(df, **final_model_kwargs, soft_labels=True)
 probs_final = fm.fit(features=df[["x1", "x2"]].values, labels=Y_probs.detach().numpy()).predict()

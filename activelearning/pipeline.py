@@ -16,7 +16,7 @@ from plot import PlotMixin
 from visualrelation import VisualRelationDataset
 
 
-class ActiveLearningPipeline(PlotMixin):
+class ActiveWeaSuLPipeline(PlotMixin):
     def __init__(self,
                  y_true,
                  it: int = 30,
@@ -196,7 +196,7 @@ class ActiveLearningPipeline(PlotMixin):
         # Pick a random point from selected subset
         return random.choice(indices)
 
-    def run_active_learning(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train=None, dl_test=None):
+    def run_active_weasul(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train=None, dl_test=None):
         """Iteratively label points, refit label model and return adjusted probabilistic labels
 
         Args:
@@ -227,7 +227,7 @@ class ActiveLearningPipeline(PlotMixin):
                                                      torch.tensor(self.label_model.E_S))
         
         # Optionally, train discriminative model on probabilistic labels
-        if not not self.final_model:
+        if self.final_model:
             if self.final_model.__class__.__name__ == "VisualRelationClassifier":
                 # VRD/VG dataset
                 dataset = VisualRelationDataset(image_dir=self.image_dir,
@@ -279,7 +279,7 @@ class ActiveLearningPipeline(PlotMixin):
                                                          torch.tensor(self.label_model.E_S))
 
             # Optionally, train discriminative model on probabilistic labels
-            if not not self.final_model and (i+1) % self.discr_model_frequency == 0:
+            if self.final_model and (i+1) % self.discr_model_frequency == 0:
                 if self.final_model.__class__.__name__ == "VisualRelationClassifier":
                     # VRD/VG dataset
                     dataset.Y = prob_labels_train.clone().detach().numpy()
@@ -308,35 +308,35 @@ class ActiveLearningPipeline(PlotMixin):
 
         if count == 0:
             self.metrics = {}
-            self.metrics["label_model_train"] = {}
-            self.metrics["label_model_test"] = {}
-            self.metrics["final_model_train"] = {}
-            self.metrics["final_model_test"] = {}
+            self.metrics["Generative_train"] = {}
+            self.metrics["Generative_test"] = {}
+            self.metrics["Discriminative_train"] = {}
+            self.metrics["Discriminative_test"] = {}
             self.queried = []
             self.probs = {}
-            self.probs["label_model_train"] = {}
-            self.probs["label_model_test"] = {}
-            self.probs["final_model_train"] = {}
-            self.probs["final_model_test"] = {}
+            self.probs["Generative_train"] = {}
+            self.probs["Generative_test"] = {}
+            self.probs["Discriminative_train"] = {}
+            self.probs["Discriminative_test"] = {}
             self.probs["bucket_labels_train"] = {}
             self.mu_dict = {}
             self.bucket_AL_values = {}
 
         self.label_model.analyze()
-        self.metrics["label_model_train"][count] = self.label_model.metric_dict
-        self.metrics["label_model_test"][count] = self.label_model._analyze(lm_test, self.y_test)
-        self.probs["label_model_train"][count] = lm_train[:, 1].clone().detach().numpy()
-        self.probs["label_model_test"][count] = lm_test[:, 1].clone().detach().numpy()
-        self.probs["bucket_labels_train"][count] = self.probs["label_model_train"][count][self.unique_idx]
+        self.metrics["Generative_train"][count] = self.label_model.metric_dict
+        self.metrics["Generative_test"][count] = self.label_model._analyze(lm_test, self.y_test)
+        self.probs["Generative_train"][count] = lm_train[:, 1].clone().detach().numpy()
+        self.probs["Generative_test"][count] = lm_test[:, 1].clone().detach().numpy()
+        self.probs["bucket_labels_train"][count] = self.probs["Generative_train"][count][self.unique_idx]
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
-        if not not self.final_model and count % self.discr_model_frequency == 0:
-            self.metrics["final_model_train"][count] = self.final_model._analyze(fm_train, self.y_true)
-            self.metrics["final_model_test"][count] = self.final_model._analyze(fm_test, self.y_test)
-            self.probs["final_model_train"][count] = fm_train[:, 1].clone().cpu().detach().numpy()
-            self.probs["final_model_test"][count] = fm_test[:, 1].clone().cpu().detach().numpy()
+        if self.final_model and count % self.discr_model_frequency == 0:
+            self.metrics["Discriminative_train"][count] = self.final_model._analyze(fm_train, self.y_true)
+            self.metrics["Discriminative_test"][count] = self.final_model._analyze(fm_test, self.y_test)
+            self.probs["Discriminative_train"][count] = fm_train[:, 1].clone().cpu().detach().numpy()
+            self.probs["Discriminative_test"][count] = fm_test[:, 1].clone().cpu().detach().numpy()
 
-        if selected_point is not None:
+        if selected_point:
             self.queried.append(selected_point)
             if self.query_strategy in ["maxkl", "margin"] and self.randomness == 0:
                 self.bucket_AL_values[count] = self.bucket_values
