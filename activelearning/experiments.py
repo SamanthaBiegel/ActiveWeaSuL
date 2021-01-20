@@ -3,31 +3,50 @@ import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 
-from pipeline import ActiveWeaSuLPipeline
+from active_weasul import ActiveWeaSuLPipeline
+from plot import plot_probs
 
 
-def process_metric_dict(metrics):
+def process_metric_dict(metric_dict, strategy_string, remove_test=False):
 
     metric_df = (
-        pd.DataFrame(metrics).stack().apply(pd.Series).stack().reset_index()
+        pd.DataFrame(metric_dict).stack().apply(pd.Series).stack().reset_index()
         .rename(columns={"level_0": "Number of labeled points", "level_1": "Model", "level_2": "Metric", 0: "Value"})
     )
 
     metric_df[["Model", "Set"]] = metric_df["Model"].str.split("_", expand=True)
+    metric_df["Strategy"] = strategy_string
+
+    if remove_test:
+        metric_df = metric_df[metric_df["Set"] != "test"]
 
     return metric_df
 
 
-def plot_metrics(metric_df):
+def process_exp_dict(exp_dict, strategy_string):
 
-    colors = ["#368f8b", "#ec7357"]
+    exp_df = pd.concat({i: process_metric_dict(exp_dict[i], strategy_string).drop(index=1) for i in exp_dict.keys()})
+
+    return exp_df
+
+
+def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_test=False):
+
+    if not plot_test:
+        metric_df = metric_df[metric_df.Set != "test"]
+
+    lines = list(metric_df.Strategy.unique())
+
+    colors = ["#368f8b", "#ec7357"][:len(lines)]
+
+    metric_df = metric_df[metric_df["Metric"].isin(filter_metrics)]
 
     sns.set(style="whitegrid")
     ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Metric", row="Model",
-                    kind="line", hue="Set",legend=False, palette=sns.color_palette(colors))
+                     kind="line", hue="Strategy", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
 
-    show_handles = [ax.axes[0][0].lines[0], ax.axes[0][0].lines[1]]
-    show_labels = ["train", "test"]
+    show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
+    show_labels = lines
     ax.axes[len(ax.axes)-1][len(ax.axes[0])-1].legend(handles=show_handles, labels=show_labels, loc="lower right")
 
     ax.set_ylabels("")
@@ -37,26 +56,28 @@ def plot_metrics(metric_df):
 
 
 def active_weasul_experiment(al_it, nr_trials, label_matrix, y_true, cliques,
-                             class_balance, label_matrix_test, y_test, query_strategy, randomness, final_model):
+                             class_balance, query_strategy, df, final_model=None, label_matrix_test=None, y_test=None, randomness=0):
 
     al_metrics = {}
-    al_metrics["lm_metrics"] = {}
-    al_metrics["fm_metrics"] = {}
 
     for i in tqdm(range(nr_trials), desc="Trials"):
-        al = ActiveLearningPipeline(it=al_it,
-                                    final_model=final_model,
-                                    y_true=y_true,
-                                    query_strategy=query_strategy,
-                                    randomness=randomness)
+        al = ActiveWeaSuLPipeline(it=al_it,
+                                  final_model=final_model,
+                                  y_true=y_true,
+                                  query_strategy=query_strategy,
+                                  randomness=randomness,
+                                  df=df,
+                                  penalty_strength=1)
 
-        _ = al.run_active_learning(label_matrix=label_matrix,
-                                   cliques=cliques,
-                                   class_balance=class_balance,
-                                   label_matrix_test=label_matrix_test,
-                                   y_test=y_test)
+        _ = al.run_active_weasul(label_matrix=label_matrix,
+                                 cliques=cliques,
+                                 class_balance=class_balance,
+                                 label_matrix_test=label_matrix_test,
+                                 y_test=y_test)
 
-        al_metrics["lm_metrics"][i] = al.metrics
-        al_metrics["fm_metrics"][i] = al.final_metrics
+        al_metrics[i] = al.metrics
+
+        plot_metrics(process_metric_dict(al.metrics, "MaxKL", remove_test=True))
+        plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
     return al_metrics

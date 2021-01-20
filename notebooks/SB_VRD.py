@@ -54,12 +54,12 @@ import os
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
-from final_model import DiscriminativeModel
+from discriminative_model import DiscriminativeModel
 from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from pipeline import ActiveWeaSuLPipeline
 from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
-from lm_utils import apply_lfs, analyze_lfs
+from lf_utils import apply_lfs, analyze_lfs
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
 # -
 
@@ -187,6 +187,12 @@ analyze_lfs(L_train, df_train["y"], lfs)
 
 analyze_lfs(L_test, df_test["y"], lfs)
 
+# +
+from snorkel.labeling.analysis import LFAnalysis
+
+LFAnalysis(L_train).lf_summary()
+# -
+
 # # **Initial fit label model**
 
 # +
@@ -201,17 +207,13 @@ cliques=[[0,1],[2,3],[4]]
 
 lm_metrics = {}
 for i in range(1):
-    lm = LabelModel(df=df_train,
-                    active_learning=False,
-                    add_cliques=True,
-                    add_prob_loss=False,
+    lm = LabelModel(y_true=df_train.y.values,
                     n_epochs=500,
                     lr=1e-1)
 
     Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
-    lm.analyze()
-    lm_metrics[i] = lm.metric_dict
-    lm.print_metrics()
+    lm.analyze(df_train.y.values)
+#     lm_metrics[i] = lm.metric_dict
 
 # +
 # # %%time
@@ -246,6 +248,16 @@ dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_image
                       Y=df_train["y"].values)
 dl_train = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
+
+# +
+dataset.Y = Y_probs.clone().detach().numpy()
+
+dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
+# -
+
+dl_test.s
+
+dl_test
 
 # +
 al_metrics = {}
@@ -405,7 +417,7 @@ al.label_model.print_metrics()
 
 
 
-n_epochs=5
+n_epochs=1
 batch_size=20
 
 # +
@@ -414,18 +426,16 @@ dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_image
                       Y=Y_probs.clone().clamp(0,1).detach().numpy())
 dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 
-vc = VisualRelationClassifier(pretrained_model, df_train, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
+vc = VisualRelationClassifier(pretrained_model=pretrained_model, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix)
 
-vc = vc.fit(dl)
+vc = vc.fit(dl_train)
 
-vc._analyze(probs_final, df_test["y"].values)
+probs_final = vc.predict()
 
-probs_final = vc_al._predict(dl_train)
+probs_final_test = vc.predict(dl_test)
 
-probs_final_test = vc_al._predict(dl_test)
-
-print(vc._analyze(probs_final, df_train["y"].values))
-print(vc._analyze(probs_final_test, df_test["y"].values))
+print(vc.analyze(df_train.y.values))
+print(vc.analyze(df_test.y.values, probs_final_test))
 # -
 
 al.label_model.predict_true()
@@ -670,32 +680,6 @@ n_epochs = 3
 lr = 1e-3
 
 # +
-# cliques = [[0,1],[1,3],[2,3],[3,4],[0,5],[1,5],[2,5],[4,5]]
-
-# +
-# al.label_model.cliques
-
-# +
-# cliques
-
-# +
-# L_train[al.queried[10:19]]
-
-# +
-# df_train.iloc[al.queried[10:19]]
-
-# +
-# al.plot_parameters()
-
-# +
-# al.plot_metrics()
-# -
-
-# # **Train discriminative model on probabilistic labels**
-
-df_train[df_train["object_category"] == "cake piece"]
-
-# +
 n_epochs = 10
 lr=1e-2
 
@@ -769,23 +753,10 @@ al.label_model._analyze(Y_probs, al.y)
 
 # ## Active learning
 
-# +
-
-df_train
-# -
-
 random.seed(None)
 df_1 = df_train.iloc[random.sample(range(len(df_train)),2)]
 
 random.sample(range(len(df_train)),2)
-
-df_1
-
-df_train
-
-df_1
-
-Y_probs[df_1.index].clone().clamp(0,1).detach().numpy()
 
 # +
 initial_seed = random.sample(range(len(df_train)),80)
@@ -812,75 +783,75 @@ vc.print_metrics()
 vc._analyze(probs_final, df_train.y.values)
 
 # +
-# from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm_notebook as tqdm
 
 
-# dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
-#                           df=df_test,
-#                           Y=df_test["y"].values)
-# dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
+                          df=df_test,
+                          Y=df_test["y"].values)
+dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
-# dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
-#                       df=df_train,
-#                       Y=df_train["y"].values)
-# dl_train = DataLoader(dataset, shuffle=False, batch_size=100)
+dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=df_train["y"].values)
+dl_train = DataLoader(dataset, shuffle=False, batch_size=100)
 
 
-# accuracy_dict = {}
-# for j in tqdm(range(1)):
-#     accuracies = []
-#     accuracies_test = []
+accuracy_dict = {}
+for j in tqdm(range(1)):
+    accuracies = []
+    accuracies_test = []
     
-#     random.seed(None)
-#     initial_seed = random.sample(range(len(df_train)),2)
-#     df_1 = df_train.iloc[initial_seed]
-#     print(df_1)
-#     queried = initial_seed
+    random.seed(None)
+    initial_seed = random.sample(range(len(df_train)),2)
+    df_1 = df_train.iloc[initial_seed]
+    print(df_1)
+    queried = initial_seed
     
-#     labels = df_1.y.values
-#     df_1.index = range(len(df_1))
-
-#     dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
-#                           df=df_1,
-#                           Y=labels)
-
-#     dl = DataLoader(dataset, shuffle=True, batch_size=len(queried))
-#     vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
-
-#     probs_final = vc.fit(dl)._predict(dl_train)
-# #     probs_final_test = vc._predict(dl_test)
-
-#     accuracy = vc._analyze(probs_final, df_train.y.values)["Accuracy"]
-#     print(accuracy)
-
-#     accuracies.append(accuracy)
-# #     accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
-
-for i in tqdm(range(30,60)):
-    dist_boundary = torch.abs(probs_final[:, 1] - probs_final[:, 0])
-    dist_boundary[queried] = 1
-    queried.append(torch.argmin(dist_boundary).item())
-
-    df_1 = df_train.iloc[queried]
-
     labels = df_1.y.values
     df_1.index = range(len(df_1))
 
     dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
-                      df=df_1,
-                      Y=labels)
+                          df=df_1,
+                          Y=labels)
 
     dl = DataLoader(dataset, shuffle=True, batch_size=len(queried))
     vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
 
     probs_final = vc.fit(dl)._predict(dl_train)
-#             probs_final_test = vc._predict(dl_test)
+#     probs_final_test = vc._predict(dl_test)
 
     accuracy = vc._analyze(probs_final, df_train.y.values)["Accuracy"]
     print(accuracy)
 
     accuracies.append(accuracy)
-    #         accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
+#     accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
+
+    for i in tqdm(range(30,60)):
+        dist_boundary = torch.abs(probs_final[:, 1] - probs_final[:, 0])
+        dist_boundary[queried] = 1
+        queried.append(torch.argmin(dist_boundary).item())
+
+        df_1 = df_train.iloc[queried]
+
+        labels = df_1.y.values
+        df_1.index = range(len(df_1))
+
+        dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                          df=df_1,
+                          Y=labels)
+
+        dl = DataLoader(dataset, shuffle=True, batch_size=len(queried))
+        vc = VisualRelationClassifier(pretrained_model, df_1, n_epochs=n_epochs, lr=lr, data_path_prefix=path_prefix, soft_labels=False)
+
+        probs_final = vc.fit(dl)._predict(dl_train)
+    #             probs_final_test = vc._predict(dl_test)
+
+        accuracy = vc._analyze(probs_final, df_train.y.values)["Accuracy"]
+        print(accuracy)
+
+        accuracies.append(accuracy)
+        #         accuracies_test.append(vc._analyze(probs_final_test, df_test.y.values)["Accuracy"])
 
 #         accuracy_dict[j] = accuracies
 

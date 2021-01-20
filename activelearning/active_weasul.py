@@ -1,62 +1,52 @@
 import logging
 import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import random
-from scipy.spatial.distance import pdist, squareform
 from scipy.stats import entropy
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
-from final_model import DiscriminativeModel
+# from logisticregression import LogisticRegression
 from plot import PlotMixin
-from visualrelation import VisualRelationDataset
 
 
 class ActiveWeaSuLPipeline(PlotMixin):
+    """Pipeline to run Active WeaSuL.
+
+    Args:
+        it (int, optional): Number of active learning iterations
+        n_epochs (int, optional): Number of label model epochs
+        lr (float, optional): Label model learning rate
+        penalty_strength (float, optional): Strength of the active learning penalty
+        query_strategy (str, optional): Active learning query strategy, one of ["maxkl", "margin", "nashaat"]
+        randomness (float, optional): Probability of choosing a random point instead of following strategy
+        final_model: Optional discriminative model object
+        image_dir (str, optional): Directory of images if training discriminative model on image data
+        batch_size (int, optional): Batch size if training discriminate model on image data
+        discr_model_frequency (int, optional): How often to train discriminative model (interval)
+    """
+
     def __init__(self,
-                 y_true,
                  it: int = 30,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
                  penalty_strength: float = 1e3,
                  query_strategy: str = "maxkl",
                  randomness: float = 0,
-                 final_model=False,
-                 df=None,
+                 final_model=None,
                  image_dir: str = "/tmp/data/visual_genome/VG_100K",
                  batch_size: int = 20,
                  discr_model_frequency: int = 1):
-        """Pipeline to run Active WeaSuL
 
-        Args:
-            y_true (numpy.array): Ground truth labels of training dataset
-            it (int, optional): Number of active learning iterations
-            n_epochs (int, optional): Number of label model epochs
-            lr (float, optional): Label model learning rate
-            penalty_strength (float, optional): Strength of the active learning penalty
-            query_strategy (str, optional): Active learning query strategy, one of ["maxkl", "margin", "nashaat"]
-            randomness (float, optional): Probability of choosing a random point instead of following strategy
-            final_model: Optional discriminative model object
-            df (pandas.DataFrame, optional): Dataframe that contains discriminative model input (features)
-            image_dir (str, optional): Directory of images if training discriminative model on image data
-            batch_size (int, optional): Batch size if training discriminate model on image data
-            discr_model_frequency (int, optional): How often to train discriminative model (interval)
-        """
-        self.y_true = y_true
         self.it = it
-        self.label_model = LabelModel(y_true=y_true,
-                                      n_epochs=n_epochs,
+        self.label_model = LabelModel(n_epochs=n_epochs,
                                       lr=lr,
                                       hide_progress_bar=True)
         self.penalty_strength = penalty_strength
         self.query_strategy = query_strategy
         self.randomness = randomness
         self.final_model = final_model
-        self.df = df
         self.image_dir = image_dir
         self.batch_size = batch_size
         self.discr_model_frequency = discr_model_frequency
@@ -130,9 +120,11 @@ class ActiveWeaSuLPipeline(PlotMixin):
             # Collect points in bucket
             bucket_items = self.ground_truth_labels[np.where(self.unique_inverse == i)[0]]
             # Collect labeled points in bucket
-            bucket_gt = bucket_items[bucket_items != -1]
+            bucket_gt = list(bucket_items[bucket_items != -1])
             # Add initial labeled point
-            bucket_gt = np.array(list(bucket_gt) + [np.round(self.probs["bucket_labels_train"][0][i])])
+            if not bucket_gt:
+                bucket_gt.append(int(np.round(self.probs["bucket_labels_train"][0][i].clip(0,1))))
+            bucket_gt = np.array(bucket_gt)
 
             # Bucket distribution, clip to avoid D_KL undefined
             eps = 1e-2/(len(bucket_gt))
@@ -146,7 +138,7 @@ class ActiveWeaSuLPipeline(PlotMixin):
             if -1 not in list(bucket_items):
                 rel_entropy[i] = 0
 
-            bucket_labels = self.y_true[np.where(self.unique_inverse == i)[0]][bucket_items == -1]
+            bucket_labels = self.y_train[np.where(self.unique_inverse == i)[0]][bucket_items == -1]
             if (1 not in list(bucket_labels)) and (0 not in list(bucket_labels)):
                 rel_entropy[i] = 0
 
@@ -158,7 +150,7 @@ class ActiveWeaSuLPipeline(PlotMixin):
         pick_bucket = random.choice(max_buckets)
 
         # Pick point from bucket
-        return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) & ~self.all_abstain & (self.y_true != -1))[0]
+        return np.where((self.unique_inverse == pick_bucket) & (self.ground_truth_labels == -1) & ~self.all_abstain & (self.y_train != -1))[0]
 
     def query(self, probs, iteration):
         """Choose data point to label following query strategy
@@ -196,66 +188,65 @@ class ActiveWeaSuLPipeline(PlotMixin):
         # Pick a random point from selected subset
         return random.choice(indices)
 
-    def run_active_weasul(self, label_matrix, cliques, class_balance, label_matrix_test, y_test, dl_train=None, dl_test=None):
+    def run_active_weasul(self, label_matrix, y_train, cliques, class_balance, label_matrix_test=None, y_test=None, train_dataset=None, test_dataset=None):
         """Iteratively label points, refit label model and return adjusted probabilistic labels
 
         Args:
             label_matrix (numpy.array): Array with labeling function outputs on train set
+            y_train (numpy.array): Ground truth labels of training dataset
             cliques (list): List of lists of maximal cliques (column indices of label matrix)
             class_balance (numpy.array): Array with true class distribution
             label_matrix_test (numpy.array): Array with labeling function outputs on test set
             y_test (numpy.array): Ground truth labels of test set
-            dl_train (torch.utils.data.DataLoader, optional): Train dataloader if training discriminative model on image data
-            dl_test (torch.utils.data.DataLoader, optional): Test dataloader if training discriminative model on image data
+            train_dataset (torch.utils.data.Dataset, optional): Train dataset if training discriminative model on image data
+            test_dataset (torch.utils.data.Dataset, optional): Test dataset if training discriminative model on image data
 
         Returns:
             np.array: Array with probabilistic labels for training dataset
         """
 
+        if any(v is None for v in (label_matrix_test, y_test, test_dataset)):
+            label_matrix_test = label_matrix.copy()
+            y_test = y_train.copy()
+            test_dataset = train_dataset
+
         self.label_matrix = label_matrix
-        self.ground_truth_labels = np.full_like(self.y_true, -1)
+        self.ground_truth_labels = np.full_like(y_train, -1)
+        self.y_train = y_train
         self.y_test = y_test
         nr_wl = label_matrix.shape[1]
         self.all_abstain = (label_matrix == -1).sum(axis=1) == nr_wl
+
+        # Identify buckets
+        _, self.unique_idx, self.unique_inverse = np.unique(label_matrix,
+                                                            return_index=True,
+                                                            return_inverse=True,
+                                                            axis=0)
+        self.confs = {range(len(self.unique_idx))[i]:
+                      "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
         # Initial fit and predict label model
         prob_labels_train = self.label_model.fit(label_matrix=self.label_matrix,
                                                  cliques=cliques,
                                                  class_balance=class_balance).predict()
-        prob_labels_test = self.label_model._predict(label_matrix_test,
-                                                     self.label_model.mu,
-                                                     torch.tensor(self.label_model.E_S))
-        
-        # Optionally, train discriminative model on probabilistic labels
-        if self.final_model:
-            if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                # VRD/VG dataset
-                dataset = VisualRelationDataset(image_dir=self.image_dir,
-                                                df=self.df,
-                                                Y=prob_labels_train.clone().detach().numpy())
-                dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
+        prob_labels_test = self.label_model.predict(label_matrix_test,
+                                                    self.label_model.mu,
+                                                    self.label_model.E_S)
 
-                self.final_model = self.final_model.fit(dl)
-                preds_train = self.final_model._predict(dl_train)
-                preds_test = self.final_model._predict(dl_test)
-            else:
-                # Synthetic dataset
-                self.X = self.df[["x1", "x2"]].values
-                preds_train = self.final_model.fit(features=self.X, labels=prob_labels_train.detach().numpy()).predict()
-                preds_test = self.final_model.predict()
+        # Optionally, train discriminative model on probabilistic labels
+        if self.final_model is not None:
+            train_dataset.Y = prob_labels_train.clone().detach()
+            dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
+            dl_test = DataLoader(test_dataset, shuffle=False, batch_size=self.batch_size)
+
+            preds_train = self.final_model.fit(dl_train).predict()
+            preds_test = self.final_model.predict(dl_test)
         else:
             preds_train = None
             preds_test = None
 
-        # Identify buckets
-        _, self.unique_idx, self.unique_inverse = np.unique(prob_labels_train.clone().detach().numpy()[:, 1],
-                                                            return_index=True,
-                                                            return_inverse=True)
-        self.confs = {range(len(self.unique_idx))[i]:
-                      "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
-        
         self.log(count=0, lm_train=prob_labels_train, lm_test=prob_labels_test, fm_train=preds_train, fm_test=preds_test)
-        
+
         for i in tqdm(range(self.it), desc="Active Learning Iterations"):
             # Switch to active learning mode
             self.label_model.active_learning = True
@@ -263,37 +254,28 @@ class ActiveWeaSuLPipeline(PlotMixin):
 
             # Query point and add to ground truth labels
             sel_idx = self.query(prob_labels_train, i)
-            self.ground_truth_labels[sel_idx] = self.y_true[sel_idx]
+            self.ground_truth_labels[sel_idx] = self.y_train[sel_idx]
             if self.query_strategy == "nashaat":
                 self.label_model.active_learning = False
                 # Nashaat et al. replace labeling function outputs by ground truth
-                self.label_matrix[sel_idx, :] = self.y_true[sel_idx]
+                self.label_matrix[sel_idx, :] = self.y_train[sel_idx]
 
             # Fit label model with penalty and predict
             prob_labels_train = self.label_model.fit(label_matrix=self.label_matrix,
                                                      cliques=cliques,
                                                      class_balance=class_balance,
                                                      ground_truth_labels=self.ground_truth_labels).predict()
-            prob_labels_test = self.label_model._predict(label_matrix_test,
-                                                         self.label_model.mu,
-                                                         torch.tensor(self.label_model.E_S))
+            prob_labels_test = self.label_model.predict(label_matrix_test,
+                                                        self.label_model.mu,
+                                                        self.label_model.E_S)
 
             # Optionally, train discriminative model on probabilistic labels
-            if self.final_model and (i+1) % self.discr_model_frequency == 0:
-                if self.final_model.__class__.__name__ == "VisualRelationClassifier":
-                    # VRD/VG dataset
-                    dataset.Y = prob_labels_train.clone().detach().numpy()
+            if self.final_model is not None and (i+1) % self.discr_model_frequency == 0:
+                train_dataset.Y = prob_labels_train.clone().detach()
+                dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
 
-                    dl = DataLoader(dataset, shuffle=True, batch_size=self.batch_size)
-
-                    self.final_model = self.final_model.fit(dl)
-                    preds_train = self.final_model._predict(dl_train)
-                    preds_test = self.final_model._predict(dl_test)
-                else:
-                    # Synthetic dataset
-                    preds_train = self.final_model.fit(features=self.X, 
-                                                       labels=prob_labels_train.detach().numpy()).predict()
-                    preds_test = self.final_model.predict()
+                preds_train = self.final_model.fit(dl_train).predict()
+                preds_test = self.final_model.predict(dl_test)
             else:
                 preds_train = None
                 preds_test = None
@@ -322,17 +304,16 @@ class ActiveWeaSuLPipeline(PlotMixin):
             self.mu_dict = {}
             self.bucket_AL_values = {}
 
-        self.label_model.analyze()
-        self.metrics["Generative_train"][count] = self.label_model.metric_dict
-        self.metrics["Generative_test"][count] = self.label_model._analyze(lm_test, self.y_test)
+        self.metrics["Generative_train"][count] = self.label_model.analyze(self.y_train)
+        self.metrics["Generative_test"][count] = self.label_model.analyze(self.y_test, lm_test)
         self.probs["Generative_train"][count] = lm_train[:, 1].clone().detach().numpy()
         self.probs["Generative_test"][count] = lm_test[:, 1].clone().detach().numpy()
         self.probs["bucket_labels_train"][count] = self.probs["Generative_train"][count][self.unique_idx]
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
         if self.final_model and count % self.discr_model_frequency == 0:
-            self.metrics["Discriminative_train"][count] = self.final_model._analyze(fm_train, self.y_true)
-            self.metrics["Discriminative_test"][count] = self.final_model._analyze(fm_test, self.y_test)
+            self.metrics["Discriminative_train"][count] = self.final_model.analyze(self.y_train, fm_train)
+            self.metrics["Discriminative_test"][count] = self.final_model.analyze(self.y_test, fm_test)
             self.probs["Discriminative_train"][count] = fm_train[:, 1].clone().cpu().detach().numpy()
             self.probs["Discriminative_test"][count] = fm_test[:, 1].clone().cpu().detach().numpy()
 

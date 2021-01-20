@@ -1,36 +1,32 @@
 import numpy as np
 import itertools
-import pandas as pd
 import torch
 import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
-import plotly.graph_objects as go
 
 from performance import PerformanceMixin
 
 
 class LabelModel(PerformanceMixin):
+    """Fit label model using Matrix Completion approach (Ratner et al. 2019).
+    Optionally, add penalty for labeled points (active learning).
+
+    Args:
+        n_epochs (int, optional): Number of epochs
+        lr (float, optional): Learning rate
+        penalty_strength (float, optional): Strength of the active learning penalty
+        active_learning (bool, optional): Add active learning component
+        hide_progress_bar (bool, optional): Hide epoch progress bar
+    """
+
     def __init__(self,
-                 y_true,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
                  active_learning: bool = False,
                  penalty_strength: float = 1e3,
                  hide_progress_bar: bool = False):
-        """Fit label model using Matrix Completion approach (Ratner et al. 2019).
-        Optionally, add penalty for labeled points (active learning).
 
-        Args:
-            y_true (numpy.array): Ground truth labels of training dataset
-            n_epochs (int, optional): Number of epochs
-            lr (float, optional): Learning rate
-            penalty_strength (float, optional): Strength of the active learning penalty
-            active_learning (bool, optional): Add active learning component
-            hide_progress_bar (bool, optional): Hide epoch progress bar
-        """
-
-        self.y_true = y_true
         self.n_epochs = n_epochs
         self.lr = lr
         self.active_learning = active_learning
@@ -80,7 +76,7 @@ class LabelModel(PerformanceMixin):
         if self.active_learning:
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
-            tmp_probs = self._predict(self.label_matrix, tmp_mu, torch.tensor(self.E_S))
+            tmp_probs = self.predict(self.label_matrix, tmp_mu, self.E_S)
             loss += self.loss_prior_knowledge_probs(tmp_probs)
             # if self.last_posteriors is not None:
             #     # print(torch.max((torch.norm(tmp_probs[self.bucket_idx, 1] - torch.Tensor(self.last_posteriors)) - 0.3), 0).values)
@@ -114,21 +110,22 @@ class LabelModel(PerformanceMixin):
 
         return mask
 
-    def get_psi(self):
-
-        return self._get_psi(self.label_matrix, self.cliques, self.nr_wl)
-
-    def _get_psi(self, label_matrix, cliques, nr_wl):
+    def get_psi(self, label_matrix=None, cliques=None, nr_wl=None):
         """Compute psi from given label matrix and cliques
 
         Args:
-            label_matrix ([numpy.array): Array with labeling function outputs on dataset
-            cliques ([type]): [description]
-            nr_wl ([type]): [description]
+            label_matrix (numpy.array): Array with labeling function outputs on dataset
+            cliques (list): List of lists of maximal cliques (column indices of label matrix)
+            nr_wl (int): Number of weak labels
 
         Returns:
-            [type]: [description]
+            numpy.array: Array of indicator variables
+            dict: Mapping from clique to column index in psi
         """
+        if any(v is None for v in (label_matrix, cliques, nr_wl)):
+            label_matrix = self.label_matrix
+            cliques = self.cliques
+            nr_wl = self.nr_wl
 
         psi_list = []
         col_counter = 0
@@ -197,8 +194,8 @@ class LabelModel(PerformanceMixin):
         self.y_set = np.unique(label_matrix)  # array of classes
 
         # Ignore abstain label
-        if self.y_set[0] == -1:
-            self.y_set = self.y_set[1:]
+        if -1 in self.y_set:
+            self.y_set = self.y_set[self.y_set != -1]
 
         self.y_dim = len(self.y_set)  # number of classes
 
@@ -269,18 +266,11 @@ class LabelModel(PerformanceMixin):
 
         return self
 
-    def predict(self):
-        """Predict probabilistic training labels"""
-
-        self.prob_labels_train = self._predict(self.label_matrix, self.mu, torch.tensor(self.E_S))
-
-        return self.prob_labels_train
-
-    def _predict(self, L_matrix, mu, P_Y):
-        """Predict labels for a dataset from given parameters and class balance
+    def predict(self, label_matrix=None, mu=None, P_Y=None, assign_train_labels=False):
+        """Predict probabilistic labels for a dataset from given parameters and class balance
 
         Args:
-            L_matrix (numpy.array): Array with labeling function outputs on dataset
+            label_matrix (numpy.array): Array with labeling function outputs on dataset
             mu (torch.Tensor): Tensor with label model parameters
             P_Y (float): Estimated probability of Y=1 for dataset
 
@@ -288,8 +278,14 @@ class LabelModel(PerformanceMixin):
             torch.Tensor: Tensor with probabilistic labels for given dataset
         """
 
-        N = L_matrix.shape[0]
-        psi, _ = self._get_psi(L_matrix, self.cliques, self.nr_wl)
+        if any(v is None for v in (label_matrix, mu, P_Y)):
+            label_matrix = self.label_matrix
+            mu = self.mu
+            P_Y = self.E_S
+            assign_train_labels = True
+
+        N = label_matrix.shape[0]
+        psi, _ = self.get_psi(label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl)
 
         cliques_joined = self.cliques.copy()
         for i, clique in enumerate(cliques_joined):
@@ -297,7 +293,7 @@ class LabelModel(PerformanceMixin):
         self.max_clique_idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
         clique_sums = torch.zeros((N, len(self.cliques)))
         for i, clique in enumerate(self.cliques):
-            clique_sums[:, i] = torch.Tensor(L_matrix[:, clique] != -1).sum(dim=1) > 0
+            clique_sums[:, i] = torch.Tensor(label_matrix[:, clique] != -1).sum(dim=1) > 0
         n_cliques = clique_sums.sum(dim=1)
 
         # Product of weak label or clique probabilities per data point
@@ -305,13 +301,13 @@ class LabelModel(PerformanceMixin):
         psi_idx = torch.Tensor(psi[:, self.max_clique_idx].T)
         clique_probs = mu[self.max_clique_idx, :] * psi_idx
         clique_probs[psi_idx == 0] = 1
-        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(P_Y ** (n_cliques - 1))
+        P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(torch.tensor(P_Y) ** (n_cliques - 1))
 
         # Mask out data points with abstains in all cliques
         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
-        lambda_combs, lambda_index, lambda_counts = np.unique(L_matrix, axis=0, return_counts=True, return_inverse=True)
+        lambda_combs, lambda_index, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
         new_counts = lambda_counts.copy()
         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
         for i, comb in enumerate(lambda_combs):
@@ -328,44 +324,47 @@ class LabelModel(PerformanceMixin):
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
 
-        labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
+        prob_labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
-        return labels
+        if assign_train_labels:
+            self.preds = prob_labels
 
-    def predict_true(self):
-        """Obtain training labels from optimal label model using ground truth labels"""
+        return prob_labels
 
-        return self._predict(self.label_matrix, self.get_true_mu()[:, 1][:, None], self.y_true)
+    # def predict_true(self):
+    #     """Obtain training labels from optimal label model using ground truth labels"""
 
-    def predict_true_counts(self):
-        """Obtain optimal training labels using ground truth labels"""
+    #     return self.predict(self.label_matrix, self.get_true_mu()[:, 1][:, None], self.y_true.mean())
 
-        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+    # def predict_true_counts(self):
+    #     """Obtain optimal training labels using ground truth labels"""
 
-        P_Y_lambda = np.zeros((self.N, 2))
+    #     lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
-        for i, j in zip([0, 1], [1, 0]):
-            P_Y_lambda[self.y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[self.y_true == i]
-            P_Y_lambda[self.y_true == i, j] = 1 - P_Y_lambda[self.y_true == i, i]
+    #     P_Y_lambda = np.zeros((self.N, 2))
 
-        return torch.Tensor(P_Y_lambda)
+    #     for i, j in zip([0, 1], [1, 0]):
+    #         P_Y_lambda[self.y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[self.y_true == i]
+    #         P_Y_lambda[self.y_true == i, j] = 1 - P_Y_lambda[self.y_true == i, i]
 
-    def get_true_mu(self):
-        """Obtain optimal label model parameters from data and ground truth labels"""
+    #     return torch.Tensor(P_Y_lambda)
 
-        exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
-        for i in range(0, self.y_dim):
-            mean = self.psi[self.y_true == i].sum(axis=0) / self.N
-            exp_mu[:, i] = mean
+    # def get_true_mu(self):
+    #     """Obtain optimal label model parameters from data and ground truth labels"""
 
-        return torch.Tensor(exp_mu)
+    #     exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
+    #     for i in range(0, self.y_dim):
+    #         mean = self.psi[self.y_true == i].sum(axis=0) / self.N
+    #         exp_mu[:, i] = mean
 
-    def get_true_cov_OS(self):
-        """Obtain true covariance between cliques and Y using ground truth labels"""
+    #     return torch.Tensor(exp_mu)
 
-        y_onehot = ((self.y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
-        psi_y = np.concatenate([self.psi, y_onehot], axis=1)
+    # def get_true_cov_OS(self):
+    #     """Obtain true covariance between cliques and Y using ground truth labels"""
 
-        cov_O_S = np.cov(psi_y.T, bias=True)
+    #     y_onehot = ((self.y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
+    #     psi_y = np.concatenate([self.psi, y_onehot], axis=1)
 
-        return cov_O_S[:-self.y_dim, -self.y_dim:]
+    #     cov_O_S = np.cov(psi_y.T, bias=True)
+
+    #     return cov_O_S[:-self.y_dim, -self.y_dim:]

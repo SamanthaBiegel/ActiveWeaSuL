@@ -6,13 +6,11 @@ import torch
 
 from torch.utils.data import Dataset
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision import transforms
-from tqdm import tqdm_notebook as tqdm
 from typing import Tuple, Union
 
-from final_model import LogisticRegression
 from performance import PerformanceMixin
+from discriminative_model import DiscriminativeModel
 
 
 class VisualRelationDataset(Dataset):
@@ -63,45 +61,43 @@ class VisualRelationDataset(Dataset):
             "sub_category": sub_category,
         }
 
-        target = {"label": self.Y[index]}
+        target = self.Y[index]
         return image, target
 
     def __len__(self):
         return len(self.X.loc[:, "source_img"])
 
 
-class VisualRelationClassifier(PerformanceMixin, nn.Module):
-    """Visual Relation Classifier"""
+class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
+    """Visual Relation Classifier.
+    
+    Methods for training and predicting come from DiscriminativeModel base class."""
 
     def __init__(self,
                  pretrained_model,
-                 df,
                  data_path_prefix,
                  soft_labels=True,
                  word_embedding_size=100,
                  n_epochs=1,
                  lr=1e-3,
-                 n_classes=2
-                 ):
+                 n_classes=2):
 
         super().__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_name = "Discriminative Model"
         self.pretrained_model = pretrained_model
-        self.word_embedding_size = word_embedding_size
         self.text_module = WordEmb(emb_path=data_path_prefix + "data/word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
         self.concat_module = FlatConcat().to(self.device)
-        self.soft_labels=soft_labels
-        self.df = df
+        self.soft_labels = soft_labels
         self.n_epochs = n_epochs
         self.lr = lr
-        self.n_classes = n_classes
 
-    def extract_concat_features(self, features):
-        """Extract image features and word embeddings using pretrained models and concatenate"""
+        in_features = self.pretrained_model.fc.in_features
+        self.linear = nn.Linear(in_features * 3 + 2 * word_embedding_size, n_classes).to(self.device)
 
         for param in self.pretrained_model.parameters():
             param.requires_grad = False
+
+    def extract_concat_features(self, features):
+        """Extract image features and word embeddings using pretrained models and concatenate"""
 
         feature_extractor = nn.Sequential(*list(self.pretrained_model.children())[:-1]).to(self.device)
         sub_features = feature_extractor(features["sub_crop"].to(self.device))
@@ -113,93 +109,10 @@ class VisualRelationClassifier(PerformanceMixin, nn.Module):
 
         return concatenated_features
 
-    def cross_entropy_soft_labels(self, predictions, targets):
-        """Implement cross entropy loss for probabilistic labels"""
-
-        y_dim = targets.shape[1]
-        loss = torch.zeros(predictions.shape[0]).to(self.device)
-        for y in range(y_dim):
-            loss_y = F.cross_entropy(predictions, predictions.new_full((predictions.shape[0],), y, dtype=torch.long),
-                                     reduction="none")
-            loss += targets[:, y] * loss_y
-
-        return loss.mean()
-
-    def init_model(self):
-        """Initialize linear module"""
-
-        in_features = self.pretrained_model.fc.in_features
-        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
-
-    def fit(self, train_dataloader):
-        """Train classifier"""
-
-        self.train_dataloader = train_dataloader
-
-        self.init_model()
-        self.train()
-
-        self.losses = []
-        self.counts = 0
-        self.average_losses = []
-
-        if self.soft_labels:
-            loss_f = self.cross_entropy_soft_labels
-        else:
-            loss_f = F.cross_entropy
-
-        # loss_f = self.cross_entropy_soft_labels
-
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-
-        n_batches = len(train_dataloader)
-
-        for epoch in tqdm(range(self.n_epochs), desc="VR Model Epochs"):
-            for i, (batch_features, batch_labels) in enumerate(train_dataloader):
-                optimizer.zero_grad()
-
-                batch_labels = {label: values.to(self.device) for label, values in batch_labels.items()}
-
-                processed_features = self.extract_concat_features(batch_features)
-
-                batch_logits = self.linear(processed_features)
-
-                loss = loss_f(batch_logits, batch_labels["label"])
-
-                loss.backward()
-
-                optimizer.step()
-
-                count = len(batch_labels)
-                self.losses.append(loss * count)
-                self.counts += count
-                self.average_losses.append((sum(self.losses) / self.counts).item())
-
-        return self
-
-    def predict(self):
-        """Predict on the train set"""
-
-        self.preds = self._predict(self.train_dataloader)
-
-        return self.preds
-
-    @torch.no_grad()
-    def _predict(self, dataloader):
-        """Predict on input"""
-
-        self.eval()
-
-        preds = []
-
-        for batch_features, batch_labels in dataloader:
-
-            processed_features = self.extract_concat_features(batch_features)
-
-            logits = self.linear(processed_features)
-            preds.extend(F.softmax(logits, dim=1))
-
-        return torch.stack(preds)
+    def forward(self, x):
+        x_features = self.extract_concat_features(x)
+        outputs = self.linear(x_features)
+        return outputs
 
 
 class WordEmb(nn.Module):

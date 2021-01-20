@@ -33,11 +33,11 @@ from tqdm import tqdm_notebook as tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
 from data import SyntheticData
-from experiments import process_metric_dict, plot_metrics
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict
+from logisticregression import LogisticRegression
 from label_model import LabelModel
 from pipeline import ActiveWeaSuLPipeline
+from plot import plot_probs, plot_train_loss
 # -
 
 # ## Load data
@@ -52,16 +52,20 @@ y_test = np.load("../data/spouse/Y_test_spouse.npy")
 
 # Drop rows with only abstains
 
-all_abstain = (L_train == -1).sum(axis=1) == 9
-L_train = L_train[~all_abstain]
+# +
+# all_abstain = (L_train == -1).sum(axis=1) == 9
+# L_train = L_train[~all_abstain]
 
-all_abstain = (L_dev == -1).sum(axis=1) == 9
-L_dev = L_dev[~all_abstain]
-y_dev = y_dev[~all_abstain]
+# +
+# all_abstain = (L_dev == -1).sum(axis=1) == 9
+# L_dev = L_dev[~all_abstain]
+# y_dev = y_dev[~all_abstain]
 
-all_abstain = (L_test == -1).sum(axis=1) == 9
-L_test = L_test[~all_abstain]
-y_test = y_test[~all_abstain]
+# +
+# all_abstain = (L_test == -1).sum(axis=1) == 9
+# L_test = L_test[~all_abstain]
+# y_test = y_test[~all_abstain]
+# -
 
 L_train_dev = np.concatenate([L_train, L_dev], axis=0)
 y_train_dev = np.concatenate([np.repeat(-1, len(L_train)), y_dev])
@@ -76,10 +80,12 @@ y_train_dev = np.concatenate([np.repeat(-1, len(L_train)), y_dev])
 
 y_dev.mean()
 
-# +
-class_balance = np.array([0.82,0.18])
+y_test.mean()
 
-cliques = [[0],[1],[2],[3],[4],[5],[6],[7],[8]]
+# +
+class_balance = np.array([0.93,0.07])
+
+cliques = [[0],[1,2],[3],[4]]
 # -
 
 # Note: we use the dev set as train set for now
@@ -95,11 +101,13 @@ Y_probs = lm.fit(label_matrix=L_train_dev,
                  class_balance=class_balance).predict()
 
 # Predict on test set
-Y_probs_test = lm._predict(L_test, lm.mu, 0.18)
+Y_probs_test = lm.predict(L_test, lm.mu, 0.07)
 
 # Analyze test set performance
-lm._analyze(Y_probs_test, y_test)
+lm.analyze(y_test, Y_probs_test)
 # -
+
+plot_train_loss(lm.losses)
 
 # ## Active learning pipeline
 
@@ -108,16 +116,17 @@ al_kwargs = {'y_true': y_train_dev,
             }
 
 # +
-it = 10
+it = 30
 # Choose strategy from ["maxkl", "margin", "nashaat"]
 query_strategy = "maxkl"
 
 al = ActiveWeaSuLPipeline(it=it,
-                            **al_kwargs,
+                            n_epochs=200,
                             penalty_strength=1e3,
                             query_strategy=query_strategy)
 
 Y_probs_al = al.run_active_weasul(label_matrix=L_train_dev,
+                                  y_train=y_train_dev,
                                     cliques=cliques,
                                     class_balance=class_balance,
                                     label_matrix_test=L_test,
@@ -126,13 +135,11 @@ Y_probs_al = al.run_active_weasul(label_matrix=L_train_dev,
 
 # ## Analyze results
 
-metric_df = process_metric_dict(al.metrics)
+metric_df = process_metric_dict(al.metrics, strategy_string="maxkl")
 
-plot_metrics(metric_df)
+plot_metrics(metric_df, filter_metrics=["MCC", "F1", "Precision", "Recall"])
 
-
-
-
+metric_df
 
 
 

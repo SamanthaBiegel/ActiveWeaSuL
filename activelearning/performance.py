@@ -5,34 +5,30 @@ import torch
 class PerformanceMixin:
     """Mixin that adds analysis functionality to models for computing performance measures"""
 
-    def analyze(self):
+    def analyze(self, y, preds=None):
         """Get predictions and analyze performance"""
 
-        self.y = self.y_true
+        if preds is None:
+            preds = self.preds
 
-        self.metric_dict = self._analyze(self.prob_labels_train, self.y)
+        predicted_labels = torch.argmax(preds, dim=1).cpu().detach().numpy()
 
-    def _analyze(self, prob_labels, y):
-
-        predicted_labels = torch.argmax(prob_labels, dim=1).cpu().detach().numpy()
-
-        y_set = list(range(prob_labels.shape[1]))
+        y_set = list(range(preds.shape[1]))
         TN, FN, FP, TP = (((predicted_labels == i) & (y == j)).sum() for i in y_set for j in y_set)
 
         return {"MCC": self.MCC(TP, TN, FP, FN),
                 "Precision": self.precision(TP, FP),
                 "Recall": self.recall(TP, FN),
-                "Accuracy": self._accuracy(prob_labels, y),
+                "Accuracy": self.accuracy(y, preds),
                 "F1": self.F1(TP, FP, FN)}
 
-    def accuracy(self):
+    def accuracy(self, y, preds=None):
         """Compute overall accuracy from label predictions"""
 
-        return self._accuracy(self.prob_labels_train, self.y)
+        if preds is None:
+            preds = self.preds
 
-    def _accuracy(self, prob_labels, y):
-
-        return (torch.argmax(prob_labels, dim=1).cpu().detach().numpy() == y).sum() / len(y)
+        return (torch.argmax(preds, dim=1).cpu().detach().numpy() == y).sum() / len(y)
 
     def MCC(self, TP, TN, FP, FN):
         """Matthews correlation coefficient"""
@@ -55,9 +51,3 @@ class PerformanceMixin:
     def F1(self, TP, FP, FN):
 
         return TP / (TP + 0.5*(FP + FN))
-
-    def print_metrics(self):
-        """Pretty print metric dict"""
-
-        for key, value in self.metric_dict.items():
-            print(key, ': ', value)
