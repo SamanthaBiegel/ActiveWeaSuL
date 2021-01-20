@@ -89,9 +89,10 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         self.soft_labels = soft_labels
         self.n_epochs = n_epochs
         self.lr = lr
+        self.word_embedding_size = word_embedding_size
+        self.n_classes = n_classes
 
-        in_features = self.pretrained_model.fc.in_features
-        self.linear = nn.Linear(in_features * 3 + 2 * word_embedding_size, n_classes).to(self.device)
+        self.reset()
 
         for param in self.pretrained_model.parameters():
             param.requires_grad = False
@@ -113,6 +114,10 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         x_features = self.extract_concat_features(x)
         outputs = self.linear(x_features)
         return outputs
+
+    def reset(self):
+        in_features = self.pretrained_model.fc.in_features
+        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
 
 
 class WordEmb(nn.Module):

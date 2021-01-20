@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 
 from active_weasul import ActiveWeaSuLPipeline
-from plot import plot_probs
 
 
 def process_metric_dict(metric_dict, strategy_string, remove_test=False):
@@ -51,33 +51,38 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_test=False):
 
     ax.set_ylabels("")
     ax.set_titles("{col_name}")
-    
+
     plt.show()
 
 
-def active_weasul_experiment(al_it, nr_trials, label_matrix, y_true, cliques,
-                             class_balance, query_strategy, df, final_model=None, label_matrix_test=None, y_test=None, randomness=0):
+def active_weasul_experiment(al_it, nr_trials, label_matrix, y_train, cliques,
+                             class_balance, query_strategy, starting_seed=None, seeds=None, final_model=None, label_matrix_test=None, y_test=None, randomness=0):
 
     al_metrics = {}
+    al_probs = {}
+
+    if seeds is None:
+        seeds = np.random.randint(0, 1000, nr_trials)
 
     for i in tqdm(range(nr_trials), desc="Trials"):
+        seed = seeds[i]
         al = ActiveWeaSuLPipeline(it=al_it,
                                   final_model=final_model,
-                                  y_true=y_true,
                                   query_strategy=query_strategy,
                                   randomness=randomness,
-                                  df=df,
-                                  penalty_strength=1)
+                                  penalty_strength=1,
+                                  starting_seed=starting_seed,
+                                  seed=seed)
 
         _ = al.run_active_weasul(label_matrix=label_matrix,
                                  cliques=cliques,
                                  class_balance=class_balance,
-                                 label_matrix_test=label_matrix_test,
-                                 y_test=y_test)
+                                 y_train=y_train)
 
         al_metrics[i] = al.metrics
+        al_probs[i] = al.probs
 
         plot_metrics(process_metric_dict(al.metrics, "MaxKL", remove_test=True))
-        plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
+        # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
-    return al_metrics
+    return al_metrics, al.queried

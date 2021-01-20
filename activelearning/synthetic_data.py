@@ -21,11 +21,10 @@ class SyntheticDataset(TensorDataset):
 class SyntheticDataGenerator:
     """Generate synthetic dataset"""
     
-    def __init__(self, N, p_z, centroids, seed=456):
+    def __init__(self, N, p_z, centroids):
         self.N = N
         self.p_z = p_z
         self.centroids = centroids
-        np.random.seed(seed)
 
     def sample_y(self):
         y = np.random.binomial(1, self.p_z, self.N)
