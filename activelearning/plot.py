@@ -219,9 +219,9 @@ class PlotMixin:
     def plot_animation(self):
 
         figures = []
-        figures.append(self._plot_animation(self.prob_dict))
+        figures.append(self._plot_animation(self.probs["Generative_train"]))
         if self.final_model:
-            figures.append(self._plot_animation(self.final_prob_dict))
+            figures.append(self._plot_animation(self.probs["Discriminative_train"]))
 
         for fig in figures:
             fig.update_layout(yaxis=dict(scaleanchor="x", scaleratio=1),

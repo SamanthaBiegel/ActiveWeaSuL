@@ -87,7 +87,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             y_test = y_train.copy()
             test_dataset = train_dataset
 
-        self.label_matrix = label_matrix
+        self.label_matrix = label_matrix.copy()
         self.y_train = y_train
         self.y_test = y_test
 
@@ -120,7 +120,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 train_dataset.Y = prob_labels_train.clone().detach()
                 dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
 
-                # self.final_model.reset()
+                self.final_model.reset()
                 preds_train = self.final_model.fit(dl_train).predict()
                 preds_test = self.final_model.predict(dl_test)
             else:

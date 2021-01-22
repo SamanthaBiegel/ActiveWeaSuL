@@ -91,8 +91,7 @@ cliques = [[0],[1,2],[3],[4]]
 # Note: we use the dev set as train set for now
 
 # +
-lm = LabelModel(y_true=y_train_dev,
-                n_epochs=200,
+lm = LabelModel(n_epochs=200,
                 lr=1e-1)
 
 # Fit and predict on train set
@@ -111,10 +110,6 @@ plot_train_loss(lm.losses)
 
 # ## Active learning pipeline
 
-al_kwargs = {'y_true': y_train_dev,
-             'n_epochs': 200
-            }
-
 # +
 it = 30
 # Choose strategy from ["maxkl", "margin", "nashaat"]
@@ -128,9 +123,7 @@ al = ActiveWeaSuLPipeline(it=it,
 Y_probs_al = al.run_active_weasul(label_matrix=L_train_dev,
                                   y_train=y_train_dev,
                                     cliques=cliques,
-                                    class_balance=class_balance,
-                                    label_matrix_test=L_test,
-                                    y_test=y_test)
+                                    class_balance=class_balance)
 # -
 
 # ## Analyze results

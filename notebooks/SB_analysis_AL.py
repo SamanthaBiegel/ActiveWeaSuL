@@ -37,11 +37,13 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict
 # -
 
 pd.options.display.expand_frame_repr = False 
@@ -508,6 +510,8 @@ fm = DiscriminativeModel(df_1, **final_model_kwargs, soft_labels=False)
 probs_final = fm.fit(features=df_1[["x1", "x2"]].values[None, :], labels=np.array(df_1["y"])[None])._predict(torch.Tensor(df[["x1", "x2"]].values))
 fm._analyze(probs_final, df["y"].values)["Accuracy"]
 
+final_model_kwargs
+
 # +
 
 accuracy_dict = {}
@@ -555,6 +559,7 @@ probs_approach_df = pd.read_csv("results/re_marg_random_joined.csv")
 
 probs_approach_df = probs_approach_df[(probs_approach_df["Model"] == "Discriminative") & (probs_approach_df["Strategy"] == "Margin")]
 # probs_approach_df[probs_approach_df["Strategy"] == "Relative Entropy"]
+
 
 
 

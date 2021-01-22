@@ -8,11 +8,11 @@ class SyntheticDataset(TensorDataset):
     """Synthetic Dataset"""
 
     def __init__(self, df: pd.DataFrame, Y: torch.Tensor) -> None:
-        self.X = df.loc[:, ["x1", "x2"]]
+        self.X = torch.Tensor(df.loc[:, ["x1", "x2"]].values)
         self.Y = Y
 
     def __getitem__(self, index: int):
-        return torch.Tensor(self.X.iloc[index]), self.Y[index]
+        return self.X[index], self.Y[index]
 
     def __len__(self):
         return len(self.X)

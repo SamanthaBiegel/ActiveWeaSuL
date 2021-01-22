@@ -11,9 +11,10 @@ class DiscriminativeModel(nn.Module):
     Provides training functionality to a classifier.
     """
 
-    def __init__(self):
+    def __init__(self, hide_progress_bar=False):
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.hide_progress_bar = hide_progress_bar
 
     def cross_entropy_soft_labels(self, predictions, targets):
         """Cross entropy loss for probabilistic labels"""
@@ -45,7 +46,7 @@ class DiscriminativeModel(nn.Module):
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 
-        for epoch in tqdm(range(self.n_epochs), desc="Discriminative Model Epochs"):
+        for epoch in tqdm(range(self.n_epochs), desc="Discriminative Model Epochs", disable=self.hide_progress_bar):
             for i, (batch_features, batch_labels) in enumerate(train_dataloader):
                 optimizer.zero_grad()
 
@@ -58,9 +59,9 @@ class DiscriminativeModel(nn.Module):
                 optimizer.step()
 
                 count = len(batch_labels)
-                self.losses.append(loss * count)
+                self.losses.append((loss * count).clone().item())
                 self.counts += count
-                self.average_losses.append((sum(self.losses) / self.counts).item())
+                self.average_losses.append(sum(self.losses) / self.counts)
 
         return self
 
@@ -79,7 +80,7 @@ class DiscriminativeModel(nn.Module):
 
         preds = []
 
-        for batch_features, batch_labels in dataloader:
+        for batch_features, _ in dataloader:
             batch_logits = self.forward(batch_features)
             preds.extend(F.softmax(batch_logits, dim=1))
 

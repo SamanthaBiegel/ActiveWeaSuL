@@ -39,7 +39,7 @@ class ActiveLearningQuery():
         bucket_margins = self.margin(self.bucket_probs)
         self.bucket_values = bucket_margins
 
-        # Select bucket with highest uncertainty
+        # Select buckets with highest uncertainty
         return np.where(bucket_margins == np.min(bucket_margins[self.is_valid_bucket]))[0]
 
     def nashaat_strategy(self):
@@ -54,7 +54,7 @@ class ActiveLearningQuery():
         
         bucket_margins = self.margin(self.bucket_probs)
 
-        # Select bucket with highest uncertainty and disagreeing weak labels
+        # Select buckets with highest uncertainty and disagreeing weak labels
         return np.where(bucket_margins == np.min(bucket_margins[self.is_valid_bucket & has_conflicts]))[0]
 
     def maxkl_strategy(self):
@@ -91,7 +91,7 @@ class ActiveLearningQuery():
 
         self.bucket_values = rel_entropy
 
-        # Pick bucket
+        # Select buckets with highest KL divergence
         return np.where(rel_entropy == np.max(rel_entropy[self.is_valid_bucket]))[0]
 
     def sample(self, probs):
@@ -110,11 +110,10 @@ class ActiveLearningQuery():
         self.bucket_probs = probs.detach().numpy()[self.unique_idx]
 
         pick = random.uniform(0, 1)
-
-        # Choose random bucket instead of following a specific strategy
         if pick < self.randomness:
+            # Choose random bucket instead of following a specific query strategy
             chosen_bucket = np.random.choice(self.valid_buckets)
         else:
-            chosen_bucket = self.query()
+            chosen_bucket = np.random.choice(self.query())
 
         return random.choice(np.where((self.unique_inverse == chosen_bucket) & self.is_in_pool)[0])

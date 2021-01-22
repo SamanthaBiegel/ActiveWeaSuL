@@ -30,19 +30,19 @@ def process_exp_dict(exp_dict, strategy_string):
     return exp_df
 
 
-def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_test=False):
+def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
-    if not plot_test:
-        metric_df = metric_df[metric_df.Set != "test"]
+    if not plot_train:
+        metric_df = metric_df[metric_df.Set != "train"]
 
     lines = list(metric_df.Strategy.unique())
 
-    colors = ["#368f8b", "#ec7357"][:len(lines)]
+    colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"][:len(lines)]
 
     metric_df = metric_df[metric_df["Metric"].isin(filter_metrics)]
 
     sns.set(style="whitegrid")
-    ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Metric", row="Model",
+    ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Model",
                      kind="line", hue="Strategy", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
 
     show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
@@ -52,11 +52,13 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_test=False):
     ax.set_ylabels("")
     ax.set_titles("{col_name}")
 
-    plt.show()
+    return ax
 
 
-def active_weasul_experiment(al_it, nr_trials, label_matrix, y_train, cliques,
-                             class_balance, query_strategy, starting_seed=None, seeds=None, final_model=None, label_matrix_test=None, y_test=None, randomness=0):
+def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
+                             class_balance, query_strategy, starting_seed=76, seeds=None, penalty_strength=1, batch_size=20,
+                             final_model=None, train_dataset=None, test_dataset=None,
+                             label_matrix_test=None, y_test=None, randomness=0):
 
     al_metrics = {}
     al_probs = {}
@@ -67,22 +69,31 @@ def active_weasul_experiment(al_it, nr_trials, label_matrix, y_train, cliques,
     for i in tqdm(range(nr_trials), desc="Trials"):
         seed = seeds[i]
         al = ActiveWeaSuLPipeline(it=al_it,
-                                  final_model=final_model,
+                                  penalty_strength=penalty_strength,
                                   query_strategy=query_strategy,
                                   randomness=randomness,
-                                  penalty_strength=1,
+                                  final_model=final_model,
+                                  batch_size=batch_size,
                                   starting_seed=starting_seed,
                                   seed=seed)
 
         _ = al.run_active_weasul(label_matrix=label_matrix,
+                                 y_train=y_train,
                                  cliques=cliques,
                                  class_balance=class_balance,
-                                 y_train=y_train)
+                                 train_dataset=train_dataset,
+                                 test_dataset=test_dataset,
+                                 label_matrix_test=label_matrix_test,
+                                 y_test=y_test)
 
         al_metrics[i] = al.metrics
         al_probs[i] = al.probs
 
-        plot_metrics(process_metric_dict(al.metrics, "MaxKL", remove_test=True))
+        # plot_metrics(process_metric_dict(al.metrics, query_strategy, remove_test=True))
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
     return al_metrics, al.queried
+
+
+# def active_learning_experiment():
+

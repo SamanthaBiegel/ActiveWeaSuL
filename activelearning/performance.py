@@ -28,7 +28,7 @@ class PerformanceMixin:
         if preds is None:
             preds = self.preds
 
-        return (torch.argmax(preds, dim=1).cpu().detach().numpy() == y).sum() / len(y)
+        return np.array(torch.argmax(preds, dim=1).cpu().detach().numpy() == y).sum() / len(y)
 
     def MCC(self, TP, TN, FP, FN):
         """Matthews correlation coefficient"""
