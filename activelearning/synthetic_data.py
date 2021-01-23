@@ -17,6 +17,16 @@ class SyntheticDataset(TensorDataset):
     def __len__(self):
         return len(self.X)
 
+    def update(self, features, Y):
+        """Update dataset content
+
+        Args:
+            features (pandas.DataFrame): New dataframe with features as columns
+            Y (torch.Tensor): Tensor with labels
+        """
+        self.X = torch.Tensor(features.values)
+        self.Y = Y
+
 
 class SyntheticDataGenerator:
     """Generate synthetic dataset"""

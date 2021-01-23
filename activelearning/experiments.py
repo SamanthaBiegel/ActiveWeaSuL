@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import torch
 from tqdm import tqdm
 
-from active_weasul import ActiveWeaSuLPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
 
 
 def process_metric_dict(metric_dict, strategy_string, remove_test=False):
@@ -62,6 +63,7 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
 
     al_metrics = {}
     al_probs = {}
+    al_queried = {}
 
     if seeds is None:
         seeds = np.random.randint(0, 1000, nr_trials)
@@ -88,12 +90,48 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
 
         al_metrics[i] = al.metrics
         al_probs[i] = al.probs
+        al_queried[i] = al.queried
 
         # plot_metrics(process_metric_dict(al.metrics, query_strategy, remove_test=True))
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
-    return al_metrics, al.queried
+    return al_metrics, al_queried
 
 
-# def active_learning_experiment():
+def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
 
+    accuracy_dict = {}
+
+    for j in tqdm(range(nr_trials), desc="Trials"):
+        accuracies = []
+        queried = []
+
+        set_seed(seeds[j])
+
+        for i in range(al_it + 1):
+
+            model.reset()
+
+            if i == 0:
+                train_preds = model.predict(dataloader=predict_dataloader)
+                queried.append(torch.argmin(torch.abs(train_preds[:, 1] - train_preds[:, 0])).item())
+                Y = y_train[queried].squeeze()[None]
+    #             plot_probs(df, train_preds).show()
+            else:
+                train_dataset.update(df_1, Y)
+                train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+                train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
+    #             if i < 4:
+    #                 plot_probs(df, train_preds, add_labeled_points=queried).show()
+                queried.append(torch.argmin(torch.abs(train_preds[:, 1] - train_preds[:, 0])).item())
+                Y = y_train[queried]
+
+            df_1 = features.iloc[queried]
+
+            test_preds = model.predict(test_dataloader)
+
+            accuracies.append(model.accuracy(y_test, test_preds))
+
+        accuracy_dict[j] = accuracies
+
+    return accuracy_dict

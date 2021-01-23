@@ -67,6 +67,11 @@ class VisualRelationDataset(Dataset):
     def __len__(self):
         return len(self.X.loc[:, "source_img"])
 
+    def update(self, features, Y):
+        self.X = features.copy()
+        self.X.index = range(len(self.X))
+        self.Y = Y
+
 
 class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
     """Visual Relation Classifier.
@@ -94,11 +99,11 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
 
         self.reset()
 
-        for param in self.pretrained_model.parameters():
-            param.requires_grad = False
-
     def extract_concat_features(self, features):
         """Extract image features and word embeddings using pretrained models and concatenate"""
+
+        for param in self.pretrained_model.parameters():
+            param.requires_grad = False
 
         feature_extractor = nn.Sequential(*list(self.pretrained_model.children())[:-1]).to(self.device)
         sub_features = feature_extractor(features["sub_crop"].to(self.device))

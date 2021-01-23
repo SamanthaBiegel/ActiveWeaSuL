@@ -53,11 +53,13 @@ import sys
 import os
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
 from label_model import LabelModel
-from pipeline import ActiveWeaSuLPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
 from lf_utils import apply_lfs, analyze_lfs
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
@@ -85,9 +87,6 @@ df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_
 
 print("Train Relationships: ", len(df_train))
 print("Test Relationships: ", len(df_test))
-# -
-
-df_train
 
 # +
 # df_test.to_csv("datasets/vrd_test_set.csv", index=False)
@@ -187,12 +186,6 @@ analyze_lfs(L_train, df_train["y"], lfs)
 
 analyze_lfs(L_test, df_test["y"], lfs)
 
-# +
-from snorkel.labeling.analysis import LFAnalysis
-
-LFAnalysis(L_train).lf_summary()
-# -
-
 # # **Initial fit label model**
 
 # +
@@ -207,12 +200,11 @@ cliques=[[0,1],[2,3],[4]]
 
 lm_metrics = {}
 for i in range(1):
-    lm = LabelModel(y_true=df_train.y.values,
-                    n_epochs=500,
+    lm = LabelModel(n_epochs=500,
                     lr=1e-1)
 
     Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
-    lm.analyze(df_train.y.values)
+    print(lm.analyze(df_train.y.values))
 #     lm_metrics[i] = lm.metric_dict
 
 # +
@@ -255,9 +247,7 @@ dataset.Y = Y_probs.clone().detach().numpy()
 dl = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 # -
 
-dl_test.s
 
-dl_test
 
 # +
 al_metrics = {}
@@ -477,200 +467,6 @@ print(vc_al._analyze(probs_final_al_test, df_test["y"].values))
 print(vc_al._analyze(probs_final_al, df_train["y"].values))
 print(vc_al._analyze(probs_final_al_test, df_test["y"].values))
 
-probs_final_al
-
-Y_probs_al
-
-dl.shuffle
-
-plot_train_loss([loss.cpu().detach().numpy() for loss in vc_al.losses])
-
-plot_train_loss(vc_al.average_losses)
-
-
-
-
-
-al.plot_metrics(true_label_counts=False)
-
-
-
-al.plot_iterations()
-
-plot_train_loss(al.label_model.losses, "Epoch", "Label")
-
-# +
-# mean_metrics = pd.DataFrame.from_dict(lm_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
-# mean_metrics["std"] = pd.DataFrame.from_dict(lm_metrics, orient="index").sem().values
-# mean_metrics["Active Learning"] = "before"
-
-# mean_al_metrics = pd.DataFrame.from_dict(al_metrics, orient="index").mean().reset_index().rename(columns={"index": "Metric"})
-# mean_al_metrics["std"] = pd.DataFrame.from_dict(al_metrics, orient="index").sem().values
-# mean_al_metrics["Active Learning"] = "after"
-
-# metrics_joined = pd.concat([mean_metrics, mean_al_metrics])
-
-# +
-# fig = px.bar(metrics_joined, x="Metric", y=0, error_y="std", color="Active Learning", barmode="group", color_discrete_sequence=px.colors.qualitative.Pastel)
-# fig.update_layout(template="plotly_white", yaxis_title="", title_text="Label model performance before and after active learning")
-# fig.show()
-# -
-
-al.plot_true_vs_predicted_posteriors()
-
-# +
-# w_c = df_train.iloc[np.where((al.first_labels != al.df["y"]) & (al.second_labels == al.df["y"]))]
-
-# +
-# c_w = df_train.iloc[np.where((al.first_labels == al.df["y"]) & (al.second_labels != al.df["y"]))]
-# -
-
-lm.get_true_mu()
-
-lf01 = L_train[:,[0,1]]
-_, inv, count = np.unique(lf01, return_counts=True, return_inverse=True, axis=0)
-inv[0]
-
-
-(df_train.y.values[inv == 1] == 0).sum() / lm.N
-
-lf23 = L_train[:,[2,3]]
-_, inv, count = np.unique(lf23, return_counts=True, return_inverse=True, axis=0)
-inv[0]
-
-(df_train.y.values[inv == 0] == 0).sum() / lm.N
-
-lf4 = L_train[:,4]
-_, inv, count = np.unique(lf4, return_counts=True, return_inverse=True, axis=0)
-inv[0]
-
-
-(df_train.y.values[inv == 1] == 0).sum() / lm.N
-
-0.2717391304347826*0.15489130434782608*0.057065217391304345/0.25/0.0571
-
-0.3179347826086957*0.10869565217391304*0.22010869565217392/0.25/0.0571
-
-import scipy
-scipy.stats.binom_test(6,11,0.8)
-
-L_train[0,:]
-
-# +
-lambda_combs, lambda_index, lambda_counts = np.unique(lm.label_matrix, axis=0, return_counts=True, return_inverse=True)
-new_counts = lambda_counts.copy()
-rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
-for i, comb in enumerate(lambda_combs):
-    nr_non_abstain = (comb != -1).sum()
-    if nr_non_abstain < lm.nr_wl:
-        if nr_non_abstain == 0:
-            new_counts[i] = 0
-        else:
-            match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
-            new_counts[i] = lambda_counts[match_rows].sum()
-
-P_lambda = torch.Tensor((new_counts/lm.N)[lambda_index][:, None])
-# -
-
-df_train.iloc[lambda_index == 17]
-
-# +
-# P_lambda[lm.predict_true()[:,1] > 1]
-# -
-
-0.035326086956521736*0.10869565217391304*0.22010869565217392/0.25/0.0054
-
-(0.057065217391304345*0.29347826086956524*0.2717391304347826)/0.25/0.0054
-
-# +
-lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([lm.label_matrix,df_train.y.values[:,None]],axis=1), axis=0, return_counts=True, return_inverse=True)
-
-P_Y_lambda = np.zeros((lm.N, 2))
-
-P_Y_lambda[df_train.y.values == 0, 0] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df_train.y.values == 0]
-P_Y_lambda[df_train.y.values == 0, 1] = 1 - P_Y_lambda[df_train.y.values == 0, 0]
-
-P_Y_lambda[df_train.y.values == 1, 1] = ((lambda_counts/lm.N)[lambda_index]/P_lambda.squeeze())[df_train.y.values == 1]
-P_Y_lambda[df_train.y.values == 1, 0] = 1 - P_Y_lambda[df_train.y.values == 1, 1]                                                               
-# -
-
-P_Y_lambda[0]
-
-lm._analyze(torch.Tensor(P_Y_lambda), df_train.y.values)
-
-lm.print_metrics()
-
-# +
-true_probs = lm.predict_true()[:, 1]
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=P_Y_lambda[:,1], y=true_probs, mode='markers', showlegend=False, marker_color=np.array(px.colors.qualitative.Pastel)[0]))
-fig.add_trace(go.Scatter(x=np.linspace(0, 1, 100), y=np.linspace(0, 1, 100), line=dict(dash="longdash", color=np.array(px.colors.qualitative.Pastel)[1]), showlegend=False))
-
-fig.update_yaxes(range=[0, 1], title_text="True from Junction Tree ")
-fig.update_xaxes(range=[0, 1], title_text="True from P(Y, lambda)")
-fig.update_layout(template="plotly_white", width=1000, height=500)
-fig.show()
-# -
-
-fig = go.Figure(go.Scatter(x=P_lambda.squeeze(), y=np.array(true_probs)-P_Y_lambda[:,1], mode="markers"))
-fig.update_layout(template="plotly_white", xaxis_title="P(lambda)", title_text="Deviation true and junction tree posteriors")
-fig.show()
-
-df_train[lambda_index == 9].y.mean()
-
-lm.predict_true()[13]
-
-(lf0[df_train.y == 1] == 0).sum() / lm.N
-
-(df_train.y[lf0 == 0] == 1).sum() / lm.N
-
-(lf0[df_train.y == 1] == 1).sum() / lm.N
-
-lm.mu
-
-w_c[w_c.y == 0]
-
-w_c[w_c.y == 1]
-
-c_w
-
-al.color_df()
-
-al.plot_metrics()
-
-al.plot_parameters()
-
-al.label_model.get_true_mu()[8:18,1]
-
-lm.cov_O
-
-al.color_cov()
-
-df_train[df_train.y == 1]
-
-lm.metric_dict
-
-lm.metric_dict
-
-al.plot_metrics()
-
-al.plot_parameters([1,3,5,7,9])
-
-
-
-# +
-# al.label_model.get_true_mu()[8:18,1]
-
-# +
-# al.color_cov()
-
-# +
-# pretrained_model = torch.load("../models/resnet.pth")
-
-# +
-# torch.save(pretrained_model, "../models/resnet.pth")
-# -
-
 # # **Train discriminative model on probabilistic labels**
 
 metrics = ["accuracy", "precision", "recall", "f1"]
@@ -752,6 +548,55 @@ al.label_model._analyze(Y_probs, al.y)
 
 
 # ## Active learning
+
+# +
+final_model_kwargs = dict(lr=1e-3,
+                          n_epochs=3)
+
+set_seed(578)
+
+predict_dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=df_train.y.values)
+test_dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
+                      df=df_test,
+                      Y=df_test.y.values)
+
+batch_size = 20
+
+al_exp_kwargs = dict(
+    nr_trials=1,
+    al_it=30,
+    model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix, soft_labels=False),
+    batch_size=batch_size,
+    seeds = np.random.randint(0,1000,10),
+    features = df_train.loc[:, ["subject_category", "object_category", "subject_bbox", "object_bbox", "source_img"]],
+    y_train = df_train.y.values,
+    y_test = df_test.y.values,
+    train_dataset = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", 
+                      df=df_train,
+                      Y=df_train.y.values),
+    predict_dataloader = torch.utils.data.DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
+    test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
+)
+# -
+
+al_accuracies
+
+al_accuracies = active_learning_experiment(**al_exp_kwargs)
+
+# +
+accuracy_df = pd.DataFrame.from_dict(al_accuracies)
+accuracy_df = accuracy_df.stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Value"})
+
+accuracy_df["Metric"] = "Accuracy"
+accuracy_df["Strategy"] = "Active Learning"
+accuracy_df["Model"] = "Discriminative"
+accuracy_df["Set"] = "test"
+accuracy_df["Dash"] = "n"
+# -
+
+plot_metrics(accuracy_df)
 
 random.seed(None)
 df_1 = df_train.iloc[random.sample(range(len(df_train)),2)]

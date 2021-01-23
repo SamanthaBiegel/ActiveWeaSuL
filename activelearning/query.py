@@ -63,6 +63,9 @@ class ActiveLearningQuery():
         Returns:
             list: List of indices of buckets to choose from
         """
+        # TODO: rewrite to update only updated distribution from sampled bucket
+        # Instead of computing everything again every iteration
+
         # Label model distributions
         lm_posteriors = self.bucket_probs.clip(1e-5, 1-1e-5)
 
