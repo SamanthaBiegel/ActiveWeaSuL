@@ -38,11 +38,13 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 # -
 
 N = 10000
@@ -52,11 +54,8 @@ p_z = 0.5
 df = pd.read_csv("../data/synthetic_dataset_3.csv")
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 
-# +
-
 cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
 matplotlib.cm.register_cmap("mycolormap", cmap)
-# -
 
 bp1 = centroids.sum(axis=0)/2
 diff = centroids[1,:]-centroids[0,:]
@@ -120,6 +119,89 @@ plt.yticks(fontsize=20)
 
 plt.savefig("plots/truesyntdata_wl3.png")
 # -
+df = pd.read_csv("../data/synthetic_small.csv")
+
+# +
+colors = ["#368f8b", "#ec7357"]
+
+sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
+
+sns.set_context("paper")
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c=df.y, s=(700), edgecolor="black", cmap=cmap)
+plt.plot(x_dec, y_dec, color="black")
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.show()
+
+# plt.savefig("plots/truelabels.png")
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c="#BBBBBB", s=(700), edgecolor="black", cmap=cmap)
+plt.legend(labels="?", loc="lower right", prop={'size': 30})
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.show()
+# plt.savefig("plots/missinglabels.png")
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c=df.wl1, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
+
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.show()
+# plt.savefig("plots/wl1.png")
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c=df.wl2, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
+
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.show()
+# plt.savefig("plots/wl2.png")
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c=df.wl3, s=(700), edgecolor="black", cmap=cmap)
+
+plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
+plt.xlim(-2.2,1.6)
+plt.ylim(-2.1,3.1)
+plt.xlabel("x1", fontsize=30)
+plt.ylabel("x2", fontsize=30)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.show()
+# plt.savefig("plots/wl3.png")
+# -
+
 
 
 
