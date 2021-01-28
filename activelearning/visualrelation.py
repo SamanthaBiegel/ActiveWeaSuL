@@ -116,8 +116,9 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         return concatenated_features
 
     def forward(self, x):
-        x_features = self.extract_concat_features(x)
-        outputs = self.linear(x_features)
+#         print(x)
+#         x_features = self.extract_concat_features(x)
+        outputs = self.linear(x)
         return outputs
 
     def reset(self):

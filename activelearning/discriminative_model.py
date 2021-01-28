@@ -38,7 +38,7 @@ class DiscriminativeModel(nn.Module):
         self.losses = []
         self.counts = 0
         self.average_losses = []
-
+        
         if self.soft_labels:
             loss_f = self.cross_entropy_soft_labels
         else:
@@ -46,11 +46,14 @@ class DiscriminativeModel(nn.Module):
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 
-        for epoch in tqdm(range(self.n_epochs), desc="Discriminative Model Epochs", disable=self.hide_progress_bar):
-            for i, (batch_features, batch_labels) in enumerate(train_dataloader):
+        for epoch in range(self.n_epochs):
+            for batch_features, batch_labels in train_dataloader:
                 optimizer.zero_grad()
-
+                
+                batch_features = batch_features.to(self.device)
+                
                 batch_logits = self.forward(batch_features)
+                batch_labels = batch_labels.to(self.device)
 
                 loss = loss_f(batch_logits, batch_labels)
 
@@ -80,7 +83,8 @@ class DiscriminativeModel(nn.Module):
 
         preds = []
 
-        for batch_features, _ in dataloader:
+        for batch_features, batch_targets in dataloader:
+            batch_features = batch_features.to(self.device)
             batch_logits = self.forward(batch_features)
             preds.extend(F.softmax(batch_logits, dim=1))
 
