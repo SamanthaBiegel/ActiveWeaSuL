@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.9.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -14,13 +14,13 @@
 # ---
 
 # +
-DAP = False
+DAP = True
     
 if DAP:
     # ! pip install -r ../requirements.txt
-    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
-    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
-    # ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
     path_prefix = "/tmp/"
     import torch
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
@@ -28,6 +28,11 @@ else:
     import torchvision.models as models
     pretrained_model = models.resnet18(pretrained=True)
     path_prefix = "../"
+# -
+
+# !nvcc --version
+
+torch.cuda.is_available()
 
 # +
 # %load_ext autoreload
@@ -51,13 +56,15 @@ import sys
 import os
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
+from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
 from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
-from lm_utils import apply_lfs, analyze_lfs
+from lf_utils import apply_lfs, analyze_lfs
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
 
 # +
@@ -129,9 +136,9 @@ pred_list = ['carrying',
 
 # +
 import ast
-# df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
-df_vis = pd.read_csv("../data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+# df_vis = pd.read_csv("../data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
 # +
 # all_img = list(df_vis.source_img.drop_duplicates())
@@ -225,9 +232,9 @@ def lf_area(x):
         return SITON
     return OTHER
 
-lfs = [lf_area, lf_dist, lf_siton_object]
+lfs = [lf_siton_object, lf_area, lf_dist]
 
-cliques = [[0,1],[2]]
+cliques = [[0],[1,2]]
 # cliques=[[0],[1,2,3],[4]]
 # -
 
@@ -238,17 +245,11 @@ analyze_lfs(L, df_vis["y"], lfs)
 class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 
 # +
-lm = LabelModel(df=df_vis,
-                    active_learning=False,
-                    add_cliques=True,
-                    add_prob_loss=False,
-                    n_epochs=200,
+lm = LabelModel(n_epochs=200,
                     lr=1e-1)
 
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.analyze()
-lm.print_metrics()
-
+lm.analyze(df_vis.y.values)
 # -
 
 
@@ -259,7 +260,7 @@ batch_size=20
 
 import csv
 word_embs = pd.read_csv(
-            path_prefix + "data/word_embeddings/glove.6B.50d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
+            path_prefix + "data/word_embeddings/glove.6B.100d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
         ).T
 word_embs = list(word_embs.columns)
 
@@ -298,15 +299,20 @@ L_train = L_final[train_idx,:]
 L_test = L_final[test_idx,:]
 
 # +
-dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+lm = LabelModel(n_epochs=200,
+                    lr=1e-1)
+
+Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
+lm.analyze(df_train.y.values)
+
+# +
+dataset_test = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
                       df=df_test,
                       Y=df_test["y"].values)
-dl_test = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
-dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
                       df=df_train,
-                      Y=df_train["y"].values)
-dl_train = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+                      Y=Y_probs.detach())
 
 # +
 # lm_metrics = {}
@@ -323,23 +329,197 @@ dl_train = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 #     lm.analyze()
 #     lm.print_metrics()
 #     lm_metrics[i] = lm.metric_dict
+
+# +
+# batch_size=8
+
+# subset_points = random.sample(range(len(df_train)), 30)
+# df_train_subset=df_train.iloc[subset_points]
+# df_train_subset.index = range(len(df_train_subset))
+
+# dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+#                       df=df_train_subset,
+#                       Y=df_train.y.values[subset_points])
+
+
+
+# dl_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size)
+# dl_test = DataLoader(dataset_test, shuffle=False, batch_size=batch_size)
+
+# final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
+
+# final_model.reset()
+# final_model.fit(dl_train)
+# preds_test = final_model.predict(dl_test)
+
+# +
+# final_model.analyze(df_test.y.values, preds_test)
+
+# +
+# plot_train_loss(final_model.average_losses)
+
+# +
+dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_train,
+                      Y=df_train.y.values)
+
+dl_train = DataLoader(dataset_train, shuffle=False, batch_size=256)
+
+final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
+
+feature_tensor_train = torch.Tensor([])
+
+for batch_features, batch_labels in dl_train:
+    feature_tensor_train = torch.cat((feature_tensor_train, final_model.extract_concat_features(batch_features).to("cpu")))
+
+# +
+dataset_test = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+                      df=df_test,
+                      Y=df_test.y.values)
+
+dl_test = DataLoader(dataset_test, shuffle=False, batch_size=256)
+
+final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
+
+feature_tensor_test = torch.Tensor([])
+
+for batch_features, batch_labels in dl_test:
+    feature_tensor_test = torch.cat((feature_tensor_test, final_model.extract_concat_features(batch_features).to("cpu")))
+
+# +
+from torch.utils.data import TensorDataset
+
+class CustomTensorDataset(TensorDataset):
+    """Custom Tensor Dataset"""
+
+    def __init__(self, X: torch.Tensor, Y: torch.Tensor) -> None:
+        self.X = X
+        self.Y = Y
+
+    def __getitem__(self, index: int):
+        return self.X[index], self.Y[index]
+
+    def __len__(self):
+        return len(self.X)
+
+    def update(self, X, Y):
+        """Update dataset content
+
+        Args:
+            X (torch.Tensor): Tensor with features (columns)
+            Y (torch.Tensor): Tensor with labels
+        """
+        self.X = X.clone()
+        self.Y = Y
+
+
 # -
 
-df_train["y"].mean()
+dataset_train = CustomTensorDataset(feature_tensor_train, torch.Tensor(df_train.y.values))
 
-al_kwargs = {'add_prob_loss': False,
-             'add_cliques': True,
-             'active_learning': "probs",
-             'df': df_train,
-             'n_epochs': 200,
-             'batch_size': 32,
-             'lr': 1e-1
-            }
+dataset_predict = CustomTensorDataset(feature_tensor_train, torch.Tensor(df_train.y.values))
 
-dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_vis_final,
-                      Y=df_vis_final["y"].values)
-dl = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+dataset_test = CustomTensorDataset(feature_tensor, torch.Tensor(df_test.y.values))
+
+exp_kwargs = dict(nr_trials=1,
+                  al_it=30,
+                  label_matrix=L_train,
+                  y_train=df_train.y.values,
+                  cliques=cliques,
+                  class_balance=class_balance,
+                  starting_seed=243, 
+                  penalty_strength=1, 
+                  batch_size=128,
+                  discr_model_frequency=5,
+                  final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix),
+                  train_dataset=dataset_train,
+                  test_dataset=dataset_test,
+                  label_matrix_test=L_test,
+                  y_test=df_test.y.values
+                  )
+
+np.random.seed(543)
+exp_kwargs["seeds"] = np.random.randint(0,1000,10)
+metrics_maxkl, queried_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
+
+import pickle
+with open("paper_results/vg_maxkl_3.pkl", "wb") as f:
+    pickle.dump(metrics_maxkl, f)
+
+np.random.seed(543)
+exp_kwargs["seeds"] = np.random.randint(0,1000,10)[2:]
+metrics_maxkl, queried_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
+
+import pickle
+with open("paper_results/vg_maxkl_4.pkl", "wb") as f:
+    pickle.dump(metrics_maxkl, f)
+
+# +
+final_model_kwargs = dict(lr=1e-3,
+                          n_epochs=3)
+
+set_seed(578)
+
+# test_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+#                       df=df_test,
+#                       Y=df_test.y.values)
+
+# train_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+#                       df=df_train,
+#                       Y=df_train.y.values)
+
+# predict_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
+#                       df=df_train,
+#                       Y=df_train.y.values)
+
+batch_size = 8
+
+features = dataset_train.X.clone()
+
+al_exp_kwargs = dict(
+    nr_trials=1,
+    al_it=200,
+    model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix, soft_labels=False),
+    batch_size=batch_size,
+    seeds = np.random.randint(0,1000,10),
+    features = features,
+    y_train = df_train.y.values,
+    y_test = df_test.y.values,
+    train_dataset = dataset_train,
+    predict_dataloader = torch.utils.data.DataLoader(dataset=dataset_predict, batch_size=256, shuffle=False),
+    test_dataloader = torch.utils.data.DataLoader(dataset=dataset_test, batch_size=256, shuffle=False),
+)
+# -
+
+al_accuracies = active_learning_experiment(**al_exp_kwargs)
+
+# +
+# with open("paper_results/vg_activelearning.pkl", "wb") as f:
+#     pickle.dump(al_accuracies, f)
+# -
+
+with open("paper_results/vg_activelearning_2.pkl", "rb") as f:
+    al_accuracies = pickle.load(f)
+
+# +
+accuracy_df = pd.DataFrame.from_dict(al_accuracies[0])
+accuracy_df = accuracy_df.stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Value"})
+
+accuracy_df["Metric"] = "Accuracy"
+accuracy_df["Strategy"] = "Active Learning"
+accuracy_df["Model"] = "Discriminative"
+accuracy_df["Set"] = "test"
+accuracy_df["Dash"] = "n"
+# -
+
+plot_metrics(accuracy_df)
+
+with open("paper_results/vg_maxkl.pkl", "rb") as f:
+    al_metrics_maxkl = pickle.load(f)
+
+plot_metrics(process_exp_dict(metrics_maxkl, "Active WeaSuL"))
+
+
 
 # +
 n_epochs = 3

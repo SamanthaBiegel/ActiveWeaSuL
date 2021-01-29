@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import random
 import seaborn as sns
 import torch
 from tqdm import tqdm
@@ -57,7 +58,8 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
 
 def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
-                             class_balance, query_strategy, starting_seed=76, seeds=None, penalty_strength=1, batch_size=20,
+                             class_balance, query_strategy, starting_seed=76, seeds=None, 
+                             discr_model_frequency=1, penalty_strength=1, batch_size=20,
                              final_model=None, train_dataset=None, test_dataset=None,
                              label_matrix_test=None, y_test=None, randomness=0):
 
@@ -77,7 +79,8 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
                                   final_model=final_model,
                                   batch_size=batch_size,
                                   starting_seed=starting_seed,
-                                  seed=seed)
+                                  seed=seed,
+                                  discr_model_frequency=discr_model_frequency)
 
         _ = al.run_active_weasul(label_matrix=label_matrix,
                                  y_train=y_train,
@@ -98,40 +101,53 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
     return al_metrics, al_queried
 
 
+def query_margin(preds, is_in_pool):
+    margin = torch.abs(preds[:,1] - preds[:,0])
+    minimum = torch.min(margin[is_in_pool]).item()
+    chosen_points = torch.where((margin == minimum) & (is_in_pool))[0]
+    point_idx = torch.randint(0,len(chosen_points), (1,1))
+    point = chosen_points[point_idx].item()
+    is_in_pool[point] = False
+    return point, is_in_pool
+    
+
+
 def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     accuracy_dict = {}
 
     for j in tqdm(range(nr_trials), desc="Trials"):
         accuracies = []
         queried = []
+        
+        is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
 
         set_seed(seeds[j])
+        
+        while (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
+            queried.append(random.sample(range(len(y_train)), 1)[0])
+            accuracies.append(0.5)
 
-        for i in range(al_it + 1):
+        for i in tqdm(range(len(queried), al_it + 1)):
 
-            model.reset()
+#             model.reset()
+            
+            Y = torch.Tensor(y_train[queried])
 
-            if i == 0:
-                train_preds = model.predict(dataloader=predict_dataloader)
-                queried.append(torch.argmin(torch.abs(train_preds[:, 1] - train_preds[:, 0])).item())
-                Y = y_train[queried].squeeze()[None]
-    #             plot_probs(df, train_preds).show()
-            else:
-                train_dataset.update(df_1, Y)
-                train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-                train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
-    #             if i < 4:
-    #                 plot_probs(df, train_preds, add_labeled_points=queried).show()
-                queried.append(torch.argmin(torch.abs(train_preds[:, 1] - train_preds[:, 0])).item())
-                Y = y_train[queried]
+            feature_subset = torch.Tensor(features[queried, :])
 
-            df_1 = features.iloc[queried]
-
+            train_dataset.update(feature_subset, Y)
+            train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+            train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
+            query, is_in_pool = query_margin(train_preds, is_in_pool)
+            queried.append(query)
+            
             test_preds = model.predict(test_dataloader)
 
             accuracies.append(model.accuracy(y_test, test_preds))
 
         accuracy_dict[j] = accuracies
 
-    return accuracy_dict
+    return accuracy_dict, queried
