@@ -18,9 +18,9 @@ DAP = True
     
 if DAP:
     # ! pip install -r ../requirements.txt
-# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
-# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
-# #     ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
+    # ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+    # ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    # ! aws s3 cp s3://user/gc03ye/uploads /tmp/data/visual_genome/VG_100K --recursive --exclude "glove/*" --exclude "resnet_old.pth" --exclude "resnet.pth" --exclude "siton_dataset.csv" --exclude "train.zip" --exclude "VRD*"
     path_prefix = "/tmp/"
     import torch
     pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
@@ -30,19 +30,20 @@ else:
     path_prefix = "../"
 # -
 
-# !nvcc --version
-
 torch.cuda.is_available()
 
 # +
 # %load_ext autoreload
 # %autoreload 2
 
+import ast
+import csv
 import json
 import numpy as np
 import random
 import time
 import pandas as pd
+import pickle
 
 import matplotlib.pyplot as plt
 import plotly.express as px
@@ -66,139 +67,15 @@ from plot import plot_probs, plot_train_loss
 from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
 from lf_utils import apply_lfs, analyze_lfs
 from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
-
-# +
-# with open(path_prefix + '/data/visual_genome/relationships.json') as f:
-#   visgen_rels = json.load(f)
 # -
 
-pred_list = ['carrying',
- 'covered in',
- 'covering',
- 'eating',
- 'flying in',
- 'growing on',
- 'hanging from',
- 'lying on',
- 'mounted on',
- 'painted on',
- 'parked on',
- 'playing',
- 'riding',
- 'says',
- 'sitting on',
- 'standing on',
- 'using',
- 'walking in',
- 'walking on',
- 'watching',
- 'wearing']
+if DAP:
+    df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
+else:
+    df_vis = pd.read_csv("../data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
 
 # +
-# visgen_df = pd.json_normalize(visgen_rels, record_path=["relationships"], meta="image_id", sep="_")
-# visgen_df["predicate"] = visgen_df["predicate"].str.lower()
-# visgen_df_actions = visgen_df[visgen_df["predicate"].isin(pred_list)]
-# visgen_df_actions.to_csv(path_prefix + "data/action_dataset.csv", index=False)
-
-# +
-# pred_action = "sitting on"
-
-# +
-# visgen_df_actions = pd.read_csv(path_prefix + "data/action_dataset.csv")
-
-# +
-# visgen_df_actions["y"] = visgen_df_actions["predicate"]
-# visgen_df_actions["y"] = visgen_df_actions["y"].apply(lambda x: 1 if x == pred_action else 0)
-# df_vis = visgen_df_actions.loc[:,["image_id", "predicate", "object_name", "object_h", "object_w", "object_y", "object_x", "subject_name", "subject_h", "subject_w", "subject_y", "subject_x", "y"]]
-# df_vis = df_vis.dropna()
-# df_vis = df_drop_duplicates(df_vis)
-# # df_vis = balance_dataset(df_vis)
-
-# +
-# df_vis["object_x_max"] = df_vis["object_x"] + df_vis["object_w"]
-# df_vis["object_y_max"] = df_vis["object_y"] + df_vis["object_h"]
-# df_vis["subject_x_max"] = df_vis["subject_x"] + df_vis["subject_w"]
-# df_vis["subject_y_max"] = df_vis["subject_y"] + df_vis["subject_h"]
-
-# df_vis["object_bbox"] = tuple(df_vis[["object_y", "object_y_max", "object_x", "object_x_max"]].values)
-# df_vis["subject_bbox"] = tuple(df_vis[["subject_y", "subject_y_max", "subject_x", "subject_x_max"]].values)
-
-# df_vis = df_vis.rename(columns={"object_name": "object_category", "subject_name": "subject_category", "image_id": "source_img"})
-
-# df_vis.source_img = df_vis.source_img.astype(str) + ".jpg"
-
-# +
-# from PIL import Image
-# df_vis["channels"] = df_vis["source_img"].apply(lambda x: len(np.array(Image.open(path_prefix + "data/visual_genome/VG_100K" + "/" + x)).shape))
-
-# +
-# df_vis.to_csv(path_prefix + "data/siton_dataset.csv", index=False)
-
-# +
-import ast
-df_vis = pd.read_csv("../../../s3_home/uploads/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
-
-# df_vis = pd.read_csv("../data/siton_dataset.csv", converters={"object_bbox": ast.literal_eval, "subject_bbox": ast.literal_eval})
-
-# +
-# all_img = list(df_vis.source_img.drop_duplicates())
-
-# +
-# [img for img in all_img if img not in files]
-
-# +
-# with open("image_files.txt", "r") as f:
-#     files = f.readlines()
-#     image_files = [file.strip() for file in files]
-    
-# subset_images = list(df_vis["source_img"].drop_duplicates())
-# missing_images = [image for image in subset_images if image not in image_files]
-# len(missing_images)
-
-# +
-# for image in missing_images:
-# #     ! cp ../data/visual_genome/VG_100K/$image ../data/visual_genome/missing_VG/$image
-
-# +
-# predicate_counts = visgen_df.groupby("predicate")["image_id"].count().sort_values(ascending=False)
-# predicate_counts[predicate_counts > 1000]
-
-# +
-# pd.set_option('display.max_rows',102)
-# pd.DataFrame(df_train.groupby("y")["source_img"].count())
-# -
-
 OTHER = 0
-
-# +
-# WEAR = 1
-
-# def lf_wear_object(x):
-#     if x.subject_name == "person":
-#         if x.object_name in ["t-shirt", "jeans", "glasses", "skirt", "pants", "shorts", "dress", "shoes"]:
-#             return WEAR
-#     return OTHER
-
-# def lf_area(x):
-#     if (x.subject_w * x.subject_h) / (x.object_w * x.object_h) > 1:
-#         return WEAR
-#     return OTHER
-
-# def lf_dist(x):
-#     if ((x.subject_x - x.object_x) + (x.subject_y - x.object_y)) > 10:
-#         return OTHER
-#     return WEAR
-
-# def lf_ydist(x):
-#     if x.subject_y_max > x.object_y_max and x.subject_y < x.object_y:
-#         return WEAR
-#     return OTHER
-
-# lfs = [lf_wear_object, lf_dist, lf_area]
-
-# cliques=[[0],[1,2]]
-
-# +
 SITON = 1
 
 def lf_siton_object(x):
@@ -232,9 +109,9 @@ def lf_area(x):
         return SITON
     return OTHER
 
-lfs = [lf_siton_object, lf_area, lf_dist]
+lfs = [lf_siton_object, lf_not_person, lf_area, lf_dist, lf_ydist]
 
-cliques = [[0],[1,2]]
+cliques = [[0,1],[2],[3],[4]]
 # cliques=[[0],[1,2,3],[4]]
 # -
 
@@ -248,87 +125,13 @@ class_balance = np.array([1-df_vis.y.mean(), df_vis.y.mean()])
 lm = LabelModel(n_epochs=200,
                     lr=1e-1)
 
-Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
-lm.analyze(df_vis.y.values)
-# -
-
-
-train_on = "probs" # probs or labels
-n_epochs = 3
-lr = 1e-3
-batch_size=20
-
-import csv
-word_embs = pd.read_csv(
-            path_prefix + "data/word_embeddings/glove.6B.100d.txt", sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE
-        ).T
-word_embs = list(word_embs.columns)
-
-# +
-# n_epochs = 3
-# lr=1e-2
-# batch_size = 64
-
-valid_embeddings = (df_vis["channels"] == 3) & df_vis.object_category.isin(word_embs) & df_vis.subject_category.isin(word_embs) & ~df_vis["object_category"].str.contains(" ") & ~df_vis["subject_category"].str.contains(" ")
-
-df_vis_final = df_vis[valid_embeddings]
-df_vis_final.index = list(range(len(df_vis_final)))
-
-# +
-# torch.norm(torch.Tensor(al.unique_prob_dict[3]) - torch.Tensor(al.unique_prob_dict[2]))
-
-# +
-# al.unique_prob_dict[1]
-# -
-L_final = L[valid_embeddings]
-
-np.random.seed(633)
-indices_shuffle = np.random.permutation(df_vis_final.shape[0])
-
-
-# +
-split_nr = int(np.ceil(0.9*df_vis_final.shape[0]))
-train_idx, test_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
-
-df_train = df_vis_final.iloc[train_idx]
-df_test = df_vis_final.iloc[test_idx]
-df_train.index = list(range(len(df_train)))
-df_test.index = list(range(len(df_test)))
-
-L_train = L_final[train_idx,:]
-L_test = L_final[test_idx,:]
-
-# +
-lm = LabelModel(n_epochs=200,
-                    lr=1e-1)
-
 Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
 lm.analyze(df_train.y.values)
+# -
 
-# +
-dataset_test = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_test,
-                      Y=df_test["y"].values)
+true_probs = lm.predict_true(df_train.y.values)
 
-dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_train,
-                      Y=Y_probs.detach())
-
-# +
-# lm_metrics = {}
-# for i in range(20):
-    
-#     lm = LabelModel(df=df_train,
-#                         active_learning=False,
-#                         add_cliques=True,
-#                         add_prob_loss=False,
-#                         n_epochs=200,
-#                         lr=1e-1)
-
-#     Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_balance).predict()
-#     lm.analyze()
-#     lm.print_metrics()
-#     lm_metrics[i] = lm.metric_dict
+lm.analyze(df_train.y.values, true_probs)
 
 # +
 # batch_size=8
@@ -341,22 +144,26 @@ dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genom
 #                       df=df_train_subset,
 #                       Y=df_train.y.values[subset_points])
 
+batch_size=20
 
+dataset_train.Y = true_probs
 
-# dl_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size)
-# dl_test = DataLoader(dataset_test, shuffle=False, batch_size=batch_size)
+dl_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size)
+dl_test = DataLoader(dataset_test, shuffle=False, batch_size=batch_size)
 
-# final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
+final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=5, data_path_prefix=path_prefix, soft_labels=True)
 
-# final_model.reset()
-# final_model.fit(dl_train)
-# preds_test = final_model.predict(dl_test)
+final_model.reset()
+final_model.fit(dl_train)
+preds_test = final_model.predict(dl_test)
+preds_train = final_model.predict()
+# -
 
-# +
-# final_model.analyze(df_test.y.values, preds_test)
+plot_train_loss(final_model.average_losses)
 
-# +
-# plot_train_loss(final_model.average_losses)
+final_model.analyze(df_train.y.values, preds_train)
+
+final_model.analyze(df_test.y.values, preds_test)
 
 # +
 dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
@@ -409,7 +216,7 @@ class CustomTensorDataset(TensorDataset):
             X (torch.Tensor): Tensor with features (columns)
             Y (torch.Tensor): Tensor with labels
         """
-        self.X = X.clone()
+        self.X = X
         self.Y = Y
 
 
@@ -419,7 +226,7 @@ dataset_train = CustomTensorDataset(feature_tensor_train, torch.Tensor(df_train.
 
 dataset_predict = CustomTensorDataset(feature_tensor_train, torch.Tensor(df_train.y.values))
 
-dataset_test = CustomTensorDataset(feature_tensor, torch.Tensor(df_test.y.values))
+dataset_test = CustomTensorDataset(feature_tensor_test, torch.Tensor(df_test.y.values))
 
 exp_kwargs = dict(nr_trials=1,
                   al_it=30,
@@ -428,11 +235,11 @@ exp_kwargs = dict(nr_trials=1,
                   cliques=cliques,
                   class_balance=class_balance,
                   starting_seed=243, 
-                  penalty_strength=1, 
+                  penalty_strength=1e3, 
                   batch_size=128,
-                  discr_model_frequency=5,
-                  final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix),
-                  train_dataset=dataset_train,
+                  discr_model_frequency=1,
+                  final_model=VisualRelationClassifier(pretrained_model, lr=1e-4, n_epochs=10, data_path_prefix=path_prefix),
+                  train_dataset=dataset_predict,
                   test_dataset=dataset_test,
                   label_matrix_test=L_test,
                   y_test=df_test.y.values
@@ -446,39 +253,19 @@ import pickle
 with open("paper_results/vg_maxkl_3.pkl", "wb") as f:
     pickle.dump(metrics_maxkl, f)
 
-np.random.seed(543)
-exp_kwargs["seeds"] = np.random.randint(0,1000,10)[2:]
-metrics_maxkl, queried_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
-
-import pickle
-with open("paper_results/vg_maxkl_4.pkl", "wb") as f:
-    pickle.dump(metrics_maxkl, f)
-
 # +
-final_model_kwargs = dict(lr=1e-3,
+final_model_kwargs = dict(lr=1e-2,
                           n_epochs=3)
 
 set_seed(578)
 
-# test_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-#                       df=df_test,
-#                       Y=df_test.y.values)
+batch_size = 64
 
-# train_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-#                       df=df_train,
-#                       Y=df_train.y.values)
-
-# predict_dataset = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-#                       df=df_train,
-#                       Y=df_train.y.values)
-
-batch_size = 8
-
-features = dataset_train.X.clone()
+features = dataset_predict.X.clone()
 
 al_exp_kwargs = dict(
-    nr_trials=1,
-    al_it=200,
+    nr_trials=6,
+    al_it=50,
     model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix, soft_labels=False),
     batch_size=batch_size,
     seeds = np.random.randint(0,1000,10),
@@ -493,12 +280,10 @@ al_exp_kwargs = dict(
 
 al_accuracies = active_learning_experiment(**al_exp_kwargs)
 
-# +
-# with open("paper_results/vg_activelearning.pkl", "wb") as f:
-#     pickle.dump(al_accuracies, f)
-# -
+with open("paper_results/vg_activelearning.pkl", "wb") as f:
+    pickle.dump(al_accuracies, f)
 
-with open("paper_results/vg_activelearning_2.pkl", "rb") as f:
+with open("paper_results/vg_activelearning.pkl", "rb") as f:
     al_accuracies = pickle.load(f)
 
 # +

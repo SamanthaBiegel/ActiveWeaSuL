@@ -130,11 +130,11 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
             queried.append(random.sample(range(len(y_train)), 1)[0])
             accuracies.append(0.5)
 
-        for i in tqdm(range(len(queried), al_it + 1)):
+        for i in range(len(queried), al_it + 1):
 
 #             model.reset()
             
-            Y = torch.Tensor(y_train[queried])
+            Y = torch.LongTensor(y_train[queried])
 
             feature_subset = torch.Tensor(features[queried, :])
 
