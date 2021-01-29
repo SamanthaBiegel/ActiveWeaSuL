@@ -2,7 +2,7 @@ import numpy as np
 import os
 import random
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm_notebook as tqdm
 
 from label_model import LabelModel
@@ -192,3 +192,27 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 self.bucket_AL_values[count] = self.bucket_values
 
         return self
+
+
+class CustomTensorDataset(TensorDataset):
+    """Custom Tensor Dataset"""
+
+    def __init__(self, X: torch.Tensor, Y: torch.Tensor) -> None:
+        self.X = X
+        self.Y = Y
+
+    def __getitem__(self, index: int):
+        return self.X[index], self.Y[index]
+
+    def __len__(self):
+        return len(self.X)
+
+    def update(self, X, Y):
+        """Update dataset content
+
+        Args:
+            X (torch.Tensor): Tensor with features (columns)
+            Y (torch.Tensor): Tensor with labels
+        """
+        self.X = X
+        self.Y = Y

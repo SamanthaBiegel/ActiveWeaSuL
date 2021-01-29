@@ -200,30 +200,6 @@ plt.yticks([], [])
 np.unique(Y_probs.detach().numpy(), axis=0)
 
 # +
-# colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
-# colors = ["#368F8B", "#3EA39E", "#43B1AC", "#F1937E", "#EF846C", "#EC7357"]
-colors = ["#368F8B", "#43B1AC", "#5CC1BC", "#F5B2A3", "#F1937E", "#EC7357"]
-
-sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=6), rc={'figure.figsize':(15,15)})
-
-g = sns.scatterplot(x=df_big.x1, y=df_big.x2, hue=lm.predict_true().detach().numpy()[:,1], s=(700), edgecolor="black",
-                    palette=sns.color_palette("mycolormap", n_colors=6))
-plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
-plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
-plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
-g.set(yticks=[], xticks=[])
-handles,labels = g.axes.get_legend_handles_labels()
-labels=["0-0-0", "0-1-0", "1-0-0", "0-1-1", "1-1-0", "1-1-1"]
-plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-
-plt.show()
-fig = g.get_figure()
-fig.savefig("plots/configurations.png")
-# +
 colors = ["#368f8b", "#ec7357"]
 
 norm = plt.Normalize(0, 1)

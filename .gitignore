@@ -1,7 +1,9 @@
 *.ipynb
 *__pycache__
-**/data/*
-!**data/spouse/
+**/data/visual_genome/VG_100K/*
+**/data/visual_genome/subset_VG/*
+**/data/VRD/*
+**/data/word_embeddings/*
 *.pkl
 **/checkpoint/
 *.ipynb_checkpoints/
@@ -15,6 +17,4 @@ connect-s3.sh
 .Rhistory
 *core*
 *models/
-notebooks/results/cov_probs_3.pickle
-notebooks/results/cov_probs_2.pickle
-notebooks/results/cov_probs.pickle
+*.json

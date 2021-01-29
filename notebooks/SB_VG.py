@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.9.1
+#       jupytext_version: 1.6.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -57,12 +57,12 @@ import sys
 import os
 
 sys.path.append(os.path.abspath("../activelearning"))
-from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from synthetic_data import SyntheticDataGenerator
 from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from active_weasul import ActiveWeaSuLPipeline, set_seed
+from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
 from plot import plot_probs, plot_train_loss
 from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
 from lf_utils import apply_lfs, analyze_lfs
@@ -129,6 +129,7 @@ Y_probs = lm.fit(label_matrix=L_train, cliques=cliques, class_balance=class_bala
 lm.analyze(df_train.y.values)
 # -
 
+
 true_probs = lm.predict_true(df_train.y.values)
 
 lm.analyze(df_train.y.values, true_probs)
@@ -162,65 +163,7 @@ preds_train = final_model.predict()
 plot_train_loss(final_model.average_losses)
 
 final_model.analyze(df_train.y.values, preds_train)
-
 final_model.analyze(df_test.y.values, preds_test)
-
-# +
-dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_train,
-                      Y=df_train.y.values)
-
-dl_train = DataLoader(dataset_train, shuffle=False, batch_size=256)
-
-final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
-
-feature_tensor_train = torch.Tensor([])
-
-for batch_features, batch_labels in dl_train:
-    feature_tensor_train = torch.cat((feature_tensor_train, final_model.extract_concat_features(batch_features).to("cpu")))
-
-# +
-dataset_test = VisualRelationDataset(image_dir=path_prefix + "data/visual_genome/VG_100K", 
-                      df=df_test,
-                      Y=df_test.y.values)
-
-dl_test = DataLoader(dataset_test, shuffle=False, batch_size=256)
-
-final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
-
-feature_tensor_test = torch.Tensor([])
-
-for batch_features, batch_labels in dl_test:
-    feature_tensor_test = torch.cat((feature_tensor_test, final_model.extract_concat_features(batch_features).to("cpu")))
-
-# +
-from torch.utils.data import TensorDataset
-
-class CustomTensorDataset(TensorDataset):
-    """Custom Tensor Dataset"""
-
-    def __init__(self, X: torch.Tensor, Y: torch.Tensor) -> None:
-        self.X = X
-        self.Y = Y
-
-    def __getitem__(self, index: int):
-        return self.X[index], self.Y[index]
-
-    def __len__(self):
-        return len(self.X)
-
-    def update(self, X, Y):
-        """Update dataset content
-
-        Args:
-            X (torch.Tensor): Tensor with features (columns)
-            Y (torch.Tensor): Tensor with labels
-        """
-        self.X = X
-        self.Y = Y
-
-
-# -
 
 dataset_train = CustomTensorDataset(feature_tensor_train, torch.Tensor(df_train.y.values))
 

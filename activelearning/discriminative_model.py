@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from tqdm import tqdm_notebook as tqdm
 
 
 class DiscriminativeModel(nn.Module):

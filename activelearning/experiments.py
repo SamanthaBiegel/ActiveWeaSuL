@@ -17,7 +17,7 @@ def process_metric_dict(metric_dict, strategy_string, remove_test=False):
     )
 
     metric_df[["Model", "Set"]] = metric_df["Model"].str.split("_", expand=True)
-    metric_df["Strategy"] = strategy_string
+    metric_df["Approach"] = strategy_string
 
     if remove_test:
         metric_df = metric_df[metric_df["Set"] != "test"]
@@ -54,7 +54,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
     ax.set_ylabels("")
     ax.set_titles("{col_name}")
 
-    return ax
+    # return ax
 
 
 def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
@@ -78,9 +78,9 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
                                   randomness=randomness,
                                   final_model=final_model,
                                   batch_size=batch_size,
+                                  discr_model_frequency=discr_model_frequency,
                                   starting_seed=starting_seed,
-                                  seed=seed,
-                                  discr_model_frequency=discr_model_frequency)
+                                  seed=seed)
 
         _ = al.run_active_weasul(label_matrix=label_matrix,
                                  y_train=y_train,
@@ -95,7 +95,8 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
         al_probs[i] = al.probs
         al_queried[i] = al.queried
 
-        # plot_metrics(process_metric_dict(al.metrics, query_strategy, remove_test=True))
+        plot_metrics(process_metric_dict(al.metrics, query_strategy, remove_test=False))
+        plt.show()
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
     return al_metrics, al_queried

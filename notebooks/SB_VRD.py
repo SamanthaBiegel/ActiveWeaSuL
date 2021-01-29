@@ -581,8 +581,6 @@ al_exp_kwargs = dict(
 )
 # -
 
-al_accuracies
-
 al_accuracies = active_learning_experiment(**al_exp_kwargs)
 
 # +
