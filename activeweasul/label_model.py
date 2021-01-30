@@ -194,8 +194,8 @@ class LabelModel(PerformanceMixin):
         self.y_set = np.unique(label_matrix)  # array of classes
 
         # Ignore abstain label
-        if -1 in self.y_set:
-            self.y_set = self.y_set[self.y_set != -1]
+        # if -1 in self.y_set:
+        #     self.y_set = self.y_set[self.y_set != -1]
 
         self.y_dim = len(self.y_set)  # number of classes
 

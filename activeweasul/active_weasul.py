@@ -5,9 +5,9 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
-from label_model import LabelModel
-from plot import PlotMixin
-from query import ActiveLearningQuery
+from activeweasul.label_model2 import LabelModel
+from activeweasul.plot import PlotMixin
+from activeweasul.query import ActiveLearningQuery
 
 
 def set_seed(seed=42):
@@ -100,7 +100,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                                                                             return_index=True,
                                                                             return_inverse=True,
                                                                             axis=0)
-        
+
         # Used for plotting
         self.confs = {range(len(self.unique_idx))[i]:
                       "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
