@@ -8,7 +8,7 @@ from typing import Optional
 from itertools import product
 import pandas as pd
 
-from activeweasul.performance import PerformanceMixin
+from activelearning.performance import PerformanceMixin
 
 
 class LabelModel(PerformanceMixin):
@@ -90,20 +90,22 @@ class LabelModel(PerformanceMixin):
     def create_mask(self):
         """Create mask to encode graph structure in covariance matrix"""
 
-        mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
+        mask = np.ones((self.psi.shape[1], self.psi.shape[1]))
+        for idx in self.wl_idx.values():
+            mask[np.ix_(idx, idx)] = 0
 
-        for key in self.wl_idx.keys():
-            # Mask diagonal blocks
-            mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
+        # for key in self.wl_idx.keys():
+        #     # Mask diagonal blocks
+        #     mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
 
-            key = key.split("_")
+        #     key = key.split("_")
 
-            # Create all possible subsets of clique
-            clique_list = list(itertools.chain.from_iterable(
-                itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
+        #     # Create all possible subsets of clique
+        #     clique_list = list(itertools.chain.from_iterable(
+        #         itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
 
-            # Create all pairs of subsets of clique
-            clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
+        #     # Create all pairs of subsets of clique
+            # clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
 
 #             # Mask all pairs of subsets that are in the same clique
 #             for pair in clique_pairs:
@@ -176,10 +178,10 @@ class LabelModel(PerformanceMixin):
         self.y_set = np.unique(label_matrix)  # array of classes
 
         # Ignore abstain label
-        if -1 in self.y_set:
-            self.y_set = self.y_set[self.y_set != -1]
+        # if -1 in self.y_set:
+        #     self.y_set = self.y_set[self.y_set != -1]
 
-        self.y_dim = len(self.y_set)  # number of classes
+        self.y_dim = len(self.y_set) - 1  # number of classes
 
         self.psi, self.wl_idx = self.get_psi()
 
@@ -226,6 +228,8 @@ class LabelModel(PerformanceMixin):
             self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
+        # Same optmizer from Snorkel
+        # optimizer = torch.optim.SGD({self.z}, lr=self.lr, weight_decay=0.)
 
         self.losses = []
         # Find z with SGD
