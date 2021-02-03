@@ -5,7 +5,7 @@ import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 
-from activeweasul.performance import PerformanceMixin
+from performance import PerformanceMixin
 
 
 class LabelModel(PerformanceMixin):
@@ -162,7 +162,7 @@ class LabelModel(PerformanceMixin):
                     psi_int_list.append(wl_int_onehot)
                     clique_idx[comb] = i
                     wl_idx[str(comb[0]) + "_" + str(comb[1])] = list(range(col_counter, col_counter+wl_int_onehot.shape[1]))
-
+                
                 # Compute psi for clique of 3 variables
                 if len(comb) == 3:
                     idx3 = wl_idx[str(comb[2])]
@@ -182,7 +182,7 @@ class LabelModel(PerformanceMixin):
             psi = np.concatenate([psi, psi_2], axis=1)
 
         return psi, wl_idx
-
+        
     def init_label_model(self, label_matrix, cliques, class_balance):
         """Initialize label model"""
 
@@ -194,8 +194,8 @@ class LabelModel(PerformanceMixin):
         self.y_set = np.unique(label_matrix)  # array of classes
 
         # Ignore abstain label
-        # if -1 in self.y_set:
-        #     self.y_set = self.y_set[self.y_set != -1]
+        if -1 in self.y_set:
+            self.y_set = self.y_set[self.y_set != -1]
 
         self.y_dim = len(self.y_set)  # number of classes
 
@@ -316,7 +316,7 @@ class LabelModel(PerformanceMixin):
                 if nr_non_abstain == 0:
                     new_counts[i] = 0
                 else:
-                    match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))
+                    match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
                     new_counts[i] = lambda_counts[match_rows].sum()
 
         self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])

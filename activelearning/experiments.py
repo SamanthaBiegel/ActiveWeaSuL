@@ -6,7 +6,7 @@ import seaborn as sns
 import torch
 from tqdm import tqdm
 
-from activeweasul.active_weasul import ActiveWeaSuLPipeline, set_seed
+from active_weasul import ActiveWeaSuLPipeline, set_seed
 
 
 def process_metric_dict(metric_dict, strategy_string, remove_test=False):

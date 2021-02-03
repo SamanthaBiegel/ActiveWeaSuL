@@ -26,12 +26,14 @@ class LabelModel(PerformanceMixin):
     def __init__(self,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
+                 cardinality: int = 2,
                  active_learning: bool = False,
                  penalty_strength: float = 1e3,
                  hide_progress_bar: bool = False):
 
         self.n_epochs = n_epochs
         self.lr = lr
+        self.cardinality = cardinality
         self.active_learning = active_learning
         self.penalty_strength = penalty_strength
         self.hide_progress_bar = hide_progress_bar
@@ -90,46 +92,51 @@ class LabelModel(PerformanceMixin):
     def create_mask(self):
         """Create mask to encode graph structure in covariance matrix"""
 
-        mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
+        mask = np.ones((self.psi.shape[1], self.psi.shape[1]))
+        for idx in self.wl_idx.values():
+            mask[np.ix_(idx, idx)] = 0
 
-        for key in self.wl_idx.keys():
-            # Mask diagonal blocks
-            mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
+    def get_clique_combinations(
+            self,
+            L,
+            clique,
+            # remove_all_zero=True,
+            debug=False
+        ):
+        """
 
-            key = key.split("_")
+        Args:
+            L ([type]): [description]
+            clique ([type]): [description]
+            remove_all_zero (bool, optional): [description]. Defaults to True.
 
-            # Create all possible subsets of clique
-            clique_list = list(itertools.chain.from_iterable(
-                itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
-
-            # Create all pairs of subsets of clique
-            clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
-
-#             # Mask all pairs of subsets that are in the same clique
-#             for pair in clique_pairs:
-#                 i = self.wl_idx[pair[0]]
-#                 j = self.wl_idx[pair[1]]
-#                 mask[i[0]:i[-1]+1, j[0]:j[-1]+1] = 0
-
-        return mask
-
-    def get_clique_combinations(self, L, clique, remove_all_zero=True):
-        choices = [-1, 0, 1]
+        Returns:
+            [type]: [description]
+        """
+        choices = [-1] + list(range(self.cardinality))
+        # Generate all combinations of outputs
         list_comb = product(*[choices] * len(clique))
+        # Remove the combination where all elements are abstain (-1)
         comb_drop = tuple([-1]*len(clique))
         list_comb = [c for c in list_comb if c != comb_drop]
+        # Generate the columns for each combination
         new_columns = []
         for comb in list_comb:
             new_columns.append(
                 np.all(np.equal(L[:, clique], comb), axis=1)
             )
-
+        # Combine into a matrix
         L_clique = np.vstack(new_columns).T
 
-        if remove_all_zero:
-            L_clique = L_clique[:, L_clique.sum(axis=0) != 0]
+        # non_zero_combs = L_clique.sum(axis=0) != 0
 
-        return list_comb, L_clique.astype(int)
+        # if remove_all_zero:
+        #     L_clique = L_clique[:, L_clique.sum(axis=0) != 0]
+
+        if debug:
+            return list_comb, L_clique.astype(int)
+
+        return L_clique.astype(int)
 
 
     def get_psi(self, label_matrix=None, cliques=None, nr_wl=None):
@@ -150,8 +157,26 @@ class LabelModel(PerformanceMixin):
             nr_wl = self.nr_wl
 
         # Generate one array per maximal clique in `cliques`
-        psi = [self.get_clique_combinations(self.label_matrix, clique)[1]
-               for clique in self.cliques]
+        psi = [
+            self.get_clique_combinations(self.label_matrix, clique)
+            for clique in self.cliques
+        ]
+
+
+
+        # TODO: Store the columns with all zeros
+        last_index = 0
+        wl_idx = {}
+        for clique, psi_cols in zip(cliques, psi):
+            key = "_".join(str(c) for c in clique)
+            # Index of the columns with at least one non-zero entry
+            non_zero_idx = psi_cols.sum(axis=0) != 0
+            n_non_zero_elements = sum(non_zero_idx)
+            wl_idx[key] = list(
+                range(last_index, last_index + n_non_zero_elements)
+            )
+            last_index += n_non_zero_elements
+
         # Generates the bounding indices for the maximal cliques
         cliques_idx = np.cumsum([0]+[arr.shape[1] for arr in psi])
         # Store the indices
