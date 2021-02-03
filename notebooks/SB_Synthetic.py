@@ -33,12 +33,12 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
-from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from synthetic_data import SyntheticDataGenerator
 from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict
 from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from active_weasul import ActiveWeaSuLPipeline, set_seed
+from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
 from plot import plot_probs, plot_train_loss
 # -
 
@@ -88,11 +88,11 @@ train_preds = dm.fit(train_loader).predict()
 dm.analyze(df.y.values, train_preds)
 
 # +
-train_set.Y = Y_probs_al.detach()
+# train_set.Y = Y_probs_al.detach()
 
-train_loader = torch.utils.data.DataLoader(dataset=train_tensor_set, batch_size=256, shuffle=True)
+# train_loader = torch.utils.data.DataLoader(dataset=train_tensor_set, batch_size=256, shuffle=True)
 
-train_preds_al = dm.fit(train_loader).predict()
+# train_preds_al = dm.fit(train_loader).predict()
 # -
 
 dm.analyze(df.y.values)

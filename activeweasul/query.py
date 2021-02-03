@@ -40,7 +40,7 @@ class ActiveLearningQuery():
         self.bucket_values = bucket_margins
 
         # Select buckets with highest uncertainty
-        return np.where(bucket_margins == np.min(bucket_margins[self.is_valid_bucket]))[0]
+        return np.where(np.logical_and(bucket_margins == np.min(bucket_margins[self.is_valid_bucket]), self.is_valid_bucket))[0]
 
     def nashaat_strategy(self):
         """Query strategy by Nashaat et al.
@@ -55,7 +55,9 @@ class ActiveLearningQuery():
         bucket_margins = self.margin(self.bucket_probs)
 
         # Select buckets with highest uncertainty and disagreeing weak labels
-        return np.where(bucket_margins == np.min(bucket_margins[self.is_valid_bucket & has_conflicts]))[0]
+        return np.where(np.logical_and.reduce((bucket_margins == np.min(bucket_margins[self.is_valid_bucket & has_conflicts]),
+                                               self.is_valid_bucket,
+                                               has_conflicts)))[0]
 
     def maxkl_strategy(self):
         """Choose bucket of points to sample from following MaxKL query strategy
@@ -95,7 +97,7 @@ class ActiveLearningQuery():
         self.bucket_values = rel_entropy
 
         # Select buckets with highest KL divergence
-        return np.where(rel_entropy == np.max(rel_entropy[self.is_valid_bucket]))[0]
+        return np.where(np.logical_and(rel_entropy == np.max(rel_entropy[self.is_valid_bucket]), self.is_valid_bucket))[0]
 
     def sample(self, probs):
         """Choose data point to label following query strategy

@@ -331,40 +331,40 @@ class LabelModel(PerformanceMixin):
 
         return prob_labels
 
-    # def predict_true(self):
-    #     """Obtain training labels from optimal label model using ground truth labels"""
+    def predict_true(self, y_true):
+        """Obtain training labels from optimal label model using ground truth labels"""
 
-    #     return self.predict(self.label_matrix, self.get_true_mu()[:, 1][:, None], self.y_true.mean())
+        return self.predict(self.label_matrix, self.get_true_mu(y_true)[:, 1][:, None], y_true.mean())
 
-    # def predict_true_counts(self):
-    #     """Obtain optimal training labels using ground truth labels"""
+    def predict_true_counts(self, y_true):
+        """Obtain optimal training labels using ground truth labels"""
 
-    #     lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
-    #     P_Y_lambda = np.zeros((self.N, 2))
+        P_Y_lambda = np.zeros((self.N, 2))
 
-    #     for i, j in zip([0, 1], [1, 0]):
-    #         P_Y_lambda[self.y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[self.y_true == i]
-    #         P_Y_lambda[self.y_true == i, j] = 1 - P_Y_lambda[self.y_true == i, i]
+        for i, j in zip([0, 1], [1, 0]):
+            P_Y_lambda[y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[y_true == i]
+            P_Y_lambda[y_true == i, j] = 1 - P_Y_lambda[y_true == i, i]
 
-    #     return torch.Tensor(P_Y_lambda)
+        return torch.Tensor(P_Y_lambda)
 
-    # def get_true_mu(self):
-    #     """Obtain optimal label model parameters from data and ground truth labels"""
+    def get_true_mu(self, y_true):
+        """Obtain optimal label model parameters from data and ground truth labels"""
 
-    #     exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
-    #     for i in range(0, self.y_dim):
-    #         mean = self.psi[self.y_true == i].sum(axis=0) / self.N
-    #         exp_mu[:, i] = mean
+        exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
+        for i in range(0, self.y_dim):
+            mean = self.psi[y_true == i].sum(axis=0) / self.N
+            exp_mu[:, i] = mean
 
-    #     return torch.Tensor(exp_mu)
+        return torch.Tensor(exp_mu)
 
-    # def get_true_cov_OS(self):
-    #     """Obtain true covariance between cliques and Y using ground truth labels"""
+    def get_true_cov_OS(self, y_true):
+        """Obtain true covariance between cliques and Y using ground truth labels"""
 
-    #     y_onehot = ((self.y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
-    #     psi_y = np.concatenate([self.psi, y_onehot], axis=1)
+        y_onehot = ((y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
+        psi_y = np.concatenate([self.psi, y_onehot], axis=1)
 
-    #     cov_O_S = np.cov(psi_y.T, bias=True)
+        cov_O_S = np.cov(psi_y.T, bias=True)
 
-    #     return cov_O_S[:-self.y_dim, -self.y_dim:]
+        return cov_O_S[:-self.y_dim, -self.y_dim:]

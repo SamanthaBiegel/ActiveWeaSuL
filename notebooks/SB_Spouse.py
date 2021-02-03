@@ -32,12 +32,13 @@ import torch.nn.functional as F
 from tqdm import tqdm_notebook as tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
 from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveWeaSuLPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
 from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 # -
 
 # ## Load data

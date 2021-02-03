@@ -3,15 +3,6 @@ scipy
 cvxpy
 pandas==1.1.2
 matplotlib
-plotly
-seaborn
 torch==1.4.0
 torchvision==0.5.0
-iminuit
 Pillow
-skorch
-scikit-learn
-tensorflow==2.2.0
-dash
-snorkel
-tqdm

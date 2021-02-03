@@ -36,11 +36,13 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveWeaSuLPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 # -
 
 pd.options.display.expand_frame_repr = False 
@@ -275,70 +277,70 @@ axes[0]
 
 np.ceil(0.9*15558)
 
-# +
-sns.set_context("paper")
-# colors = ["#086788",  "#ef7b45",  "#e3b505", "#000000", "#000000", "#d88c9a"]
-# colors = ["#000000","#e3b505", "#ef7b45", "#086788"]
-colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
-
-sns.set(style="whitegrid", palette=sns.color_palette(colors))
-
-fig, axes = plt.subplots(2,2, figsize=(15,15), sharey=True)
-
-(
-    sns.lineplot(data=joined_df_approaches[joined_df_approaches["Model"] == "Generative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Approach", ci=68, n_boot=10000, estimator="mean", ax=axes[0][0])
-)
-handles, labels = axes[0][0].get_legend_handles_labels()
-show_handles = [handles[0], handles[1]]
-show_labels = ["Approach 1", labels[1]]
-axes[0][0].legend(handles=show_handles, labels=show_labels, loc="lower right")
-axes[0][0].title.set_text("Generative")
-
-(
-    sns.lineplot(data=joined_df_approaches[joined_df_approaches["Model"] == "Discriminative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Approach", ci=68, n_boot=10000, estimator="mean", ax=axes[1][0])
-)
-handles, labels = axes[1][0].get_legend_handles_labels()
-show_handles = [handles[0], handles[1]]
-show_labels = ["Approach 1", labels[1]]
-axes[1][0].legend(handles=show_handles, labels=show_labels, loc="lower right")
-axes[1][0].title.set_text("Discriminative")
-
-axes[0][0].set_xlabel("Number of labeled points")
-axes[1][0].set_xlabel("Number of labeled points")
-
-axes[0][0].set_ylabel("Accuracy")
-
-(
-    sns.lineplot(data=cov_df[cov_df["Model"] == "Generative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Approach", ci=None, estimator="mean", ax=axes[0][1], palette=sns.color_palette([colors[2]]))
-)
-handles, labels = axes[0][1].get_legend_handles_labels()
-show_handles = [handles[0]]
-show_labels = ["Approach 2"]
-axes[0][1].legend(handles=show_handles, labels=show_labels, loc="lower right")
-axes[0][1].title.set_text("Generative")
-
-(
-    sns.lineplot(data=cov_df[cov_df["Model"] == "Discriminative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Approach", ci=None, estimator="mean", ax=axes[1][1], palette=sns.color_palette([colors[2]]))
-)
-handles, labels = axes[1][1].get_legend_handles_labels()
-show_handles = [handles[0]]
-show_labels = ["Approach 2"]
-axes[1][1].legend(handles=show_handles, labels=show_labels, loc="lower right")
-axes[1][1].title.set_text("Discriminative")
-
-axes[0][1].set_xlabel("Number of labeled points")
-axes[1][1].set_xlabel("Number of labeled points")
-
-axes[1][0].set_ylabel("Accuracy")
-
-plt.tight_layout()
-
-# plt.savefig("plots/approaches.png")
-plt.show()
+# + active=""
+# sns.set_context("paper")
+# # colors = ["#086788",  "#ef7b45",  "#e3b505", "#000000", "#000000", "#d88c9a"]
+# # colors = ["#000000","#e3b505", "#ef7b45", "#086788"]
+# colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+#
+# sns.set(style="whitegrid", palette=sns.color_palette(colors))
+#
+# fig, axes = plt.subplots(2,2, figsize=(15,15), sharey=True)
+#
+# (
+#     sns.lineplot(data=joined_df_approaches[joined_df_approaches["Model"] == "Generative"], x="Active Learning Iteration", y="Accuracy",
+#                 hue="Approach", ci=68, n_boot=10000, estimator="mean", ax=axes[0][0])
+# )
+# handles, labels = axes[0][0].get_legend_handles_labels()
+# show_handles = [handles[0], handles[1]]
+# show_labels = ["Approach 1", labels[1]]
+# axes[0][0].legend(handles=show_handles, labels=show_labels, loc="lower right")
+# axes[0][0].title.set_text("Generative")
+#
+# (
+#     sns.lineplot(data=joined_df_approaches[joined_df_approaches["Model"] == "Discriminative"], x="Active Learning Iteration", y="Accuracy",
+#                 hue="Approach", ci=68, n_boot=10000, estimator="mean", ax=axes[1][0])
+# )
+# handles, labels = axes[1][0].get_legend_handles_labels()
+# show_handles = [handles[0], handles[1]]
+# show_labels = ["Approach 1", labels[1]]
+# axes[1][0].legend(handles=show_handles, labels=show_labels, loc="lower right")
+# axes[1][0].title.set_text("Discriminative")
+#
+# axes[0][0].set_xlabel("Number of labeled points")
+# axes[1][0].set_xlabel("Number of labeled points")
+#
+# axes[0][0].set_ylabel("Accuracy")
+#
+# (
+#     sns.lineplot(data=cov_df[cov_df["Model"] == "Generative"], x="Active Learning Iteration", y="Accuracy",
+#                 hue="Approach", ci=None, estimator="mean", ax=axes[0][1], palette=sns.color_palette([colors[2]]))
+# )
+# handles, labels = axes[0][1].get_legend_handles_labels()
+# show_handles = [handles[0]]
+# show_labels = ["Approach 2"]
+# axes[0][1].legend(handles=show_handles, labels=show_labels, loc="lower right")
+# axes[0][1].title.set_text("Generative")
+#
+# (
+#     sns.lineplot(data=cov_df[cov_df["Model"] == "Discriminative"], x="Active Learning Iteration", y="Accuracy",
+#                 hue="Approach", ci=None, estimator="mean", ax=axes[1][1], palette=sns.color_palette([colors[2]]))
+# )
+# handles, labels = axes[1][1].get_legend_handles_labels()
+# show_handles = [handles[0]]
+# show_labels = ["Approach 2"]
+# axes[1][1].legend(handles=show_handles, labels=show_labels, loc="lower right")
+# axes[1][1].title.set_text("Discriminative")
+#
+# axes[0][1].set_xlabel("Number of labeled points")
+# axes[1][1].set_xlabel("Number of labeled points")
+#
+# axes[1][0].set_ylabel("Accuracy")
+#
+# plt.tight_layout()
+#
+# # plt.savefig("plots/approaches.png")
+# plt.show()
 
 # +
 sns.set_context("paper")
@@ -464,11 +466,13 @@ joined_df_models = pd.concat([joined_df_models, optimal_lm, optimal_fm])
 
 joined_df_models = pd.read_csv("results/re_marg_random_joined.csv")
 
+joined_df_models = joined_df_models[(joined_df_models["Strategy"] != "DM*") | (joined_df_models["Strategy"] != "GM*")]
+
 # +
 sns.set_context("paper")
 # colors = ["#086788",  "#ef7b45",  "#e3b505", "#000000", "#000000", "#d88c9a"]
 # colors = ["#000000","#e3b505", "#ef7b45", "#086788"]
-colors = ["#000000", "#368f8b", "#ec7357", "#2b4162", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
+colors = ["#368f8b", "#ec7357", "#2b4162", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
 
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
@@ -476,23 +480,23 @@ fig, axes = plt.subplots(1,2, figsize=(15,8), sharey=True)
 
 (
     sns.lineplot(data=joined_df_models[joined_df_models["Model"] == "Generative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Strategy", ci=68, n_boot=10000, estimator="mean", style="Dash", sizes=(1, 2), hue_order=["GM*", "Random", "Margin", "Relative Entropy"],
+                hue="Strategy", ci=68, n_boot=10000, estimator="mean", style="Dash", sizes=(1, 2), hue_order=["Random", "Margin", "Relative Entropy"],
                 size="Dash", ax=axes[0])
 )
 handles, labels = axes[0].get_legend_handles_labels()
-show_handles = [handles[4], handles[3], handles[2]]
-show_labels = ["MaxKL", labels[3], labels[2]]
+show_handles = [handles[3], handles[2], handles[1]]
+show_labels = ["MaxKL", "Margin", "Random"]
 axes[0].legend(handles=show_handles, labels=show_labels, loc="lower right")
 axes[0].title.set_text("Generative")
 
 (
     sns.lineplot(data=joined_df_models[joined_df_models["Model"] == "Discriminative"], x="Active Learning Iteration", y="Accuracy",
-                hue="Strategy", ci=68, n_boot=10000, estimator="mean", style="Dash", sizes=(1, 2), hue_order=["DM*", "Random", "Margin", "Relative Entropy"],
+                hue="Strategy", ci=68, n_boot=10000, estimator="mean", style="Dash", sizes=(1, 2), hue_order=["Random", "Margin", "Relative Entropy"],
                 size="Dash", ax=axes[1])
 )
 handles, labels = axes[1].get_legend_handles_labels()
-show_handles = [handles[4], handles[3], handles[2]]
-show_labels = ["MaxKL", labels[3], labels[2]]
+show_handles = [handles[3], handles[2], handles[1]]
+show_labels = ["MaxKL", "Margin", "Random"]
 axes[1].legend(handles=show_handles, labels=show_labels, loc="lower right")
 axes[1].title.set_text("Discriminative")
 
@@ -503,7 +507,7 @@ axes[0].set_ylabel("Accuracy")
 
 plt.tight_layout()
 
-plt.savefig("plots/strategies.png")
+plt.savefig("plots/sampling-strategies.png")
 # plt.show()
 # -
 

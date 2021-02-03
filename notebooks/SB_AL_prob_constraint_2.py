@@ -37,11 +37,13 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 sys.path.append(os.path.abspath("../activelearning"))
-from data import SyntheticData
-from final_model import DiscriminativeModel
-from plot import plot_probs, plot_train_loss
+from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+from logisticregression import LogisticRegression
+from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
-from pipeline import ActiveLearningPipeline
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from plot import plot_probs, plot_train_loss
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 # -
 
 pd.options.display.expand_frame_repr = False 
@@ -52,8 +54,8 @@ N = 10000
 centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
 p_z = 0.5
 
-data = SyntheticData(N, p_z, centroids)
-df = data.sample_data_set().create_df()
+data = SyntheticDataGenerator(N, p_z, centroids)
+df = data.sample_dataset().create_df()
 
 df.loc[:, "wl1"] = (df["x2"]<0.4)*1
 df.loc[:, "wl2"] = (df["x1"]<-0.3)*1
@@ -77,92 +79,15 @@ df["u"] = "?"
 df_big = pd.read_csv("../data/synthetic_dataset_3.csv")
 label_matrix = np.array(df[["wl1", "wl2", "wl3","y"]])
 
-# +
-# sub_df = df.sample(100)
-# -
-
 _, inv_idx = np.unique(label_matrix[:, :-1], axis=0, return_inverse=True)
 
 # +
-bp1 = centroids.sum(axis=0)/2
+class_balance = np.array([1 - p_z, p_z])
+cliques=[[0],[1,2]]
 
-# vector between cluster means
-diff = centroids[1,:]-centroids[0,:]
-
-# slope of decision boundary is perpendicular to slope of line that goes through the cluster means
-slope = diff[1]/diff[0]
-perp_slope = -1/slope
-
-# solve for intercept using slope and middle point
-b = bp1[1] - perp_slope*bp1[0]
-
-coef = [b, perp_slope, -1]
-
-
-x_dec = np.linspace(centroids[0,0]-4, centroids[1,0]+4, 1000)
-y_dec = (- coef[0] - coef[1]*x_dec)/coef[2]
-# -
-
-centroids
-
-# +
-import matplotlib.colors as clr
-import matplotlib.cm
-
-some_matrix = np.linspace(0,1,200)[None,:]
-
-cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
-matplotlib.cm.register_cmap("mycolormap", cmap)
-
-
-plt.matshow(some_matrix, cmap=cmap)
-
-plt.show()
-
-# +
-colors = ["#368f8b", "#ec7357"]
-
-sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
-# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.y, s=(700), edgecolor="black")
-# g.set(yticks=[], xticks=[])
-plt.scatter(x=df.x1, y=df.x2, c=df.y, s=(700), edgecolor="black", cmap=cmap)
-plt.plot(x_dec, y_dec, color="black")
-# handles,labels = g.axes.get_legend_handles_labels()
-# plt.legend(labels=[0,1],loc="lower right", prop={'size': 30})
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-plt.xticks([], [])
-plt.yticks([], [])
-
-plt.savefig("plots/truelabels.png")
-
-# +
-sns.set_context("paper")
-
-colors = ["#BBBBBB", "#368f8b", "#ec7357"]
-# colors = ["#368f8b", "#ec7357"]
-
-sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
-plt.scatter(x=df.x1, y=df.x2, c="#BBBBBB", s=(700), edgecolor="black", cmap=cmap)
-plt.legend(labels="?", loc="lower right", prop={'size': 30})
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-plt.xticks([], [])
-plt.yticks([], [])
-plt.savefig("plots/missinglabels.png")
-
-# +
 L = df[["wl1", "wl2", "wl3"]].values
 
-lm = LabelModel(df=df,
-                active_learning=False,
-                add_cliques=True,
-                add_prob_loss=False,
-                n_epochs=200,
+lm = LabelModel(n_epochs=200,
                 lr=1e-1)
     
 Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).predict()
@@ -172,75 +97,13 @@ Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).p
 
 np.unique(lm.predict_true().detach().numpy(), axis=0)
 
-# +
-colors = ["#368f8b", "#ec7357"]
-
-sns.set(style="white", palette=sns.color_palette(colors), rc={'figure.figsize':(15,15)})
-
-# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl1, s=(700), edgecolor="black")
-plt.scatter(x=df.x1, y=df.x2, c=df.wl1, s=(700), edgecolor="black", cmap=cmap)
-
-plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
-# g.set(yticks=[], xticks=[])
-# handles,labels = g.axes.get_legend_handles_labels()
-# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-
-plt.xticks([], [])
-plt.yticks([], [])
-
-plt.savefig("plots/wl1.png")
-
-# +
-# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl2, s=(700), edgecolor="black")
-plt.scatter(x=df.x1, y=df.x2, c=df.wl2, s=(700), edgecolor="black", cmap=cmap)
-
-plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
-# g.set(yticks=[], xticks=[])
-# handles,labels = g.axes.get_legend_handles_labels()
-# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-
-plt.xticks([], [])
-plt.yticks([], [])
-
-plt.savefig("plots/wl2.png")
-
-# +
-# g = sns.scatterplot(x=df.x1, y=df.x2, hue=df.wl3, s=(700), edgecolor="black")
-plt.scatter(x=df.x1, y=df.x2, c=df.wl3, s=(700), edgecolor="black", cmap=cmap)
-
-plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
-# g.set(yticks=[], xticks=[])
-# handles,labels = g.axes.get_legend_handles_labels()
-# plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30})
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-plt.xticks([], [])
-plt.yticks([], [])
-
-plt.savefig("plots/wl3.png")
-# -
-
 _, unique_idx, unique_inverse = np.unique(Y_probs.clone().detach().numpy()[:, 1], return_index=True, return_inverse=True)
 confs = {range(len(unique_idx))[i]: "-".join([str(e) for e in row]) for i, row in enumerate(L[unique_idx, :])}
 conf_list = np.vectorize(confs.get)(unique_inverse)
 
 L = df[["wl1", "wl2", "wl3"]].values
 psi,_ = lm._get_psi(L, cliques, 3)
-true_test = lm._predict(L, psi, lm.get_true_mu()[:, 1][:, None], df["y"].mean())
-
-len(unique_inverse)
-
-Y_probs[unique_idx]
+true_test = lm.predict(L, psi, lm.get_true_mu()[:, 1][:, None], df["y"].mean())
 
 
 
@@ -289,7 +152,7 @@ plt.xticks([], [])
 plt.yticks([], [])
 # plt.colorbar(sm)
 
-plt.savefig("plots/sample-examples.png")
+# plt.savefig("plots/sample-examples.png")
 
 # +
 # colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
@@ -335,42 +198,6 @@ plt.yticks([], [])
 # -
 
 np.unique(Y_probs.detach().numpy(), axis=0)
-
-# +
-# colors = ["#2b4162", "#ec7357", "#368f8b", "#e9c46a", "#721817", "#fa9f42", "#0b6e4f", "#96bdc6",  "#c09891", "#5d576b", "#c6dabf"]
-# colors = ["#368F8B", "#3EA39E", "#43B1AC", "#F1937E", "#EF846C", "#EC7357"]
-colors = ["#368F8B", "#43B1AC", "#5CC1BC", "#F5B2A3", "#F1937E", "#EC7357"]
-
-sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=6), rc={'figure.figsize':(15,15)})
-
-g = sns.scatterplot(x=df_big.x1, y=df_big.x2, hue=lm.predict_true().detach().numpy()[:,1], s=(700), edgecolor="black",
-                    palette=sns.color_palette("mycolormap", n_colors=6))
-plt.plot([-5, 5],[0.4, 0.4], linewidth=.5, color="black")
-plt.plot([-0.3, -0.3], [-5, 5], linewidth=.5, color="black")
-plt.plot([-1, -1], [-5, 5], linewidth=.5, color="black")
-g.set(yticks=[], xticks=[])
-handles,labels = g.axes.get_legend_handles_labels()
-labels=["0-0-0", "0-1-0", "1-0-0", "0-1-1", "1-1-0", "1-1-1"]
-plt.legend(handles=handles, labels=labels, loc="lower right", prop={'size': 30}, title=r'$\bf{wl1-wl2-wl3}$')
-plt.xlim(-2.2,1.6)
-plt.ylim(-2.1,3.1)
-plt.xlabel("x1", fontsize=30)
-plt.ylabel("x2", fontsize=30)
-
-plt.show()
-fig = g.get_figure()
-fig.savefig("plots/configurations.png")
-# -
-
-
-
-df_big.iloc[[2641, 8953, 7495]]
-
-(1.169919-1.355350)/(-0.495345--0.533058)
-
-1.355350-(-0.533058*-4.9168986821520395)
-
--1.265642177710602+(-2.5*-4.9168986821520395)
 
 # +
 colors = ["#368f8b", "#ec7357"]
@@ -575,8 +402,7 @@ final_model_kwargs = {'input_dim': 2,
                       'batch_size': 256,
                       'n_epochs': 100}
 
-class_balance = np.array([1 - p_z, p_z])
-cliques=[[0],[1,2]]
+
 # cliques=[[0],[1],[2]]
 
 

@@ -1,31 +1,5 @@
 import numpy as np
 import pandas as pd
-import torch
-from torch.utils.data import TensorDataset
-
-
-class SyntheticDataset(TensorDataset):
-    """Synthetic Dataset"""
-
-    def __init__(self, df: pd.DataFrame, Y: torch.Tensor) -> None:
-        self.X = torch.Tensor(df.loc[:, ["x1", "x2"]].values)
-        self.Y = Y
-
-    def __getitem__(self, index: int):
-        return self.X[index], self.Y[index]
-
-    def __len__(self):
-        return len(self.X)
-
-    def update(self, features, Y):
-        """Update dataset content
-
-        Args:
-            features (pandas.DataFrame): New dataframe with features as columns
-            Y (torch.Tensor): Tensor with labels
-        """
-        self.X = torch.Tensor(features.values)
-        self.Y = Y
 
 
 class SyntheticDataGenerator:
