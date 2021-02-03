@@ -162,8 +162,6 @@ class LabelModel(PerformanceMixin):
             for clique in self.cliques
         ]
 
-
-
         # TODO: Store the columns with all zeros
         last_index = 0
         wl_idx = {}
