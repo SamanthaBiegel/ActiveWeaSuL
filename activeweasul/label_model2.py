@@ -129,11 +129,6 @@ class LabelModel(PerformanceMixin):
         # Combine into a matrix
         L_clique = np.vstack(new_columns).T
 
-        # non_zero_combs = L_clique.sum(axis=0) != 0
-
-        # if remove_all_zero:
-        #     L_clique = L_clique[:, L_clique.sum(axis=0) != 0]
-
         if debug:
             return list_comb, L_clique.astype(int)
 
@@ -168,11 +163,11 @@ class LabelModel(PerformanceMixin):
             for clique in cliques
         ]
 
-        last_index = 0
-
         # The indices of the cliques in psi are computed only during training
         if training:
+            last_index = 0
             self.wl_idx = {}
+
             for clique, psi_cols in zip(cliques, psi):
                 key = "_".join(str(c) for c in clique)
                 # Index of the columns with at least one non-zero entry
@@ -187,7 +182,7 @@ class LabelModel(PerformanceMixin):
         psi = np.hstack(psi)
 
         psi = psi[:, psi.sum(axis=0) != 0]
-        # ! I kept the return as it is for compatibility reasons
+        # ! I kept the return statement as it was for compatibility reasons
         return psi, self.wl_idx
 
     def init_label_model(self, label_matrix, cliques, class_balance):
@@ -199,12 +194,6 @@ class LabelModel(PerformanceMixin):
 
         self.N, self.nr_wl = label_matrix.shape
         self.y_set = np.unique(label_matrix)  # array of classes
-
-        # Ignore abstain label
-        if -1 in self.y_set:
-            self.y_set = self.y_set[self.y_set != -1]
-
-        self.y_dim = len(self.y_set)  # number of classes
 
         self.psi, self.wl_idx = self.get_psi()
 
@@ -248,7 +237,7 @@ class LabelModel(PerformanceMixin):
             _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)
 
         if not self.active_learning:
-            self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
+            self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.cardinality-1)), requires_grad=True)
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
 
