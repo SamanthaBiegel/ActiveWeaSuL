@@ -138,8 +138,13 @@ class LabelModel(PerformanceMixin):
 
         return L_clique.astype(int)
 
-
-    def get_psi(self, label_matrix=None, cliques=None, nr_wl=None):
+    def get_psi(
+        self,
+        label_matrix=None,
+        cliques=None,
+        nr_wl=None,
+        training=True
+    ):
         """Compute psi from given label matrix and cliques
 
         Args:
@@ -158,35 +163,31 @@ class LabelModel(PerformanceMixin):
 
         # Generate one array per maximal clique in `cliques`
         psi = [
-            self.get_clique_combinations(self.label_matrix, clique)
-            for clique in self.cliques
+            self.get_clique_combinations(label_matrix, clique)
+            for clique in cliques
         ]
 
-        # TODO: Store the columns with all zeros
         last_index = 0
-        wl_idx = {}
-        for clique, psi_cols in zip(cliques, psi):
-            key = "_".join(str(c) for c in clique)
-            # Index of the columns with at least one non-zero entry
-            non_zero_idx = psi_cols.sum(axis=0) != 0
-            n_non_zero_elements = sum(non_zero_idx)
-            wl_idx[key] = list(
-                range(last_index, last_index + n_non_zero_elements)
-            )
-            last_index += n_non_zero_elements
 
-        # Generates the bounding indices for the maximal cliques
-        cliques_idx = np.cumsum([0]+[arr.shape[1] for arr in psi])
-        # Store the indices
-        wl_idx = {
-            "_".join(str(c) for c in clique): list(range(i, j))
-            for clique, i, j in zip(
-                cliques, cliques_idx[:-1], cliques_idx[1:]
-            )
-        }
+        # The indices of the cliques in psi are computed only during training
+        if training:
+            self.wl_idx = {}
+            for clique, psi_cols in zip(cliques, psi):
+                key = "_".join(str(c) for c in clique)
+                # Index of the columns with at least one non-zero entry
+                non_zero_idx = psi_cols.sum(axis=0) != 0
+                n_non_zero_elements = sum(non_zero_idx)
+                self.wl_idx[key] = list(
+                    range(last_index, last_index + n_non_zero_elements)
+                )
+                last_index += n_non_zero_elements
+
         # Combine the arrays to get psi
         psi = np.hstack(psi)
-        return psi, wl_idx
+
+        psi = psi[:, psi.sum(axis=0) != 0]
+        # ! I kept the return as it is for compatibility reasons
+        return psi, self.wl_idx
 
     def init_label_model(self, label_matrix, cliques, class_balance):
         """Initialize label model"""
