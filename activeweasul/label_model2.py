@@ -95,6 +95,7 @@ class LabelModel(PerformanceMixin):
         mask = np.ones((self.psi.shape[1], self.psi.shape[1]))
         for idx in self.wl_idx.values():
             mask[np.ix_(idx, idx)] = 0
+        return mask
 
     def get_clique_combinations(
             self,
@@ -291,7 +292,10 @@ class LabelModel(PerformanceMixin):
             assign_train_labels = True
 
         N = label_matrix.shape[0]
-        psi, _ = self.get_psi(label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl)
+        psi, _ = self.get_psi(
+            label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl,
+            training=False
+        )
 
         cliques_joined = self.cliques.copy()
         for i, clique in enumerate(cliques_joined):
