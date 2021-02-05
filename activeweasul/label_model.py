@@ -5,6 +5,9 @@ import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 
+from itertools import product
+import pandas as pd
+
 from activeweasul.performance import PerformanceMixin
 
 
@@ -23,12 +26,14 @@ class LabelModel(PerformanceMixin):
     def __init__(self,
                  n_epochs: int = 200,
                  lr: float = 1e-1,
+                 cardinality: int = 2,
                  active_learning: bool = False,
                  penalty_strength: float = 1e3,
                  hide_progress_bar: bool = False):
 
         self.n_epochs = n_epochs
         self.lr = lr
+        self.cardinality = cardinality
         self.active_learning = active_learning
         self.penalty_strength = penalty_strength
         self.hide_progress_bar = hide_progress_bar
@@ -87,30 +92,55 @@ class LabelModel(PerformanceMixin):
     def create_mask(self):
         """Create mask to encode graph structure in covariance matrix"""
 
-        mask = np.ones((max(max(self.wl_idx.values()))+1, max(max(self.wl_idx.values()))+1))
-
-        for key in self.wl_idx.keys():
-            # Mask diagonal blocks
-            mask[self.wl_idx[key][0]: self.wl_idx[key][-1] + 1, self.wl_idx[key][0]: self.wl_idx[key][-1] + 1] = 0
-
-            key = key.split("_")
-
-            # Create all possible subsets of clique
-            clique_list = list(itertools.chain.from_iterable(
-                itertools.combinations(key, r) for r in range(len(key) + 1) if r > 0))
-
-            # Create all pairs of subsets of clique
-            clique_pairs = list(itertools.permutations(["_".join(clique) for clique in clique_list], r=2))
-
-            # Mask all pairs of subsets that are in the same clique
-            for pair in clique_pairs:
-                i = self.wl_idx[pair[0]]
-                j = self.wl_idx[pair[1]]
-                mask[i[0]:i[-1]+1, j[0]:j[-1]+1] = 0
-
+        mask = np.ones((self.psi.shape[1], self.psi.shape[1]))
+        for idx in self.wl_idx.values():
+            mask[np.ix_(idx, idx)] = 0
         return mask
 
-    def get_psi(self, label_matrix=None, cliques=None, nr_wl=None):
+    def get_clique_combinations(
+            self,
+            L,
+            clique,
+            # remove_all_zero=True,
+            debug=False
+        ):
+        """
+
+        Args:
+            L ([type]): [description]
+            clique ([type]): [description]
+            remove_all_zero (bool, optional): [description]. Defaults to True.
+
+        Returns:
+            [type]: [description]
+        """
+        choices = [-1] + list(range(self.cardinality))
+        # Generate all combinations of outputs
+        list_comb = product(*[choices] * len(clique))
+        # Remove the combination where all elements are abstain (-1)
+        comb_drop = tuple([-1]*len(clique))
+        list_comb = [c for c in list_comb if c != comb_drop]
+        # Generate the columns for each combination
+        new_columns = []
+        for comb in list_comb:
+            new_columns.append(
+                np.all(np.equal(L[:, clique], comb), axis=1)
+            )
+        # Combine into a matrix
+        L_clique = np.vstack(new_columns).T
+
+        if debug:
+            return list_comb, L_clique.astype(int)
+
+        return L_clique.astype(int)
+
+    def get_psi(
+        self,
+        label_matrix=None,
+        cliques=None,
+        nr_wl=None,
+        training=True
+    ):
         """Compute psi from given label matrix and cliques
 
         Args:
@@ -127,61 +157,33 @@ class LabelModel(PerformanceMixin):
             cliques = self.cliques
             nr_wl = self.nr_wl
 
-        psi_list = []
-        col_counter = 0
-        wl_idx = {}
+        # Generate one array per maximal clique in `cliques`
+        psi = [
+            self.get_clique_combinations(label_matrix, clique)
+            for clique in cliques
+        ]
 
-        # Compute psi for individual weak labels
-        for i in range(nr_wl):
-            wl = label_matrix[:, i]
-            wl_onehot = (wl[:, None] == self.y_set)*1
-            psi_list.append(wl_onehot)
-            wl_idx[str(i)] = list(range(col_counter, col_counter+wl_onehot.shape[1]))
-            col_counter += wl_onehot.shape[1]
+        # The indices of the cliques in psi are computed only during training
+        if training:
+            last_index = 0
+            self.wl_idx = {}
 
-        psi = np.hstack(psi_list)
+            for clique, psi_cols in zip(cliques, psi):
+                key = "_".join(str(c) for c in clique)
+                # Index of the columns with at least one non-zero entry
+                non_zero_idx = psi_cols.sum(axis=0) != 0
+                n_non_zero_elements = sum(non_zero_idx)
+                self.wl_idx[key] = list(
+                    range(last_index, last_index + n_non_zero_elements)
+                )
+                last_index += n_non_zero_elements
 
-        # Compute psi for cliques
-        psi_int_list = []
-        clique_idx = {}
-        # Iterate over maximal cliques
-        for clique in cliques:
-            # Compute set of all subcliques with at least 2 variables in maximal clique
-            clique_comb = itertools.chain.from_iterable(
-                itertools.combinations(clique, r) for r in range(len(clique)+1) if r > 1)
-            for i, comb in enumerate(clique_comb):
-                # Compute psi for clique of 2 variables
-                if len(comb) == 2:
-                    idx1 = wl_idx[str(comb[0])]
-                    idx2 = wl_idx[str(comb[1])]
-                    wl_int_onehot = (
-                        (psi[:, None, idx1[0]:(idx1[-1]+1)]
-                            * psi[:, idx2[0]:(idx2[-1]+1), None]).reshape(len(psi), -1)
-                    )
+        # Combine the arrays to get psi
+        psi = np.hstack(psi)
 
-                    psi_int_list.append(wl_int_onehot)
-                    clique_idx[comb] = i
-                    wl_idx[str(comb[0]) + "_" + str(comb[1])] = list(range(col_counter, col_counter+wl_int_onehot.shape[1]))
-
-                # Compute psi for clique of 3 variables
-                if len(comb) == 3:
-                    idx3 = wl_idx[str(comb[2])]
-                    wl_int_onehot = (
-                        (psi_int_list[clique_idx[(comb[0], comb[1])]][:, None, :]
-                            * psi[:, idx3[0]:(idx3[-1]+1), None]).reshape(len(psi), -1)
-                    )
-                    psi_int_list.append(wl_int_onehot)
-                    wl_idx[str(comb[0]) + "_" + str(comb[1]) + "_" + str(comb[2])] = list(
-                        range(col_counter, col_counter+wl_int_onehot.shape[1]))
-
-                col_counter += wl_int_onehot.shape[1]
-
-        # Concatenate different clique sizes
-        if psi_int_list:
-            psi_2 = np.hstack(psi_int_list)
-            psi = np.concatenate([psi, psi_2], axis=1)
-
-        return psi, wl_idx
+        psi = psi[:, psi.sum(axis=0) != 0]
+        # ! I kept the return statement as it was for compatibility reasons
+        return psi, self.wl_idx
 
     def init_label_model(self, label_matrix, cliques, class_balance):
         """Initialize label model"""
@@ -192,12 +194,6 @@ class LabelModel(PerformanceMixin):
 
         self.N, self.nr_wl = label_matrix.shape
         self.y_set = np.unique(label_matrix)  # array of classes
-
-        # Ignore abstain label
-        # if -1 in self.y_set:
-        #     self.y_set = self.y_set[self.y_set != -1]
-
-        self.y_dim = len(self.y_set)  # number of classes
 
         self.psi, self.wl_idx = self.get_psi()
 
@@ -238,10 +234,18 @@ class LabelModel(PerformanceMixin):
         if self.active_learning:
             self.ground_truth_labels = ground_truth_labels
             # self.last_posteriors = last_posteriors
-            _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)
+            _, self.bucket_idx, self.bucket_inverse, self.bucket_counts =\
+                np.unique(
+                    label_matrix, axis=0, return_index=True,
+                    return_inverse=True, return_counts=True
+                )
 
         if not self.active_learning:
-            self.z = nn.Parameter(torch.normal(0, 1, size=(self.psi.shape[1], self.y_dim - 1)), requires_grad=True)
+            self.z = nn.Parameter(
+                torch.normal(
+                    0, 1, size=(self.psi.shape[1], self.cardinality-1)
+                ), requires_grad=True
+            )
 
         optimizer = torch.optim.Adam({self.z}, lr=self.lr)
 
@@ -253,6 +257,7 @@ class LabelModel(PerformanceMixin):
             loss.backward()
             optimizer.step()
             self.losses.append(loss.clone().detach().numpy())
+        self.losses = np.array(self.losses)
 
         # Determine the sign of z
         # Assuming cov_OS corresponds to Y=1, then cov(wl1=1,Y=1) should be positive
@@ -285,7 +290,10 @@ class LabelModel(PerformanceMixin):
             assign_train_labels = True
 
         N = label_matrix.shape[0]
-        psi, _ = self.get_psi(label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl)
+        psi, _ = self.get_psi(
+            label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl,
+            training=False
+        )
 
         cliques_joined = self.cliques.copy()
         for i, clique in enumerate(cliques_joined):
@@ -303,26 +311,27 @@ class LabelModel(PerformanceMixin):
         clique_probs[psi_idx == 0] = 1
         P_joint_lambda_Y = torch.prod(clique_probs, dim=0)/(torch.tensor(P_Y) ** (n_cliques - 1))
 
-        # Mask out data points with abstains in all cliques
-        P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
+#         # Mask out data points with abstains in all cliques
+#         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
         lambda_combs, lambda_index, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
-        new_counts = lambda_counts.copy()
-        rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
-        for i, comb in enumerate(lambda_combs):
-            nr_non_abstain = (comb != -1).sum()
-            if nr_non_abstain < self.nr_wl:
-                if nr_non_abstain == 0:
-                    new_counts[i] = 0
-                else:
-                    match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))
-                    new_counts[i] = lambda_counts[match_rows].sum()
+#         new_counts = lambda_counts.copy()
+#         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
+#         for i, comb in enumerate(lambda_combs):
+#             nr_non_abstain = (comb != -1).sum()
+#             if nr_non_abstain < self.nr_wl:
+#                 if nr_non_abstain == 0:
+#                     new_counts[i] = 0
+#                 else:
+#                     match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))
+#                     new_counts[i] = lambda_counts[match_rows].sum()
 
-        self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
+        #self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
+        self.P_lambda = torch.Tensor((lambda_counts/N)[lambda_index][:, None])
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda).clamp(0,1)
 
         prob_labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
@@ -352,8 +361,8 @@ class LabelModel(PerformanceMixin):
     def get_true_mu(self, y_true):
         """Obtain optimal label model parameters from data and ground truth labels"""
 
-        exp_mu = np.zeros((self.psi.shape[1], self.y_dim))
-        for i in range(0, self.y_dim):
+        exp_mu = np.zeros((self.psi.shape[1], self.cardinality))
+        for i in range(0, self.cardinality):
             mean = self.psi[y_true == i].sum(axis=0) / self.N
             exp_mu[:, i] = mean
 
@@ -362,9 +371,9 @@ class LabelModel(PerformanceMixin):
     def get_true_cov_OS(self, y_true):
         """Obtain true covariance between cliques and Y using ground truth labels"""
 
-        y_onehot = ((y_true[..., None] == self.y_set)*1).reshape((self.N, self.y_dim))
+        y_onehot = ((y_true[..., None] == self.y_set)*1).reshape((self.N, self.cardinality))
         psi_y = np.concatenate([self.psi, y_onehot], axis=1)
 
         cov_O_S = np.cov(psi_y.T, bias=True)
 
-        return cov_O_S[:-self.y_dim, -self.y_dim:]
+        return cov_O_S[:-self.cardinality, -self.cardinality:]
