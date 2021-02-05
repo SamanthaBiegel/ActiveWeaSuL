@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm_notebook as tqdm
 
-from activeweasul.label_model2 import LabelModel
+from activeweasul.label_model import LabelModel
 from activeweasul.plot import PlotMixin
 from activeweasul.query import ActiveLearningQuery
 
