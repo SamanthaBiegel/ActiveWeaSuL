@@ -2,11 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
+from scipy.stats import entropy
 import seaborn as sns
+from sklearn.linear_model import LogisticRegression
 import torch
 from tqdm import tqdm
 
 from active_weasul import ActiveWeaSuLPipeline, set_seed
+from performance import PerformanceMixin
 
 
 def process_metric_dict(metric_dict, strategy_string, remove_test=False):
@@ -32,12 +35,55 @@ def process_exp_dict(exp_dict, strategy_string):
     return exp_df
 
 
+def add_baseline(metric_dfs, al_it):
+    WS_baseline = metric_dfs[(metric_dfs["Number of labeled points"] == 0)
+                         & (metric_dfs["Approach"] == "Active WeaSuL")
+                         & (metric_dfs["Metric"] == "Accuracy")
+                         & (metric_dfs["Set"] == "test")].groupby("Model").mean()["Value"]
+
+    baseline_fm = pd.DataFrame({"Number of labeled points": list(range(al_it+1)), "Value": np.repeat(WS_baseline["Discriminative"], al_it+1)})
+    baseline_fm["Model"] = "Discriminative"
+    baseline_fm["Run"] = 0
+    baseline_fm["Approach"] = "Weak supervision by itself"
+    baseline_fm["Metric"] = "Accuracy"
+    baseline_fm["Dash"] = "n"
+    baseline_fm["Set"] = "test"
+
+    baseline_lm = pd.DataFrame({"Number of labeled points": list(range(al_it+1)), "Value": np.repeat(WS_baseline["Generative"], al_it+1)})
+    baseline_lm["Model"] = "Generative"
+    baseline_lm["Run"] = 0
+    baseline_lm["Approach"] = "Weak supervision by itself"
+    baseline_lm["Metric"] = "Accuracy"
+    baseline_lm["Dash"] = "n"
+    baseline_lm["Set"] = "test"
+
+    return pd.concat([metric_dfs, baseline_lm, baseline_fm])
+
+def add_optimal(metric_dfs, al_it, optimal_generative_test, optimal_discriminative_test):
+
+    optimal_lm = pd.DataFrame(optimal_generative_test, index=range(al_it+1)).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Metric", 0: "Value"})
+    optimal_lm["Run"] = 0
+    optimal_lm["Model"] = "Generative"
+    optimal_lm["Approach"] = "Upper bound"
+    optimal_lm["Dash"] = "y"
+    optimal_lm["Set"] = "test"
+
+    optimal_dm = pd.DataFrame(optimal_discriminative_test, index=range(al_it+1)).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Metric", 0: "Value"})
+    optimal_dm["Run"] = 0
+    optimal_dm["Model"] = "Discriminative"
+    optimal_dm["Approach"] = "Upper bound"
+    optimal_dm["Dash"] = "y"
+    optimal_dm["Set"] = "test"
+
+    return pd.concat([metric_dfs, optimal_lm, optimal_dm])
+
+
 def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
     if not plot_train:
         metric_df = metric_df[metric_df.Set != "train"]
 
-    lines = list(metric_df.Strategy.unique())
+    lines = list(metric_df.Approach.unique())
 
     colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"][:len(lines)]
 
@@ -45,7 +91,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
     sns.set(style="whitegrid")
     ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Model",
-                     kind="line", hue="Strategy", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
+                     kind="line", hue="Approach", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
 
     show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
     show_labels = lines
@@ -66,6 +112,7 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
     al_metrics = {}
     al_probs = {}
     al_queried = {}
+    al_entropies = {}
 
     if seeds is None:
         seeds = np.random.randint(0, 1000, nr_trials)
@@ -95,11 +142,17 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
         al_probs[i] = al.probs
         al_queried[i] = al.queried
 
-        plot_metrics(process_metric_dict(al.metrics, query_strategy, remove_test=False))
+        al_entropies[i] = []
+
+        for j in range(al_it):
+            bucket_list = al.unique_inverse[al.queried[:j+1]]
+            al_entropies[i].append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(len(np.unique(al.unique_inverse)))]))
+
+        plot_metrics(process_metric_dict(al.metrics, query_strategy))
         plt.show()
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
-    return al_metrics, al_queried
+    return al_metrics, al_queried, al_probs, al_entropies
 
 
 def query_margin(preds, is_in_pool):
@@ -109,8 +162,7 @@ def query_margin(preds, is_in_pool):
     point_idx = torch.randint(0,len(chosen_points), (1,1))
     point = chosen_points[point_idx].item()
     is_in_pool[point] = False
-    return point, is_in_pool
-    
+    return point, is_in_pool    
 
 
 def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
@@ -152,3 +204,63 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
         accuracy_dict[j] = accuracies
 
     return accuracy_dict, queried
+
+def synthetic_al_experiment(nr_trials, al_it, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
+
+    metric_dict = {}
+
+    for j in tqdm(range(nr_trials), desc="Trials"):
+        metric_dict[j] = {}
+        metric_dict[j]["Discriminative_train"] = {}
+        metric_dict[j]["Discriminative_test"] = {}
+        queried = []
+        
+        model = LogisticRegression()
+
+        set_seed(seeds[j])            
+
+        for i in range(len(queried), al_it + 1):
+
+            if (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
+                queried.append(random.sample(range(len(y_train)), 1)[0])
+                metric_dict[j]["Discriminative_train"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                metric_dict[j]["Discriminative_test"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+            else:      
+                Y = y_train[queried]
+                df_1 = features.iloc[queried]
+                train_preds = model.fit(df_1.loc[:, ["x1", "x2"]].values, Y).predict_proba(features.values)
+                    
+                queried.append(np.argmin(np.abs(train_preds[:, 1] - train_preds[:, 0])).item())
+
+                test_preds = model.predict_proba(test_features)
+
+                metric_dict[j]["Discriminative_train"][i] = PerformanceMixin().analyze(y=y_train, preds=torch.Tensor(train_preds))
+                metric_dict[j]["Discriminative_test"][i] = PerformanceMixin().analyze(y=y_test, preds=torch.Tensor(test_preds))
+
+    return metric_dict
+
+
+def bucket_entropy_experiment(nr_trials, al_it, label_matrix, y_train, cliques, class_balance, starting_seed, seeds, query_strategy, randomness):
+
+    entropies = {}
+    for i in tqdm(range(nr_trials), desc="Repetitions"):
+        seed = seeds[i]
+        it = al_it
+
+        al = ActiveWeaSuLPipeline(it=it,
+                                  query_strategy=query_strategy,
+                                  randomness=randomness,
+                                  starting_seed=starting_seed,
+                                  seed=seed)
+
+        _ = al.run_active_weasul(label_matrix=label_matrix, y_train=y_train, cliques=cliques, class_balance=class_balance)
+
+        entropy_sampled_buckets = []
+
+        for j in range(it):
+            bucket_list = al.unique_inverse[al.queried[:j+1]]
+            entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
+
+        entropies[i] = entropy_sampled_buckets
+
+    return entropies

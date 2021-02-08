@@ -331,15 +331,19 @@ class LabelModel(PerformanceMixin):
 
         return prob_labels
 
-    def predict_true(self, y_true):
+    def predict_true(self, y_true, y_test=None, label_matrix=None):
         """Obtain training labels from optimal label model using ground truth labels"""
 
-        return self.predict(self.label_matrix, self.get_true_mu(y_true)[:, 1][:, None], y_true.mean())
+        if any(v is None for v in (label_matrix, y_test)):
+            label_matrix = self.label_matrix
+            y_test = y_true
+
+        return self.predict(label_matrix, self.get_true_mu(y_true)[:, 1][:, None], y_test.mean())
 
     def predict_true_counts(self, y_true):
         """Obtain optimal training labels using ground truth labels"""
 
-        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix, y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
         P_Y_lambda = np.zeros((self.N, 2))
 
