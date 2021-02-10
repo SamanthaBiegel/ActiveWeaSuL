@@ -37,7 +37,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
     if not plot_train:
         metric_df = metric_df[metric_df.Set != "train"]
 
-    lines = list(metric_df.Strategy.unique())
+    lines = list(metric_df.Approach.unique())
 
     colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"][:len(lines)]
 
@@ -45,7 +45,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
     sns.set(style="whitegrid")
     ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Model",
-                     kind="line", hue="Strategy", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
+                     kind="line", hue="Approach", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
 
     show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
     show_labels = lines
@@ -58,7 +58,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
 
 def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
-                             class_balance, query_strategy, starting_seed=76, seeds=None, 
+                             class_balance, query_strategy, starting_seed=76, seeds=None,
                              discr_model_frequency=1, penalty_strength=1, batch_size=20,
                              final_model=None, train_dataset=None, test_dataset=None,
                              label_matrix_test=None, y_test=None, randomness=0):
@@ -110,11 +110,11 @@ def query_margin(preds, is_in_pool):
     point = chosen_points[point_idx].item()
     is_in_pool[point] = False
     return point, is_in_pool
-    
+
 
 
 def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     accuracy_dict = {}
@@ -122,11 +122,11 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
     for j in tqdm(range(nr_trials), desc="Trials"):
         accuracies = []
         queried = []
-        
+
         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
 
         set_seed(seeds[j])
-        
+
         while (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
             queried.append(random.sample(range(len(y_train)), 1)[0])
             accuracies.append(0.5)
@@ -134,7 +134,7 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
         for i in range(len(queried), al_it + 1):
 
 #             model.reset()
-            
+
             Y = torch.LongTensor(y_train[queried])
 
             feature_subset = torch.Tensor(features[queried, :])
@@ -144,7 +144,7 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
             train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
             query, is_in_pool = query_margin(train_preds, is_in_pool)
             queried.append(query)
-            
+
             test_preds = model.predict(test_dataloader)
 
             accuracies.append(model.accuracy(y_test, test_preds))
