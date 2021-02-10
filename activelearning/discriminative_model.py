@@ -10,10 +10,9 @@ class DiscriminativeModel(nn.Module):
     Provides training functionality to a classifier.
     """
 
-    def __init__(self, hide_progress_bar=False):
+    def __init__(self):
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.hide_progress_bar = hide_progress_bar
 
     def cross_entropy_soft_labels(self, predictions, targets):
         """Cross entropy loss for probabilistic labels"""
@@ -43,7 +42,7 @@ class DiscriminativeModel(nn.Module):
         else:
             loss_f = F.cross_entropy
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
         for epoch in range(self.n_epochs):
             for batch_features, batch_labels in train_dataloader:

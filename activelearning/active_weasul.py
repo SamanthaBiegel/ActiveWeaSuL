@@ -62,6 +62,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         self.batch_size = batch_size
         self.discr_model_frequency = discr_model_frequency
         set_seed(starting_seed)
+        self.final_model.reset()
         self.seed = seed
 
     def run_active_weasul(self, label_matrix, y_train, cliques, class_balance, label_matrix_test=None, y_test=None, train_dataset=None, test_dataset=None):
@@ -118,10 +119,13 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
             # Optionally, train discriminative model on probabilistic labels
             if self.final_model is not None and i % self.discr_model_frequency == 0:
-                train_dataset.Y = prob_labels_train.clone().detach()
+                final_model_probs_train = prob_labels_train.clone().detach()
+                final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
+                final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
+                train_dataset.Y = final_model_probs_train.clamp(0,1)
                 dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
 
-                self.final_model.reset()
+                # self.final_model.reset()
                 preds_train = self.final_model.fit(dl_train).predict()
                 preds_test = self.final_model.predict(dl_test)
             else:
@@ -132,15 +136,13 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 sel_idx = None
                 # Different seed for rest of the pipeline after first label model fit
                 set_seed(self.seed)
-
-            self.log(count=i, lm_train=prob_labels_train, lm_test=prob_labels_test, fm_train=preds_train,
-                     fm_test=preds_test, selected_point=sel_idx)
-
-            if i == 0:
+                
                 # Switch to active learning mode
                 self.label_model.active_learning = True
                 self.label_model.penalty_strength = self.penalty_strength
-                self.ground_truth_labels = np.full_like(y_train, -1)
+
+            self.log(count=i, lm_train=prob_labels_train, lm_test=prob_labels_test, fm_train=preds_train,
+                     fm_test=preds_test, selected_point=sel_idx)
 
             if i < self.it:
                 # Query point and add to ground truth labels

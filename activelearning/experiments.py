@@ -90,7 +90,7 @@ def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
     metric_df = metric_df[metric_df["Metric"].isin(filter_metrics)]
 
     sns.set(style="whitegrid")
-    ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Model",
+    ax = sns.relplot(data=metric_df, x="Number of labeled points", y="Value", col="Model", row="Set",
                      kind="line", hue="Approach", estimator="mean", ci=68, n_boot=100, legend=False, palette=sns.color_palette(colors))
 
     show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
@@ -119,6 +119,7 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
 
     for i in tqdm(range(nr_trials), desc="Trials"):
         seed = seeds[i]
+        # final_model.reset()
         al = ActiveWeaSuLPipeline(it=al_it,
                                   penalty_strength=penalty_strength,
                                   query_strategy=query_strategy,
@@ -148,7 +149,7 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
             bucket_list = al.unique_inverse[al.queried[:j+1]]
             al_entropies[i].append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(len(np.unique(al.unique_inverse)))]))
 
-        plot_metrics(process_metric_dict(al.metrics, query_strategy))
+        plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["MCC"])
         plt.show()
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
@@ -162,48 +163,92 @@ def query_margin(preds, is_in_pool):
     point_idx = torch.randint(0,len(chosen_points), (1,1))
     point = chosen_points[point_idx].item()
     is_in_pool[point] = False
-    return point, is_in_pool    
+    return point, is_in_pool
 
 
-def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
+# def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
     
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+#     accuracy_dict = {}
+
+#     for j in tqdm(range(nr_trials), desc="Trials"):
+#         accuracies = []
+#         queried = []
+        
+#         model.reset()
+        
+#         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
+
+#         set_seed(seeds[j])
+        
+#         while (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
+#             queried.append(random.sample(range(len(y_train)), 1)[0])
+#             accuracies.append(0.5)
+
+#         for i in range(len(queried), al_it + 1):
+            
+#             Y = torch.LongTensor(y_train[queried])
+
+#             feature_subset = torch.Tensor(features[queried, :])
+
+#             train_dataset.update(feature_subset, Y)
+#             train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+#             train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
+#             query, is_in_pool = query_margin(train_preds, is_in_pool)
+#             queried.append(query)
+            
+#             test_preds = model.predict(test_dataloader)
+
+#             accuracies.append(model.accuracy(y_test, test_preds))
+
+#         accuracy_dict[j] = accuracies
+
+#     return accuracy_dict, queried
+
+def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    accuracy_dict = {}
+    metric_dict = {}
 
     for j in tqdm(range(nr_trials), desc="Trials"):
-        accuracies = []
+        metric_dict[j] = {}
+        metric_dict[j]["Discriminative_train"] = {}
+        metric_dict[j]["Discriminative_test"] = {}
         queried = []
-        
+
+        model.reset()
+
         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
 
         set_seed(seeds[j])
-        
-        while (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
-            queried.append(random.sample(range(len(y_train)), 1)[0])
-            accuracies.append(0.5)
 
-        for i in range(len(queried), al_it + 1):
+        for i in range(al_it + 1):
 
-#             model.reset()
-            
-            Y = torch.LongTensor(y_train[queried])
+            if (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
+                point = random.sample(range(len(y_train)), 1)[0]
+                is_in_pool[point] = False
+                queried.append(point)
+                metric_dict[j]["Discriminative_train"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                metric_dict[j]["Discriminative_test"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+            else:
+                Y = torch.LongTensor(y_train[queried])
 
-            feature_subset = torch.Tensor(features[queried, :])
+                feature_subset = torch.Tensor(features[queried, :])
 
-            train_dataset.update(feature_subset, Y)
-            train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-            train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
-            query, is_in_pool = query_margin(train_preds, is_in_pool)
-            queried.append(query)
-            
-            test_preds = model.predict(test_dataloader)
+                train_dataset.update(feature_subset, Y)
+                train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+                train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
+                query, is_in_pool = query_margin(train_preds, is_in_pool)
+                queried.append(query)
 
-            accuracies.append(model.accuracy(y_test, test_preds))
+                test_preds = model.predict(test_dataloader)
 
-        accuracy_dict[j] = accuracies
+                metric_dict[j]["Discriminative_train"][i] = PerformanceMixin().analyze(y=y_train, preds=train_preds)
+                metric_dict[j]["Discriminative_test"][i] = PerformanceMixin().analyze(y=y_test, preds=test_preds)
 
-    return accuracy_dict, queried
+    return metric_dict
 
 def synthetic_al_experiment(nr_trials, al_it, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
 

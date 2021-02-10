@@ -14,6 +14,24 @@
 # ---
 
 # +
+DAP = True
+
+if DAP:
+# #     ! pip install -r ../requirements.txt
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD/ /tmp/data/annotations --recursive --exclude "sg_dataset*"
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD/sg_dataset/sg_train_images/ /tmp/data/images/train_images --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/VRD/sg_dataset/sg_test_images/ /tmp/data/images/test_images --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/glove /tmp/data/word_embeddings --recursive
+# #     ! aws s3 cp s3://user/gc03ye/uploads/resnet_old.pth /tmp/models/resnet_old.pth
+    import torch
+    path_prefix = "/tmp/"
+    pretrained_model = torch.load(path_prefix + "models/resnet_old.pth")
+else:
+    import torchvision.models as models
+    pretrained_model = models.resnet18(pretrained=True)
+    path_prefix = "../"
+
+# +
 # %load_ext autoreload
 # %autoreload 2
 
@@ -30,6 +48,7 @@ import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 sys.path.append(os.path.abspath("../activelearning"))
@@ -39,57 +58,131 @@ from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
 from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
 from plot import plot_probs, plot_train_loss
-from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment, bucket_entropy_experiment, add_baseline, synthetic_al_experiment
+from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment, bucket_entropy_experiment, add_baseline, add_optimal, synthetic_al_experiment
+from vr_utils import load_vr_data, balance_dataset, df_drop_duplicates
+from lf_utils import apply_lfs, analyze_lfs
+from visualrelation import VisualRelationDataset, VisualRelationClassifier, WordEmb, FlatConcat
+
 # -
 
 # ### Generate data
 
 # +
-N = 10000
-centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
-p_z = 0.5
+balance=False
+semantic_predicates = [
+        "carry",
+        "cover",
+        "fly",
+        "look",
+        "lying on",
+        "park on",
+        "sit on",
+        "stand on",
+        "ride",
+#         "wear"
+    ]
 
-set_seed(932)
-data = SyntheticDataGenerator(N, p_z, centroids)
-df_train = data.sample_dataset().create_df()
+classify = ["sit on"]
+df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_predicates, path_prefix=path_prefix, drop_duplicates=True, balance=balance, validation=False)
+
 y_train = df_train.y.values
+y_test = df_test.y.values
+
+print("Train Relationships: ", len(df_train))
+print("Test Relationships: ", len(df_test))
 
 # +
-N = 3000
+dataset_train = VisualRelationDataset(image_dir=path_prefix + "data/images/train_images", df=df_train, Y=y_train)
 
-set_seed(466)
-data = SyntheticDataGenerator(N, p_z, centroids)
-df_test = data.sample_dataset().create_df()
-y_test = df_test.y.values
+dl_train = DataLoader(dataset_train, shuffle=False, batch_size=256)
+
+final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=False)
+
+feature_tensor_train = torch.Tensor([])
+
+for batch_features, batch_labels in tqdm(dl_train):
+    feature_tensor_train = torch.cat((feature_tensor_train, final_model.extract_concat_features(batch_features).to("cpu")))
+
+# +
+dataset_test = VisualRelationDataset(image_dir=path_prefix + "data/images/test_images", 
+                      df=df_test,
+                      Y=y_test)
+
+dl_test = DataLoader(dataset_test, shuffle=False, batch_size=256)
+
+feature_tensor_test = torch.Tensor([])
+
+for batch_features, batch_labels in dl_test:
+    feature_tensor_test = torch.cat((feature_tensor_test, final_model.extract_concat_features(batch_features).to("cpu")))
 # -
 
 # ### Apply labeling functions
 
-# +
-df_train.loc[:, "wl1"] = (df_train.x2<0.4)*1
-df_train.loc[:, "wl2"] = (df_train.x1<-0.3)*1
-df_train.loc[:, "wl3"] = (df_train.x1<-1)*1
+SITON = 1
+OTHER = 0
 
-label_matrix = df_train[["wl1", "wl2", "wl3"]].values
 
 # +
-df_test.loc[:, "wl1"] = (df_test.x2<0.4)*1
-df_test.loc[:, "wl2"] = (df_test.x1<-0.3)*1
-df_test.loc[:, "wl3"] = (df_test.x1<-1)*1
+def lf_siton_object(x):
+    if x.subject_category == "person":
+        if x.object_category in ["bench", "chair", "floor", "horse", "grass", "table"]:
+            return SITON
+    return OTHER
 
-label_matrix_test = df_test[["wl1", "wl2", "wl3"]].values
+def lf_not_person(x):
+    if x.subject_category != "person":
+        return OTHER
+    return SITON
+
+YMIN = 0
+YMAX = 1
+XMIN = 2
+XMAX = 3
+
+def lf_ydist(x):
+    if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
+        return SITON
+    return OTHER
+
+def lf_xdist(x):
+    if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]: 
+        return OTHER
+    return SITON
+
+def lf_dist(x):
+    if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
+        return OTHER
+    return SITON
+
+def area(bbox):
+    return (bbox[YMAX] - bbox[YMIN]) * (bbox[XMAX] - bbox[XMIN])
+
+def lf_area(x):
+    if area(x.subject_bbox) / area(x.object_bbox) < 0.8:
+        return SITON
+    return OTHER
+
+
+# +
+lfs = [lf_siton_object, lf_dist, lf_area]
+
+label_matrix = apply_lfs(df_train, lfs)
+label_matrix_test = apply_lfs(df_test, lfs)
+# -
+
+analyze_lfs(label_matrix_test, df_test["y"], lfs)
+
+
+# +
+class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
+
+cliques=[[0],[1,2]]
 # -
 
 # ### Fit label model
 
-# +
-final_model_kwargs = dict(input_dim=2,
-                          output_dim=2,
-                          lr=1e-1,
-                          n_epochs=100)
-
-class_balance = np.array([1 - p_z, p_z])
-cliques=[[0],[1,2]]
+final_model_kwargs = dict(lr=1e-3,
+                          n_epochs=3)
 
 # +
 set_seed(243)
@@ -103,7 +196,7 @@ Y_probs = lm.fit(label_matrix=label_matrix,
                  class_balance=class_balance).predict()
 
 # Predict on test set
-Y_probs_test = lm.predict(label_matrix_test, lm.mu, p_z)
+Y_probs_test = lm.predict(label_matrix_test, lm.mu, class_balance[1])
 
 # Analyze test set performance
 lm.analyze(y_test, Y_probs_test)
@@ -112,20 +205,24 @@ lm.analyze(y_test, Y_probs_test)
 # ### Fit discriminative model
 
 # +
-batch_size = 256
+batch_size = 20
 
 set_seed(27)
 
-train_dataset = CustomTensorDataset(X=torch.Tensor(df_train.loc[:,["x1", "x2"]].values), Y=lm.predict_true(y_train).detach())
-test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.loc[:,["x1", "x2"]].values), Y=Y_probs_test.detach())
-train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=256, shuffle=True)
+train_dataset = CustomTensorDataset(feature_tensor_train, lm.predict_true(y_train).detach())
+test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
+
+train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=20, shuffle=True)
 test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
-dm = LogisticRegression(**final_model_kwargs)
+dm = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix)
 
 dm.reset()
 train_preds = dm.fit(train_loader).predict()
 test_preds = dm.predict(test_dataloader)
+
+# +
+# dm.analyze(y_test, test_preds)
 
 # +
 # plot_train_loss(dm.average_losses)
@@ -162,12 +259,12 @@ test_preds = dm.predict(test_dataloader)
 # plot_probs(df, al.probs["Generative_train"][plot_it], soft_labels=False, add_labeled_points=al.queried[:plot_it])
 # -
 
-# ### Figure 1
-
 starting_seed = 243
-penalty_strength = 1
+penalty_strength = 1e3
 nr_trials = 10
-al_it = 30
+al_it = 50
+
+# ### Figure 1
 
 # #### Active WeaSuL
 
@@ -180,14 +277,14 @@ exp_kwargs = dict(nr_trials=nr_trials,
                   starting_seed=starting_seed,
                   penalty_strength=penalty_strength,
                   batch_size=batch_size,
-                  final_model=LogisticRegression(**final_model_kwargs, hide_progress_bar=True),
-                  discr_model_frequency=1,
-                  train_dataset = CustomTensorDataset(X=torch.Tensor(df_train.loc[:,["x1", "x2"]].values), Y=Y_probs.detach()),
-                  test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.loc[:,["x1", "x2"]].values), Y=Y_probs_test.detach()),
+                  final_model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix),
+                  discr_model_frequency=5,
+                  train_dataset = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train)),
+                  test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test)),
                   label_matrix_test=label_matrix_test,
                   y_test=y_test)
 
-np.random.seed(284)
+np.random.seed(50)
 exp_kwargs["seeds"]= np.random.randint(0,1000,10)
 metrics_maxkl, queried_maxkl, probs_maxkl, entropies_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
 
@@ -200,42 +297,44 @@ metrics_nashaat, queried_nashaat, probs_nashaat, _ = active_weasul_experiment(**
 # Nashaat 1000 iterations
 np.random.seed(25)
 exp_kwargs["seeds"]= np.random.randint(0,1000,10)
-exp_kwargs["al_it"] = 1000
-exp_kwargs["discr_model_frequency"] = 20
+exp_kwargs["al_it"] = 200
+exp_kwargs["discr_model_frequency"] = 10
 metrics_nashaat_1000, _, _, _ = active_weasul_experiment(**exp_kwargs, query_strategy="nashaat", randomness=0)
 exp_kwargs["al_it"] = al_it
-exp_kwargs["discr_model_frequency"] = 1
+exp_kwargs["discr_model_frequency"] = 5
 
 # #### Active learning
 
 # +
 set_seed(76)
 
-predict_dataset = CustomTensorDataset(X=torch.Tensor(df_train.loc[:,["x1","x2"]].values), Y=torch.Tensor(y_train))
-test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.loc[:,["x1","x2"]].values), Y=torch.Tensor(y_test))
+train_dataset = CustomTensorDataset(feature_tensor_train[0,:], torch.Tensor(y_train[0]))
+predict_dataset = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train))
+test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
 
 al_exp_kwargs = dict(
-    nr_trials=nr_trials,
-    al_it=al_it,
+    nr_trials=10,
+    al_it=50,
     batch_size=batch_size,
-    seeds = np.random.randint(0,1000,10),
-    features = df_train.loc[:, ["x1", "x2"]],
+    seeds = np.random.randint(0,1000,nr_trials),
+    model = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix=path_prefix, soft_labels=False),
+    features = feature_tensor_train,
     y_train = y_train,
     y_test = y_test,
-    train_dataset = CustomTensorDataset(X=df_train.loc[[0],["x1", "x2"]], Y=y_train[0]),
+    train_dataset = train_dataset,
     predict_dataloader = torch.utils.data.DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
     test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
-    test_features=df_test.loc[:, ["x1", "x2"]].values
+    test_features=feature_tensor_test
 )
 # -
 
-al_accuracies = synthetic_al_experiment(**al_exp_kwargs)
+metrics_activelearning = active_learning_experiment(**al_exp_kwargs)
 
 # #### Process results
 
 metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "Active WeaSuL"),
                         process_exp_dict(metrics_nashaat, "Nashaat et al."),
-                        process_exp_dict(al_accuracies, "Active learning by itself")])
+                        process_exp_dict(metrics_activelearning, "Active learning by itself")])
 metric_dfs = metric_dfs.reset_index(level=0).rename(columns={"level_0": "Run"})
 metric_dfs["Dash"] = "n"
 # +
@@ -247,17 +346,16 @@ joined_df = add_optimal(joined_df, al_it, optimal_generative_test, optimal_discr
 # -
 
 
-joined_df = joined_df[joined_df["Metric"] == "Accuracy"]
+joined_df = joined_df[joined_df["Metric"] == "MCC"]
 joined_df = joined_df[joined_df["Set"] == "test"]
 
 nashaat_df = process_exp_dict(metrics_nashaat_1000, "Nashaat et al.")
-nashaat_df = nashaat_df[nashaat_df["Metric"] == "Accuracy"]
+nashaat_df = nashaat_df[nashaat_df["Metric"] == "MCC"]
 nashaat_df = nashaat_df[nashaat_df["Set"] == "test"]
 font_size=25
 legend_size=25
 tick_size=20
-n_boot=10000
-
+n_boot=100
 # +
 colors = ["#000000", "#2b4162", "#368f8b", "#ec7357", "#e9c46a"]
 
@@ -276,13 +374,13 @@ sns.lineplot(data=joined_df[joined_df["Model"] == "Generative"], x="Number of la
 # leg._legend_box.align = "left"
 # leg_lines = leg.get_lines()
 # leg_lines[0].set_linestyle("--")
-axes[0].set_title("Generative model (30 iterations)", size=font_size)
+axes[0].set_title("Generative model (50 iterations)", size=font_size)
 
 sns.lineplot(data=joined_df[joined_df["Model"] == "Discriminative"], x="Number of labeled points", y="Value",
             hue="Approach", ci=68, n_boot=n_boot, estimator="mean", style="Dash",
             hue_order=["Upper bound","Active WeaSuL", "Nashaat et al.", "Weak supervision by itself", "Active learning by itself"], ax=axes[1])
 axes[1].legend([],[])
-axes[1].set_title("Discriminative model (30 iterations)", fontsize=font_size)
+axes[1].set_title("Discriminative model (50 iterations)", fontsize=font_size)
 
 ax = sns.lineplot(data=nashaat_df[nashaat_df["Model"] == "Discriminative"], x="Number of labeled points", y="Value", hue="Approach", ci=68, n_boot=n_boot, palette=sns.color_palette([colors[2]]))
 # handles,labels = ax.axes.get_legend_handles_labels()
@@ -302,13 +400,13 @@ axes[2].tick_params(axis='both', which='major', labelsize=tick_size)
 axes[0].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[2].set_xlabel("Number of active learning iterations", fontsize=font_size)
-axes[0].set_ylabel("Accuracy", fontsize=font_size)
+axes[0].set_ylabel("MCC", fontsize=font_size)
 
-plt.ylim(0.48, 0.98)
+# plt.ylim(0.48, 0.98)
 
 plt.tight_layout()
 
-plt.savefig("../plots/performance_baselines.png")
+plt.savefig("../plots/VRD_performance_baselines.png")
 # plt.show()
 # -
 
@@ -316,11 +414,11 @@ plt.savefig("../plots/performance_baselines.png")
 
 # #### Other sampling strategies
 
-np.random.seed(568)
+np.random.seed(60)
 exp_kwargs["seeds"]= np.random.randint(0,1000,10)
 metrics_margin, queried_margin, probs_margin, entropies_margin = active_weasul_experiment(**exp_kwargs, query_strategy="margin")
 
-np.random.seed(568)
+np.random.seed(70)
 exp_kwargs["seeds"]= np.random.randint(0,1000,10)
 metrics_random, queried_random, probs_random, entropies_random = active_weasul_experiment(**exp_kwargs, query_strategy="margin", randomness=1)
 
@@ -332,7 +430,7 @@ metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "MaxKL"),
 
 # +
 metric_dfs = metric_dfs[metric_dfs.Set != "train"]
-metric_dfs = metric_dfs[metric_dfs["Metric"].isin(["Accuracy"])]
+metric_dfs = metric_dfs[metric_dfs["Metric"].isin(["MCC"])].reset_index()
 
 lines = list(metric_dfs.Approach.unique())
 
@@ -363,13 +461,14 @@ axes[1].tick_params(axis='both', which='major', labelsize=tick_size)
 
 axes[0].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
-axes[0].set_ylabel("Accuracy", fontsize=font_size)
+axes[0].set_ylabel("MCC", fontsize=font_size)
 
-plt.ylim(0.85,0.978)
+# plt.ylim(0.85,0.978)
 
 plt.tight_layout()
 
-plt.savefig("../plots/sampling_strategies.png")
+plt.savefig("../plots/VRD_sampling_strategies.png")
+# plt.show()
 # -
 
 # ### Figure 2C
@@ -404,10 +503,11 @@ ax.tick_params(axis='both', which='major', labelsize=tick_size)
 ax.set_xlabel("Number of active learning iterations", fontsize=font_size)
 ax.set_ylabel("Diversity (entropy)", fontsize=font_size)
 ax.set_title("Diversity of sampled buckets", fontsize=font_size)
-plt.ylim(-0.05,1.8)
+# plt.ylim(-0.05,1.8)
 
 plt.tight_layout()
-plt.savefig("../plots/entropies.png")
+plt.savefig("../plots/VRD_entropies.png")
+# plt.show()
 # -
 
 

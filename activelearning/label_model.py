@@ -322,7 +322,7 @@ class LabelModel(PerformanceMixin):
         self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda).clamp(0,1)
 
         prob_labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
