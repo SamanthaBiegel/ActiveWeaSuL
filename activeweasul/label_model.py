@@ -5,7 +5,7 @@ import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 
-from itertools import product
+from itertools import product, chain
 import pandas as pd
 
 from activeweasul.performance import PerformanceMixin
@@ -181,7 +181,8 @@ class LabelModel(PerformanceMixin):
         # Combine the arrays to get psi
         psi = np.hstack(psi)
 
-        psi = psi[:, psi.sum(axis=0) != 0]
+        # Select only the columns with non-zero elements
+        psi = psi[:, list(chain.from_iterable(self.wl_idx.values()))]
         # ! I kept the return statement as it was for compatibility reasons
         return psi, self.wl_idx
 
@@ -298,7 +299,10 @@ class LabelModel(PerformanceMixin):
         cliques_joined = self.cliques.copy()
         for i, clique in enumerate(cliques_joined):
             cliques_joined[i] = ["_".join(str(wl) for wl in clique)]
-        self.max_clique_idx = np.array([idx for clique in cliques_joined for i, idx in enumerate(self.wl_idx[clique[0]])])
+        self.max_clique_idx = np.array(
+            [idx for clique in cliques_joined
+             for i, idx in enumerate(self.wl_idx[clique[0]])]
+        )
         clique_sums = torch.zeros((N, len(self.cliques)))
         for i, clique in enumerate(self.cliques):
             clique_sums[:, i] = torch.Tensor(label_matrix[:, clique] != -1).sum(dim=1) > 0
