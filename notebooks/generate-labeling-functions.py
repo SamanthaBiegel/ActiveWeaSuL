@@ -45,6 +45,8 @@ from snorkel.labeling.model import LabelModel
 
 from lfs.occupancy import labeling_functions
 
+import torch
+
 # Importing the methods from Samantha's work (I've changed the )
 if '../ActiveWeaSuL' not in sys.path:
     sys.path.append('../ActiveWeaSuL')
@@ -204,6 +206,20 @@ y_mc = lm_mc.fit(label_matrix=L_train,
 
 # %%
 plt.plot(lm_mc.losses)
+
+# %% [markdown]
+# ### "Optimal" loss
+#
+# Considering the true $\mu$, we can compute the expected $z$ and corresponding loss for its value
+
+# %%
+true_mu = lm_mc.get_true_mu(y)[:, 1]
+cov_OS = true_mu[:, None] - torch.Tensor(lm_mc.E_O[:, None] @ lm_mc.E_S[None, None])
+c = lm_mc.cov_S - cov_OS.T @ lm_mc.cov_O_inverse @ cov_OS
+z = torch.sqrt(c) * lm_mc.cov_O_inverse @ cov_OS
+optimal_loss = torch.norm((lm_mc.cov_O_inverse + z @ z.T)[torch.BoolTensor(lm_mc.mask)]) ** 2
+
+optimal_loss
 
 # %%
 get_metrics(df_occup.Occupancy, y_mc[:, 1] > 0.5, None)
