@@ -191,6 +191,8 @@ np.random.seed(284)
 exp_kwargs["seeds"]= np.random.randint(0,1000,10)
 metrics_maxkl, queried_maxkl, probs_maxkl, entropies_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
 
+plot_metrics(process_exp_dict(metrics_maxkl, "Active WeaSuL"))
+
 # #### Nashaat et al.
 
 np.random.seed(25)
@@ -289,6 +291,7 @@ ax = sns.lineplot(data=nashaat_df[nashaat_df["Model"] == "Discriminative"], x="N
 # leg = plt.legend(handles=handles, labels=labels, loc="lower right", title="Method", fontsize=legend_size, title_fontsize=legend_size)
 # leg._legend_box.align = "left"
 handles, labels = axes[1].get_legend_handles_labels()
+[ha.set_linewidth(5) for ha in handles]
 leg = axes[2].legend(handles=handles[1:], labels=labels[1:6], loc="lower right", title="Method", fontsize=legend_size, title_fontsize=legend_size)
 leg._legend_box.align = "left"
 leg_lines = leg.get_lines()
@@ -304,7 +307,7 @@ axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[2].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[0].set_ylabel("Accuracy", fontsize=font_size)
 
-plt.ylim(0.48, 0.98)
+plt.ylim(0.5, 1)
 
 plt.tight_layout()
 
@@ -365,7 +368,7 @@ axes[0].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
 axes[0].set_ylabel("Accuracy", fontsize=font_size)
 
-plt.ylim(0.85,0.978)
+plt.ylim(0.83,0.978)
 
 plt.tight_layout()
 

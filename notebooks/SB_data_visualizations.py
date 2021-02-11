@@ -69,6 +69,22 @@ matplotlib.cm.register_cmap("mycolormap", cmap)
 norm = plt.Normalize(0, 1)
 sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
 sm.set_array([])
+
+# +
+cmap = clr.LinearSegmentedColormap.from_list('', ['#ec7357',"#BBBBBB",'#368f8b'], N=200)
+matplotlib.cm.register_cmap("mycolormap", cmap)
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
+
+fig = plt.figure(figsize=(10, 3))
+ax1 = fig.add_axes([0.1, 0.1, 0.03, 0.8])
+cb1 = matplotlib.colorbar.ColorbarBase(ax1, cmap=cmap,
+                                norm=norm,
+                                orientation='vertical',
+                                ticks=[])
+plt.savefig("../plots/colorbar.png")
 # -
 
 bp1 = centroids.sum(axis=0)/2
@@ -163,16 +179,16 @@ sns.set_context("paper")
 point_size=200
 legend_size=15
 font_size=15
-line_width=2
+line_width=1
 
 # +
 plt.figure(figsize=(5,5))
 plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.y, s=point_size, edgecolor="black", cmap=cmap)
-plt.plot(x_dec, y_dec, color="black", linewidth=line_width)
+# plt.plot(x_dec, y_dec, color="black", linewidth=line_width)
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -183,8 +199,8 @@ plt.scatter(x=df_example.x1, y=df_example.x2, c="#BBBBBB", s=point_size, edgecol
 plt.legend(labels="?", loc="lower right", prop={'size': legend_size})
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -197,8 +213,8 @@ plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 
 plt.xticks([], [])
 plt.yticks([], [])
@@ -212,8 +228,8 @@ plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 
 plt.xticks([], [])
 plt.yticks([], [])
@@ -226,8 +242,8 @@ plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.wl3, s=point_size, ed
 plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -259,8 +275,8 @@ plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -301,8 +317,8 @@ plt.plot([-2.5, 1.7],[y1, y2], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -357,8 +373,8 @@ plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -371,8 +387,8 @@ plt.plot([-2.7,2.2],[y1, y2], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-plt.xlabel("x1", fontsize=font_size)
-plt.ylabel("x2", fontsize=font_size)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
 plt.xticks([], [])
 plt.yticks([], [])
 
