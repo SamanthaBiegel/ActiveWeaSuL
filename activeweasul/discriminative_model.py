@@ -37,7 +37,7 @@ class DiscriminativeModel(nn.Module):
         self.losses = []
         self.counts = 0
         self.average_losses = []
-        
+
         if self.soft_labels:
             loss_f = self.cross_entropy_soft_labels
         else:
@@ -48,9 +48,9 @@ class DiscriminativeModel(nn.Module):
         for epoch in range(self.n_epochs):
             for batch_features, batch_labels in train_dataloader:
                 optimizer.zero_grad()
-                
+
                 batch_features = batch_features.to(self.device)
-                
+
                 batch_logits = self.forward(batch_features)
                 batch_labels = batch_labels.to(self.device)
 
