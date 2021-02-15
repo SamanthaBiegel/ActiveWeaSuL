@@ -306,6 +306,7 @@ class LabelModel(PerformanceMixin):
 #         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
+<<<<<<< HEAD:activeweasul/label_model2.py
         lambda_combs, lambda_index, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
 #         new_counts = lambda_counts.copy()
 #         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
@@ -320,6 +321,21 @@ class LabelModel(PerformanceMixin):
 
         #self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
         self.P_lambda = torch.Tensor((lambda_counts/N)[lambda_index][:, None])
+=======
+        lambda_combs, lambda_inverse, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
+        marginals = lambda_counts / N
+        rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
+        for i, comb in enumerate(lambda_combs):
+            nr_non_abstain = (comb != -1).sum()
+            if nr_non_abstain == 0:
+                marginals[i] = 0
+            else:
+                match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
+                new_counts = lambda_counts[match_rows].sum()
+                marginals[i] = new_counts/lambda_counts[np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] != -1).all(axis=1))].sum()
+        
+        self.P_lambda = torch.Tensor(marginals[lambda_inverse])[:, None]
+>>>>>>> 9222374d18667beb5abceb049d924e9cb69c2e1f:activelearning/label_model.py
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda).clamp(0,1)
@@ -331,21 +347,42 @@ class LabelModel(PerformanceMixin):
 
         return prob_labels
 
+<<<<<<< HEAD:activeweasul/label_model2.py
     # def predict_true(self):
     #     """Obtain training labels from optimal label model using ground truth labels"""
 
     #     return self.predict(self.label_matrix, self.get_true_mu()[:, 1][:, None], self.y_true.mean())
+=======
+    def predict_true(self, y_true, y_test=None, label_matrix=None):
+        """Obtain training labels from optimal label model using ground truth labels"""
+
+        if any(v is None for v in (label_matrix, y_test)):
+            label_matrix = self.label_matrix
+            y_test = y_true
+
+        return self.predict(label_matrix, self.get_true_mu(y_true)[:, 1][:, None], y_test.mean())
+>>>>>>> 9222374d18667beb5abceb049d924e9cb69c2e1f:activelearning/label_model.py
 
     # def predict_true_counts(self):
     #     """Obtain optimal training labels using ground truth labels"""
 
+<<<<<<< HEAD:activeweasul/label_model2.py
     #     lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix[:,:3], self.y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+=======
+        lambda_combs, lambda_inverse, lambda_counts = np.unique(np.concatenate([self.label_matrix, y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+>>>>>>> 9222374d18667beb5abceb049d924e9cb69c2e1f:activelearning/label_model.py
 
     #     P_Y_lambda = np.zeros((self.N, 2))
 
+<<<<<<< HEAD:activeweasul/label_model2.py
     #     for i, j in zip([0, 1], [1, 0]):
     #         P_Y_lambda[self.y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[self.y_true == i]
     #         P_Y_lambda[self.y_true == i, j] = 1 - P_Y_lambda[self.y_true == i, i]
+=======
+        for i, j in zip([0, 1], [1, 0]):
+            P_Y_lambda[y_true == i, i] = ((lambda_counts/self.N)[lambda_inverse]/self.P_lambda.squeeze())[y_true == i]
+            P_Y_lambda[y_true == i, j] = 1 - P_Y_lambda[y_true == i, i]
+>>>>>>> 9222374d18667beb5abceb049d924e9cb69c2e1f:activelearning/label_model.py
 
     #     return torch.Tensor(P_Y_lambda)
 
