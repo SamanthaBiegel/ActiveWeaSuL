@@ -162,7 +162,7 @@ class LabelModel(PerformanceMixin):
                     psi_int_list.append(wl_int_onehot)
                     clique_idx[comb] = i
                     wl_idx[str(comb[0]) + "_" + str(comb[1])] = list(range(col_counter, col_counter+wl_int_onehot.shape[1]))
-                
+
                 # Compute psi for clique of 3 variables
                 if len(comb) == 3:
                     idx3 = wl_idx[str(comb[2])]
@@ -182,7 +182,7 @@ class LabelModel(PerformanceMixin):
             psi = np.concatenate([psi, psi_2], axis=1)
 
         return psi, wl_idx
-        
+
     def init_label_model(self, label_matrix, cliques, class_balance):
         """Initialize label model"""
 
@@ -307,19 +307,19 @@ class LabelModel(PerformanceMixin):
         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
-        lambda_combs, lambda_index, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
-        new_counts = lambda_counts.copy()
+        lambda_combs, lambda_inverse, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
+        marginals = lambda_counts / N
         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
         for i, comb in enumerate(lambda_combs):
             nr_non_abstain = (comb != -1).sum()
-            if nr_non_abstain < self.nr_wl:
-                if nr_non_abstain == 0:
-                    new_counts[i] = 0
-                else:
-                    match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
-                    new_counts[i] = lambda_counts[match_rows].sum()
+            if nr_non_abstain == 0:
+                marginals[i] = 0
+            else:
+                match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))
+                new_counts = lambda_counts[match_rows].sum()
+                marginals[i] = new_counts/lambda_counts[np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] != -1).all(axis=1))].sum()
 
-        self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
+        self.P_lambda = torch.Tensor(marginals[lambda_inverse])[:, None]
 
         # Conditional label probability
         P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
@@ -343,12 +343,12 @@ class LabelModel(PerformanceMixin):
     def predict_true_counts(self, y_true):
         """Obtain optimal training labels using ground truth labels"""
 
-        lambda_combs, lambda_index, lambda_counts = np.unique(np.concatenate([self.label_matrix, y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
+        lambda_combs, lambda_inverse, lambda_counts = np.unique(np.concatenate([self.label_matrix, y_true[:, None]], axis=1), axis=0, return_counts=True, return_inverse=True)
 
         P_Y_lambda = np.zeros((self.N, 2))
 
         for i, j in zip([0, 1], [1, 0]):
-            P_Y_lambda[y_true == i, i] = ((lambda_counts/self.N)[lambda_index]/self.P_lambda.squeeze())[y_true == i]
+            P_Y_lambda[y_true == i, i] = ((lambda_counts/self.N)[lambda_inverse]/self.P_lambda.squeeze())[y_true == i]
             P_Y_lambda[y_true == i, j] = 1 - P_Y_lambda[y_true == i, i]
 
         return torch.Tensor(P_Y_lambda)
