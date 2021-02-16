@@ -36,28 +36,21 @@ def process_exp_dict(exp_dict, strategy_string):
 
 
 def add_baseline(metric_dfs, al_it):
-    WS_baseline = metric_dfs[(metric_dfs["Number of labeled points"] == 0)
-                         & (metric_dfs["Approach"] == "Active WeaSuL")
-                         & (metric_dfs["Metric"] == "Accuracy")
-                         & (metric_dfs["Set"] == "test")].groupby("Model").mean()["Value"]
 
-    baseline_fm = pd.DataFrame({"Number of labeled points": list(range(al_it+1)), "Value": np.repeat(WS_baseline["Discriminative"], al_it+1)})
-    baseline_fm["Model"] = "Discriminative"
-    baseline_fm["Run"] = 0
-    baseline_fm["Approach"] = "Weak supervision by itself"
-    baseline_fm["Metric"] = "Accuracy"
-    baseline_fm["Dash"] = "n"
-    baseline_fm["Set"] = "test"
+    baseline_df = (
+        pd.concat([metric_dfs[(metric_dfs["Number of labeled points"] == 0)
+        & (metric_dfs["Approach"] == "Active WeaSuL")].groupby(["Metric", "Set", "Model"])
+        .mean().reset_index()]*(al_it+1), ignore_index=True)
+    )
 
-    baseline_lm = pd.DataFrame({"Number of labeled points": list(range(al_it+1)), "Value": np.repeat(WS_baseline["Generative"], al_it+1)})
-    baseline_lm["Model"] = "Generative"
-    baseline_lm["Run"] = 0
-    baseline_lm["Approach"] = "Weak supervision by itself"
-    baseline_lm["Metric"] = "Accuracy"
-    baseline_lm["Dash"] = "n"
-    baseline_lm["Set"] = "test"
+    idx = baseline_df.index
+    baseline_df["Number of labeled points"] = idx[:al_it+1].repeat(len(baseline_df)/(al_it+1))
+    baseline_df["Approach"] = "Weak supervision by itself"
+    baseline_df["Run"] = 0
+    baseline_df["Dash"] = "n"
 
-    return pd.concat([metric_dfs, baseline_lm, baseline_fm])
+    return pd.concat([metric_dfs, baseline_df])
+
 
 def add_optimal(metric_dfs, al_it, optimal_generative_test, optimal_discriminative_test):
 
