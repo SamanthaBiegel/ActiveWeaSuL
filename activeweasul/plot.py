@@ -41,7 +41,7 @@ def plot_probs(df, probs, midpoint=0.5, add_labeled_points=None, soft_labels=Tru
 def plot_train_loss(loss_list, x_axis="Epoch"):
 
     fig = go.Figure(go.Scatter(x=list(range(len(loss_list))), y=loss_list))
-    fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text="Training Loss", template="plotly_white")
+    fig.update_layout(xaxis_title=x_axis, yaxis_title="Loss", title_text="Label Model Loss", template="plotly_white")
 
     return fig
 

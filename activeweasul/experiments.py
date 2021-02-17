@@ -142,8 +142,8 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
             bucket_list = al.unique_inverse[al.queried[:j+1]]
             al_entropies[i].append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(len(np.unique(al.unique_inverse)))]))
 
-        plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["MCC"])
-        plt.show()
+        # plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["MCC"])
+        # plt.show()
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
     return al_metrics, al_queried, al_probs, al_entropies

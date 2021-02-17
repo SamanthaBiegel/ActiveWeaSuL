@@ -59,7 +59,7 @@ class LabelModel(PerformanceMixin):
         # discount_factor = torch.tensor(0.97).repeat(nr_iterations) ** torch.arange(nr_iterations-1, -1, -1)
 
         # loss = nn.CrossEntropyLoss(reduction="sum")
-        # return penalty_strength * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask]))
+        # return self.penalty_strength * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask]))
 
         # loss = nn.CrossEntropyLoss(reduction="none")
         # return penalty_strength * torch.sum(1/torch.Tensor(self.bucket_counts[self.bucket_inverse][mask]) * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask])))
@@ -72,6 +72,8 @@ class LabelModel(PerformanceMixin):
         """Compute loss for matrix completion problem"""
 
         loss = torch.norm((self.cov_O_inverse + self.z @ self.z.T)[torch.BoolTensor(self.mask)]) ** 2
+
+        self.losses.append(loss.clone().detach().numpy())
 
         if self.active_learning:
             tmp_cov = self.calculate_cov_OS()
@@ -252,7 +254,7 @@ class LabelModel(PerformanceMixin):
             loss = self.loss_func()
             loss.backward()
             optimizer.step()
-            self.losses.append(loss.clone().detach().numpy())
+            # self.losses.append(loss.clone().detach().numpy())
 
         # Determine the sign of z
         # Assuming cov_OS corresponds to Y=1, then cov(wl1=1,Y=1) should be positive
