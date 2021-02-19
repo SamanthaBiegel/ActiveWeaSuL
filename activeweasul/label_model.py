@@ -309,22 +309,22 @@ class LabelModel(PerformanceMixin):
         P_joint_lambda_Y[(clique_probs == 1).all(axis=0)] = np.nan
 
         # Marginal weak label probabilities
-        lambda_combs, lambda_inverse, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
-        marginals = lambda_counts / N
+        lambda_combs, lambda_index, lambda_counts = np.unique(label_matrix, axis=0, return_counts=True, return_inverse=True)
+        new_counts = lambda_counts.copy()
         rows_not_abstain, cols_not_abstain = np.where(lambda_combs != -1)
         for i, comb in enumerate(lambda_combs):
             nr_non_abstain = (comb != -1).sum()
-            if nr_non_abstain == 0:
-                marginals[i] = 0
-            else:
-                match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
-                new_counts = lambda_counts[match_rows].sum()
-                marginals[i] = new_counts/lambda_counts[np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] != -1).all(axis=1))].sum()
-        
-        self.P_lambda = torch.Tensor(marginals[lambda_inverse])[:, None]
+            if nr_non_abstain < self.nr_wl:
+                if nr_non_abstain == 0:
+                    new_counts[i] = 0
+                else:
+                    match_rows = np.where((lambda_combs[:, cols_not_abstain[rows_not_abstain == i]] == lambda_combs[i, cols_not_abstain[rows_not_abstain == i]]).all(axis=1))       
+                    new_counts[i] = lambda_counts[match_rows].sum()
+
+        self.P_lambda = torch.Tensor((new_counts/N)[lambda_index][:, None])
 
         # Conditional label probability
-        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda)#.clamp(0,1)
+        P_Y_given_lambda = (P_joint_lambda_Y[:, None] / self.P_lambda).clamp(0,1)
 
         prob_labels = torch.cat([1 - P_Y_given_lambda, P_Y_given_lambda], axis=1)
 
