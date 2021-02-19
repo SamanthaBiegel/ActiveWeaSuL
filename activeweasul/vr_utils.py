@@ -60,7 +60,7 @@ def df_drop_duplicates(df):
     """Drop duplicates for object pairs with multiple predicate labels"""
 
     np.random.seed(456)
-    return df.sample(frac=1).sort_values("y").drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True, keep="first").sort_index()
+    return df.sample(frac=1).sort_values("y").drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True, keep="last").sort_index()
 
 
 def balance_dataset(df):
@@ -74,11 +74,11 @@ def balance_dataset(df):
 def load_vr_data(classify=None, include_predicates=None, path_prefix="", drop_duplicates=False, balance=False, validation=True):
     """Load Pandas DataFrame of visual relations"""
 
-    relationships_train = json.load(open(path_prefix + "data/annotations/annotations_train.json"))
-    relationships_test = json.load(open(path_prefix + "data/annotations/annotations_test.json"))
+    relationships_train = json.load(open(path_prefix + "annotations/annotations_train.json"))
+    relationships_test = json.load(open(path_prefix + "annotations/annotations_test.json"))
 
-    objects = json.load(open(path_prefix + "data/annotations/objects.json"))
-    predicates = json.load(open(path_prefix + "data/annotations/predicates.json"))
+    objects = json.load(open(path_prefix + "annotations/objects.json"))
+    predicates = json.load(open(path_prefix + "annotations/predicates.json"))
 
     if include_predicates is None:
         include_predicates = predicates

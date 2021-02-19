@@ -89,7 +89,7 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
 
         super().__init__()
         self.pretrained_model = pretrained_model
-        self.text_module = WordEmb(emb_path=data_path_prefix + "data/word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
+        self.text_module = WordEmb(emb_path=data_path_prefix + "word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
         self.concat_module = FlatConcat().to(self.device)
         self.soft_labels = soft_labels
         self.n_epochs = n_epochs
@@ -116,16 +116,14 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         return concatenated_features
 
     def forward(self, x):
-#         print(x)
-#         x_features = self.extract_concat_features(x)
-        outputs = self.linear_1(x)
+        outputs = self.linear(x)
         return outputs
 
     def reset(self):
         in_features = self.pretrained_model.fc.in_features
-        self.linear_1 = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, 2).to(self.device)
-        self.relu = nn.ReLU()
-        self.linear_2 = nn.Linear(100, self.n_classes).to(self.device)
+        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
+        # torch.nn.init.xavier_uniform_(self.linear.weight)
+        # self.linear.bias.data.fill_(0.01)
 
 
 class WordEmb(nn.Module):

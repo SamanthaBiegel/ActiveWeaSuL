@@ -159,46 +159,6 @@ def query_margin(preds, is_in_pool):
     return point, is_in_pool
 
 
-# def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader):
-    
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-#     accuracy_dict = {}
-
-#     for j in tqdm(range(nr_trials), desc="Trials"):
-#         accuracies = []
-#         queried = []
-        
-#         model.reset()
-        
-#         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
-
-#         set_seed(seeds[j])
-        
-#         while (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
-#             queried.append(random.sample(range(len(y_train)), 1)[0])
-#             accuracies.append(0.5)
-
-#         for i in range(len(queried), al_it + 1):
-            
-#             Y = torch.LongTensor(y_train[queried])
-
-#             feature_subset = torch.Tensor(features[queried, :])
-
-#             train_dataset.update(feature_subset, Y)
-#             train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-#             train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
-#             query, is_in_pool = query_margin(train_preds, is_in_pool)
-#             queried.append(query)
-            
-#             test_preds = model.predict(test_dataloader)
-
-#             accuracies.append(model.accuracy(y_test, test_preds))
-
-#         accuracy_dict[j] = accuracies
-
-#     return accuracy_dict, queried
-
 def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

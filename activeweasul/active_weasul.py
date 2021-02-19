@@ -96,6 +96,11 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         dl_test = DataLoader(test_dataset, shuffle=False, batch_size=self.batch_size)
 
+        # Split into train and validation sets for early stopping
+        indices_shuffle = np.random.permutation(len(self.label_matrix))
+        split_nr = int(np.ceil(0.8*len(self.label_matrix)))
+        self.train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
+
         # Identify buckets
         self.unique_combs, self.unique_idx, self.unique_inverse = np.unique(label_matrix,
                                                                             return_index=True,
@@ -122,11 +127,12 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 final_model_probs_train = prob_labels_train.clone().detach()
                 final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
                 final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
-                train_dataset.Y = final_model_probs_train.clamp(0,1)
-                dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
+                train_dataset.Y = final_model_probs_train.clamp(0, 1)
+                dl_train = DataLoader(CustomTensorDataset(*train_dataset[self.train_idx]), shuffle=True, batch_size=self.batch_size)
+                dl_val = DataLoader(CustomTensorDataset(*train_dataset[val_idx]), shuffle=True, batch_size=self.batch_size)
 
                 # self.final_model.reset()
-                preds_train = self.final_model.fit(dl_train).predict()
+                preds_train = self.final_model.fit(dl_train, dl_val).predict()
                 preds_test = self.final_model.predict(dl_test)
             else:
                 preds_train = None

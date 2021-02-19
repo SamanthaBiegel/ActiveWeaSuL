@@ -37,7 +37,7 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 
-sys.path.append(os.path.abspath("../activelearning"))
+sys.path.append(os.path.abspath("../activeweasul"))
 from synthetic_data import SyntheticDataGenerator
 from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
@@ -63,14 +63,6 @@ label_matrix = df[["wl1", "wl2", "wl3"]].values
 y_train = df.y.values
 
 # +
-cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
-matplotlib.cm.register_cmap("mycolormap", cmap)
-
-norm = plt.Normalize(0, 1)
-sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
-sm.set_array([])
-
-# +
 cmap = clr.LinearSegmentedColormap.from_list('', ['#ec7357',"#BBBBBB",'#368f8b'], N=200)
 matplotlib.cm.register_cmap("mycolormap", cmap)
 
@@ -85,6 +77,14 @@ cb1 = matplotlib.colorbar.ColorbarBase(ax1, cmap=cmap,
                                 orientation='vertical',
                                 ticks=[])
 plt.savefig("../plots/colorbar.png")
+
+# +
+cmap = clr.LinearSegmentedColormap.from_list('', ['#368f8b',"#BBBBBB",'#ec7357'], N=200)
+matplotlib.cm.register_cmap("mycolormap", cmap)
+
+norm = plt.Normalize(0, 1)
+sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
+sm.set_array([])
 # -
 
 bp1 = centroids.sum(axis=0)/2
@@ -179,7 +179,7 @@ sns.set_context("paper")
 point_size=200
 legend_size=15
 font_size=15
-line_width=1
+line_width=2
 
 # +
 plt.figure(figsize=(5,5))
@@ -205,6 +205,30 @@ plt.xticks([], [])
 plt.yticks([], [])
 
 plt.savefig("../plots/missinglabels.png")
+
+# +
+set_seed(285)
+
+_, unique_idx, unique_inverse = np.unique(label_matrix_example, axis=0, return_index=True, return_inverse=True)
+
+sampled_idx = random.sample(list(df_example[unique_inverse == 3].index), 5)
+
+df_example["u"] = 0.5
+
+df_example.loc[sampled_idx, "u"] = df_example.loc[sampled_idx, "y"]
+
+# +
+plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.u, s=point_size, edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
+plt.xlim(-2.7,2.2)
+plt.ylim(-2,2.9)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("../plots/example_samples.png")
 
 # +
 plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.wl1, s=point_size, edgecolor="black", cmap=cmap)
@@ -261,9 +285,6 @@ Y_probs = lm.fit(label_matrix=L, cliques=cliques, class_balance=class_balance).p
 
 
 Y_probs_example = lm.predict(label_matrix_example, lm.mu, df_example.y.mean())
-# -
-
-np.unique(Y_probs.detach().numpy(), axis=0)
 
 # +
 plt.scatter(x=df_example.x1, y=df_example.x2, c=Y_probs_example[:,1].detach().numpy(), s=point_size, edgecolor="black", cmap=cmap)
@@ -281,6 +302,40 @@ plt.xticks([], [])
 plt.yticks([], [])
 
 plt.savefig("../plots/problabels_ba.png")
+
+# +
+plt.scatter(x=df_example.x1, y=df_example.x2, c=np.unique(lm.predict_true(y_train)[:,1])[unique_inverse], s=point_size, edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
+
+plt.xlim(-2.7,2.2)
+plt.ylim(-2,2.9)
+
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("../plots/optimal_labels.png")
+# -
+
+np.unique(Y_probs.detach().numpy(), axis=0)
+
+# +
+plt.scatter(x=df.x1, y=df.x2, c=Y_probs[:,1].detach().numpy(), s=point_size, edgecolor="black", cmap=cmap)
+plt.clim(0,1)
+
+plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
+plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
+plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
+
+plt.xlim(-2.7,2.2)
+plt.ylim(-2,2.9)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
+plt.xticks([], [])
+plt.yticks([], [])
 
 # +
 set_seed(76)
@@ -304,12 +359,6 @@ y1 = a*-2.5 + b
 y2 = a*1.7 + b
 
 # +
-norm = plt.Normalize(0, 1)
-sm = plt.cm.ScalarMappable(cmap="mycolormap", norm=norm)
-sm.set_array([])
-
-# sns.set(style="white", palette=sns.color_palette("mycolormap", n_colors=200), rc={'figure.figsize':(15,15)})
-
 plt.scatter(x=df_example.x1, y=df_example.x2, c=test_preds[:,1].detach().numpy(), s=point_size, edgecolor="black", cmap=cmap)
 plt.clim(0,1)
 
@@ -317,8 +366,7 @@ plt.plot([-2.5, 1.7],[y1, y2], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
-# plt.xlabel("x1", fontsize=font_size)
-# plt.ylabel("x2", fontsize=font_size)
+
 plt.xticks([], [])
 plt.yticks([], [])
 
@@ -366,7 +414,7 @@ y2 = a*2.2 + b
 
 # +
 plt.scatter(x=df_example.x1, y=df_example.x2, c=al.probs["Generative_test"][30], s=point_size, edgecolor="black", cmap=cmap)
-
+plt.clim(0,1)
 plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
 plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
 plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
@@ -382,7 +430,7 @@ plt.savefig("../plots/problabels_aa.png")
 
 # +
 plt.scatter(x=df_example.x1, y=df_example.x2, c=al.probs["Discriminative_test"][30], s=point_size, edgecolor="black", cmap=cmap)
-
+plt.clim(0,1)
 plt.plot([-2.7,2.2],[y1, y2], linewidth=line_width, color="black")
 
 plt.xlim(-2.7,2.2)
@@ -394,6 +442,7 @@ plt.yticks([], [])
 
 plt.savefig("../plots/finallabels_aa.png")
 # -
+
 
 
 
