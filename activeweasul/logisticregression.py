@@ -25,4 +25,4 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
         return outputs
     
     def reset(self):
-        self.linear = nn.Linear(self.input_dim, self.output_dim)
+        self.linear = nn.Linear(self.input_dim, self.output_dim).to(self.device)

@@ -10,10 +10,11 @@ class DiscriminativeModel(nn.Module):
     Provides training functionality to a classifier.
     """
 
-    def __init__(self, hide_progress_bar=False):
+    def __init__(self):
         super().__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.hide_progress_bar = hide_progress_bar
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
 
     def cross_entropy_soft_labels(self, predictions, targets):
         """Cross entropy loss for probabilistic labels"""
@@ -21,8 +22,13 @@ class DiscriminativeModel(nn.Module):
         y_dim = targets.shape[1]
         loss = torch.zeros(predictions.shape[0]).to(self.device)
         for y in range(y_dim):
-            loss_y = F.cross_entropy(predictions, predictions.new_full((predictions.shape[0],), y, dtype=torch.long),
-                                     reduction="none")
+            loss_y = F.cross_entropy(
+                predictions,
+                predictions.new_full(
+                    (predictions.shape[0],), y, dtype=torch.long
+                ),
+                reduction="none"
+            )
             loss += targets[:, y] * loss_y
 
         return loss.mean()
@@ -39,11 +45,15 @@ class DiscriminativeModel(nn.Module):
         self.average_losses = []
 
         if self.soft_labels:
-            loss_f = self.cross_entropy_soft_labels
+            # loss_f = self.cross_entropy_soft_labels
+            #! Testing the sigmoid + bce
+            loss_f = lambda input, target: F.binary_cross_entropy(
+                torch.sigmoid(input), target
+            )
         else:
             loss_f = F.cross_entropy
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
         for epoch in range(self.n_epochs):
             for batch_features, batch_labels in train_dataloader:

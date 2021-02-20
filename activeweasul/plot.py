@@ -258,8 +258,8 @@ class PlotMixin:
             df1.loc[idx[0][i], :] = c3
         return df1
 
-    def color_cov(self):
-        full_lm = np.append(self.label_matrix, self.df["y"].values[:, None], axis=1)
+    def color_cov(self, y_true):
+        full_lm = np.append(self.label_matrix, y_true[:, None], axis=1)
         cliques = self.label_model.cliques.copy()
         cliques.append([full_lm.shape[1]-1])
         psi_y, _ = self.label_model.get_psi(label_matrix=full_lm, cliques=cliques, nr_wl=full_lm.shape[1])

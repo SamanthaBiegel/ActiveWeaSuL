@@ -118,12 +118,14 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
     def forward(self, x):
 #         print(x)
 #         x_features = self.extract_concat_features(x)
-        outputs = self.linear(x)
+        outputs = self.linear_1(x)
         return outputs
 
     def reset(self):
         in_features = self.pretrained_model.fc.in_features
-        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
+        self.linear_1 = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, 2).to(self.device)
+        self.relu = nn.ReLU()
+        self.linear_2 = nn.Linear(100, self.n_classes).to(self.device)
 
 
 class WordEmb(nn.Module):
