@@ -71,12 +71,21 @@ class LabelModel(PerformanceMixin):
 
         # return penalty_strength * torch.sum(discount_factor * ((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask] ** 2))
 
-        return self.penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
+        return (
+            self.penalty_strength *
+            torch.norm(
+                (torch.Tensor(self.ground_truth_labels[mask]) - probs[mask, 1])
+            ) ** 2
+        )
 
     def loss_func(self):
         """Compute loss for matrix completion problem"""
 
-        loss = torch.norm((self.cov_O_inverse + self.z @ self.z.T)[torch.BoolTensor(self.mask)]) ** 2
+        loss = torch.norm(
+            (self.cov_O_inverse + self.z @ self.z.T)[
+                torch.BoolTensor(self.mask)
+            ]
+        ) ** 2
 
         if self.active_learning:
             tmp_cov = self.calculate_cov_OS()
