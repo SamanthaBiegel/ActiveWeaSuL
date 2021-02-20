@@ -138,7 +138,6 @@ class LabelModel(PerformanceMixin):
         self,
         label_matrix=None,
         cliques=None,
-        nr_wl=None,
         training=True
     ):
         """Compute psi from given label matrix and cliques
@@ -146,16 +145,14 @@ class LabelModel(PerformanceMixin):
         Args:
             label_matrix (numpy.array): Array with labeling function outputs on dataset
             cliques (list): List of lists of maximal cliques (column indices of label matrix)
-            nr_wl (int): Number of weak labels
 
         Returns:
             numpy.array: Array of indicator variables
             dict: Mapping from clique to column index in psi
         """
-        if any(v is None for v in (label_matrix, cliques, nr_wl)):
+        if any(v is None for v in (label_matrix, cliques)):
             label_matrix = self.label_matrix
             cliques = self.cliques
-            nr_wl = self.nr_wl
 
         # Generate one array per maximal clique in `cliques`
         psi = [
@@ -292,8 +289,7 @@ class LabelModel(PerformanceMixin):
 
         N = label_matrix.shape[0]
         psi, _ = self.get_psi(
-            label_matrix=label_matrix, cliques=self.cliques, nr_wl=self.nr_wl,
-            training=False
+            label_matrix=label_matrix, cliques=self.cliques, training=False
         )
 
         cliques_joined = self.cliques.copy()
@@ -314,7 +310,7 @@ class LabelModel(PerformanceMixin):
         clique_probs = mu[self.max_clique_idx, :] * psi_idx
         clique_probs[psi_idx == 0] = 1
         P_joint_lambda_Y = (
-            torch.prod(clique_probs, dim=0)/
+            torch.prod(clique_probs, dim=0) /
             (torch.tensor(P_Y) ** (n_cliques - 1))
         )
 
