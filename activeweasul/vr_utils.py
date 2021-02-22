@@ -122,7 +122,7 @@ def load_vr_data(classify=None, include_predicates=None, path_prefix="", drop_du
         train_df = balance_dataset(train_df)
 
     if validation:
-        train_df["labels"] = -1 * np.ones(len(train_df))
+        # train_df["labels"] = -1 * np.ones(len(train_df))
         valid_df = vr_to_pandas(
             relationships_val,
             objects,

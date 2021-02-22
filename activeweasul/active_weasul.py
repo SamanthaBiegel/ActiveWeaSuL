@@ -62,7 +62,9 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         self.batch_size = batch_size
         self.discr_model_frequency = discr_model_frequency
         set_seed(starting_seed)
-        self.final_model.reset()
+        if final_model is not None:
+            self.final_model.reset()
+            self.final_model.min_val_loss = 1e15
         self.seed = seed
 
     def run_active_weasul(self, label_matrix, y_train, cliques, class_balance, label_matrix_test=None, y_test=None, train_dataset=None, test_dataset=None):
@@ -98,7 +100,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         # Split into train and validation sets for early stopping
         indices_shuffle = np.random.permutation(len(self.label_matrix))
-        split_nr = int(np.ceil(0.8*len(self.label_matrix)))
+        split_nr = int(np.ceil(0.9*len(self.label_matrix)))
         self.train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
 
         # Identify buckets
@@ -106,13 +108,9 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                                                                             return_index=True,
                                                                             return_inverse=True,
                                                                             axis=0)
-        
-        # Used for plotting
-        self.confs = {range(len(self.unique_idx))[i]:
-                      "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
         for i in tqdm(range(self.it + 1), desc="Active Learning Iterations"):
-
+            
             # Fit label model and predict to obtain probabilistic labels
             prob_labels_train = self.label_model.fit(label_matrix=self.label_matrix,
                                                      cliques=cliques,
@@ -125,13 +123,12 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             # Optionally, train discriminative model on probabilistic labels
             if self.final_model is not None and i % self.discr_model_frequency == 0:
                 final_model_probs_train = prob_labels_train.clone().detach()
-                final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
-                final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
-                train_dataset.Y = final_model_probs_train.clamp(0, 1)
+                # final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
+                # final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
+                train_dataset.Y = final_model_probs_train
                 dl_train = DataLoader(CustomTensorDataset(*train_dataset[self.train_idx]), shuffle=True, batch_size=self.batch_size)
                 dl_val = DataLoader(CustomTensorDataset(*train_dataset[val_idx]), shuffle=True, batch_size=self.batch_size)
 
-                # self.final_model.reset()
                 preds_train = self.final_model.fit(dl_train, dl_val).predict()
                 preds_test = self.final_model.predict(dl_test)
             else:
@@ -189,7 +186,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
         if self.final_model is not None and count % self.discr_model_frequency == 0:
-            self.metrics["Discriminative_train"][count] = self.final_model.analyze(self.y_train, fm_train)
+            self.metrics["Discriminative_train"][count] = self.final_model.analyze(self.y_train[self.train_idx], fm_train)
             self.metrics["Discriminative_test"][count] = self.final_model.analyze(self.y_test, fm_test)
             self.probs["Discriminative_train"][count] = fm_train[:, 1].clone().cpu().detach().numpy()
             self.probs["Discriminative_test"][count] = fm_test[:, 1].clone().cpu().detach().numpy()

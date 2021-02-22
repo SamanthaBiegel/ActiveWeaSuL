@@ -340,7 +340,7 @@ class LabelModel(PerformanceMixin):
             label_matrix = self.label_matrix
             y_test = y_true
 
-        return self.predict(label_matrix, self.get_true_mu(y_true)[:, 1][:, None], y_test.mean())
+        return self.predict(label_matrix, self.get_true_mu(y_true)[:, 1][:, None], self.E_S)
 
     def predict_true_counts(self, y_true):
         """Obtain optimal training labels using ground truth labels"""

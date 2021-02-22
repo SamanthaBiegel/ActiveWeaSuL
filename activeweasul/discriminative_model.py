@@ -17,7 +17,9 @@ class DiscriminativeModel(nn.Module):
         self.average_train_losses = []
         self.average_val_losses = []
 
-        self.reset_early_stopping()
+        self.early_stopping = True
+
+        self.min_val_loss = 1e15
 
     def cross_entropy_soft_labels(self, predictions, targets):
         """Cross entropy loss for probabilistic labels"""
@@ -31,7 +33,7 @@ class DiscriminativeModel(nn.Module):
 
         return loss.mean()
 
-    def fit(self, train_dataloader, val_dataloader):
+    def fit(self, train_dataloader, val_dataloader=None):
         """Train classifier"""
 
         self.train_dataloader = train_dataloader
@@ -39,13 +41,16 @@ class DiscriminativeModel(nn.Module):
         self.train()
         
         if self.soft_labels:
-            loss_f = self.cross_entropy_soft_labels
+            # loss_f = self.cross_entropy_soft_labels
+            loss_f = lambda input, target: F.binary_cross_entropy_with_logits(
+                input, target
+            )
         else:
             loss_f = F.cross_entropy
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
 
-        self.reset_early_stopping()
+        self.last_updated_min_val_loss = 0
 
         for epoch in range(self.n_epochs):
 
@@ -74,31 +79,33 @@ class DiscriminativeModel(nn.Module):
 
             self.average_train_losses.append(train_losses / train_counts)
 
-            # Validation loss
-            for batch_features, batch_labels in val_dataloader:
-                batch_features = batch_features.to(self.device)
-                batch_logits = self.forward(batch_features)
-                batch_labels = batch_labels.to(self.device)
+            if self.early_stopping:
 
-                loss = loss_f(batch_logits, batch_labels)
+                # Validation loss
+                for batch_features, batch_labels in val_dataloader:
+                    batch_features = batch_features.to(self.device)
+                    batch_logits = self.forward(batch_features)
+                    batch_labels = batch_labels.to(self.device)
 
-                count = len(batch_labels)
-                val_losses += (loss * count).item()
-                val_counts += count
+                    loss = loss_f(batch_logits, batch_labels)
 
-            current_val_loss = val_losses / val_counts
-            self.average_val_losses.append(current_val_loss)
+                    count = len(batch_labels)
+                    val_losses += (loss * count).item()
+                    val_counts += count
 
-            # Early stopping
-            if current_val_loss < self.min_val_loss:
-                self.min_val_loss = current_val_loss
-                self.last_updated_min_val_loss = 0
-            else:
-                self.last_updated_min_val_loss += 1
-                if self.last_updated_min_val_loss == self.patience:
-                    print(epoch)
-                    return self
+                current_val_loss = val_losses / val_counts
+                self.average_val_losses.append(current_val_loss)
 
+                # Early stopping
+                if current_val_loss < self.min_val_loss:
+                    self.min_val_loss = current_val_loss
+                    self.last_updated_min_val_loss = 0
+                    torch.save(self.state_dict(), self.checkpoint)
+                else:
+                    self.last_updated_min_val_loss += 1
+                    if self.last_updated_min_val_loss >= self.patience:
+                        self.load_state_dict(torch.load(self.checkpoint))
+                        return self
         return self
 
     @torch.no_grad()
@@ -127,9 +134,3 @@ class DiscriminativeModel(nn.Module):
             self.preds = preds
 
         return preds
-
-    def reset_early_stopping(self):
-
-        self.min_val_loss = 1e15
-        self.patience = 3
-        self.last_updated_min_val_loss = 0

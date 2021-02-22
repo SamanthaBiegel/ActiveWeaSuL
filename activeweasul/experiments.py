@@ -112,7 +112,7 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
 
     for i in tqdm(range(nr_trials), desc="Trials"):
         seed = seeds[i]
-        # final_model.reset()
+
         al = ActiveWeaSuLPipeline(it=al_it,
                                   penalty_strength=penalty_strength,
                                   query_strategy=query_strategy,
@@ -172,6 +172,7 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
         queried = []
 
         model.reset()
+        model.early_stopping = False
 
         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
 
@@ -179,12 +180,12 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
 
         for i in range(al_it + 1):
 
-            if (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
+            if len(np.unique(y_train[queried])) < 2:
                 point = random.sample(range(len(y_train)), 1)[0]
                 is_in_pool[point] = False
                 queried.append(point)
                 metric_dict[j]["Discriminative_train"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
-                metric_dict[j]["Discriminative_test"][i] = {"MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                metric_dict[j]["Discriminative_test"][i] = {"MCC": 0, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": 0}
             else:
                 Y = torch.LongTensor(y_train[queried])
 
@@ -193,15 +194,15 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
                 train_dataset.update(feature_subset, Y)
                 train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
                 train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
-                query, is_in_pool = query_margin(train_preds, is_in_pool)
-                queried.append(query)
+                point, is_in_pool = query_margin(train_preds, is_in_pool)
+                queried.append(point)
 
                 test_preds = model.predict(test_dataloader)
 
                 metric_dict[j]["Discriminative_train"][i] = PerformanceMixin().analyze(y=y_train, preds=train_preds)
                 metric_dict[j]["Discriminative_test"][i] = PerformanceMixin().analyze(y=y_test, preds=test_preds)
 
-    return metric_dict
+    return metric_dict, model
 
 def synthetic_al_experiment(nr_trials, al_it, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
 
