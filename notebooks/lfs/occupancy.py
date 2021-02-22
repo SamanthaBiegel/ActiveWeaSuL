@@ -2,287 +2,210 @@ from snorkel.labeling import labeling_function
 
 @labeling_function()
 def lf01(sample):
-    if sample['CO2'] <= 614.625:
-        if sample['Light'] <= 376.75:
-            if sample['Humidity'] <= 22.364999771118164:
-                # N. of samples 2173 ([2173.    0.])
-                # N. of samples 3694 ([3692.    2.])
-                return 0
-        else:  # if sample['Light'] > 376.75
-            if sample['CO2'] <= 456.3333282470703:
-                # N. of samples 11 ([10.  1.])
-                return 0
-            else:  # if sample['CO2'] > 456.3333282470703
-                # N. of samples 142 ([  9. 133.])
+    if sample['HumidityRatio'] <= 0.005165699403733015:
+        if sample['CO2'] <= 617.25:
+            # N. of samples 1205 ([1179.   26.])
+            return 0
+        else:  # if sample['CO2'] > 617.25
+            if sample['CO2'] <= 778.9166564941406:
+                # N. of samples 88 ([42. 46.])
                 return 1
-    else:  # if sample['CO2'] > 614.625
-        if sample['date'] <= 1.4235050627301376e+18:
-            if sample['Light'] <= 188.25:
-                # N. of samples 210 ([209.   1.])
-                return 0
-            else:  # if sample['Light'] > 188.25
-                # N. of samples 1639 ([  71. 1568.])
+            else:  # if sample['CO2'] > 778.9166564941406
+                # N. of samples 227 ([ 28. 199.])
                 return 1
-        else:  # if sample['date'] > 1.4235050627301376e+18
-            if sample['Temperature'] <= 20.7787504196167:
-                # N. of samples 166 ([166.   0.])
-                return 0
-            else:  # if sample['Temperature'] > 20.7787504196167
-                # N. of samples 108 ([84. 24.])
-                return -1
-    return -1
+    else:  # if sample['HumidityRatio'] > 0.005165699403733015
+        if sample['CO2'] <= 1307.5:
+            # N. of samples 36 ([24. 12.])
+            return 0
+        else:  # if sample['CO2'] > 1307.5
+            # N. of samples 73 ([10. 63.])
+            return 1
 
-            
 @labeling_function()
 def lf02(sample):
-    if sample['CO2'] <= 614.625:
-        if sample['Humidity'] <= 33.44875144958496:
-            if sample['Light'] <= 376.75:
-                # N. of samples 5867 ([5.865e+03 2.000e+00])
+    if sample['date'] <= 1.423245990302843e+18:
+        if sample['CO2'] <= 614.375:
+            # N. of samples 325 ([308.  17.])
+            return 0
+        else:  # if sample['CO2'] > 614.375
+            if sample['Light'] <= 187.58333206176758:
+                # N. of samples 27 ([27.  0.])
                 return 0
-            else:  # if sample['Light'] > 376.75
-                # N. of samples 125 ([ 19. 106.])
+            else:  # if sample['Light'] > 187.58333206176758
+                # N. of samples 238 ([ 16. 222.])
                 return 1
-        else:  # if sample['Humidity'] > 33.44875144958496
-            # N. of samples 28 ([ 0. 28.])
+    else:  # if sample['date'] > 1.423245990302843e+18
+        if sample['Humidity'] <= 33.21125030517578:
+            # N. of samples 908 ([874.  34.])
+            return 0
+        else:  # if sample['Humidity'] > 33.21125030517578
+            # N. of samples 131 ([58. 73.])
             return 1
-    else:  # if sample['CO2'] > 614.625
-        if sample['Temperature'] <= 20.7787504196167:
-            if sample['Light'] <= 198.5:
-                # N. of samples 166 ([166.   0.])
-                return 0
-            else:  # if sample['Light'] > 198.5
-                # N. of samples 66 ([ 0. 66.])
-                return 1
-        else:  # if sample['Temperature'] > 20.7787504196167
-            if sample['CO2'] <= 755.1666564941406:
-                # N. of samples 316 ([145. 171.])
-                return -1
-            else:  # if sample['CO2'] > 755.1666564941406
-                # N. of samples 1575 ([ 219. 1356.])
-                return 1
 
 @labeling_function()
 def lf03(sample):
-    if sample['CO2'] <= 614.625:
-        if sample['Humidity'] <= 33.44875144958496:
-            if sample['Light'] <= 376.75:
-                # N. of samples 5867 ([5.865e+03 2.000e+00])
-                return 0
-            else:  # if sample['Light'] > 376.75
-                # N. of samples 125 ([ 19. 106.])
+    if sample['Temperature'] <= 21.26750087738037:
+        # N. of samples 1184 ([1111.   73.])
+        return 0
+    else:  # if sample['Temperature'] > 21.26750087738037
+        if sample['HumidityRatio'] <= 0.003045869176276028:
+            # N. of samples 65 ([65.  0.])
+            return 0
+        else:  # if sample['HumidityRatio'] > 0.003045869176276028
+            if sample['Humidity'] <= 21.833749771118164:
+                # N. of samples 116 ([ 13. 103.])
                 return 1
-        else:  # if sample['Humidity'] > 33.44875144958496
-            # N. of samples 28 ([ 0. 28.])
-            return 1
-    else:  # if sample['CO2'] > 614.625
-        if sample['date'] <= 1.4235050627301376e+18:
-            if sample['Light'] <= 188.25:
-                # N. of samples 210 ([209.   1.])
-                return 0
-            else:  # if sample['Light'] > 188.25
-                # N. of samples 1639 ([  71. 1568.])
-                return 1
-        else:  # if sample['date'] > 1.4235050627301376e+18
-            if sample['Light'] <= 213.0:
-                # N. of samples 250 ([250.   0.])
-                return 0
-            else:  # if sample['Light'] > 213.0
-                # N. of samples 24 ([ 0. 24.])
-                return 1
+            else:  # if sample['Humidity'] > 21.833749771118164
+                if sample['CO2'] <= 689.1666564941406:
+                    # N. of samples 63 ([61.  2.])
+                    return 0
+                else:  # if sample['CO2'] > 689.1666564941406
+                    # N. of samples 201 ([ 33. 168.])
+                    return 1
 
 @labeling_function()
 def lf04(sample):
-    if sample['CO2'] <= 614.625:
-        if sample['HumidityRatio'] <= 0.004973354283720255:
-            if sample['CO2'] <= 496.125:
-                # N. of samples 5532 ([5507.   25.])
-                return 0
-            else:  # if sample['CO2'] > 496.125
-                # N. of samples 464 ([377.  87.])
-                return 0
-        else:  # if sample['HumidityRatio'] > 0.004973354283720255
-            # N. of samples 24 ([ 0. 24.])
+    if sample['date'] <= 1.423245990302843e+18:
+        if sample['Temperature'] <= 21.62916660308838:
+            # N. of samples 368 ([302.  66.])
+            return 0
+        else:  # if sample['Temperature'] > 21.62916660308838
+            # N. of samples 222 ([ 49. 173.])
             return 1
-    else:  # if sample['CO2'] > 614.625
-        if sample['date'] <= 1.4235050627301376e+18:
-            if sample['date'] <= 1.4231000988537324e+18:
-                # N. of samples 65 ([49. 16.])
-                return -1
-            else:  # if sample['date'] > 1.4231000988537324e+18
-                # N. of samples 1784 ([ 231. 1553.])
-                return 1
-        else:  # if sample['date'] > 1.4235050627301376e+18
-            if sample['date'] <= 1.4235397660658893e+18:
-                # N. of samples 250 ([250.   0.])
+    else:  # if sample['date'] > 1.423245990302843e+18
+        if sample['Temperature'] <= 20.6875:
+            # N. of samples 816 ([802.  14.])
+            return 0
+        else:  # if sample['Temperature'] > 20.6875
+            if sample['Light'] <= 385.8333282470703:
+                # N. of samples 131 ([130.   1.])
                 return 0
-            else:  # if sample['date'] > 1.4235397660658893e+18
-                # N. of samples 24 ([ 0. 24.])
+            else:  # if sample['Light'] > 385.8333282470703
+                # N. of samples 92 ([ 0. 92.])
                 return 1
 
 @labeling_function()
 def lf05(sample):
-    if sample['Temperature'] <= 21.252500534057617:
-        if sample['Light'] <= 336.625:
-            # N. of samples 1641 ([1.64e+03 1.00e+00])
-            # N. of samples 3830 ([3830.    0.])
-            return 0
-        else:  # if sample['Light'] > 336.625
-            if sample['Light'] <= 557.75:
-                # N. of samples 395 ([ 15. 380.])
-                return 1
-            else:  # if sample['Light'] > 557.75
-                # N. of samples 4 ([4. 0.])
+    if sample['date'] <= 1.423245990302843e+18:
+        if sample['date'] <= 1.423209019224359e+18:
+            if sample['Temperature'] <= 21.954166412353516:
+                # N. of samples 330 ([310.  20.])
                 return 0
-    else:  # if sample['Temperature'] > 21.252500534057617
-        if sample['Humidity'] <= 18.96916675567627:
-            # N. of samples 348 ([348.   0.])
-            return 0
-        else:  # if sample['Humidity'] > 18.96916675567627
-            if sample['Humidity'] <= 21.84500026702881:
-                # N. of samples 534 ([ 71. 463.])
+            else:  # if sample['Temperature'] > 21.954166412353516
+                # N. of samples 122 ([32. 90.])
                 return 1
-            else:  # if sample['Humidity'] > 21.84500026702881
-                # N. of samples 1391 ([506. 885.])
-                return -1
+        else:  # if sample['date'] > 1.423209019224359e+18
+            # N. of samples 138 ([  9. 129.])
+            return 1
+    else:  # if sample['date'] > 1.423245990302843e+18
+        if sample['Humidity'] <= 33.21125030517578:
+            # N. of samples 908 ([874.  34.])
+            return 0
+        else:  # if sample['Humidity'] > 33.21125030517578
+            # N. of samples 131 ([58. 73.])
+            return 1
 
 @labeling_function()
 def lf06(sample):
-    if sample['CO2'] <= 614.625:
-        if sample['date'] <= 1.4235574269714104e+18:
-            if sample['CO2'] <= 496.125:
-                # N. of samples 5524 ([5505.   19.])
+    if sample['date'] <= 1.423245990302843e+18:
+        if sample['Humidity'] <= 19.016666412353516:
+            # N. of samples 56 ([54.  2.])
+            return 0
+        else:  # if sample['Humidity'] > 19.016666412353516
+            if sample['Temperature'] <= 21.62916660308838:
+                # N. of samples 313 ([248.  65.])
                 return 0
-            else:  # if sample['CO2'] > 496.125
-                # N. of samples 464 ([377.  87.])
-                return 0
-        else:  # if sample['date'] > 1.4235574269714104e+18
-            if sample['CO2'] <= 482.4166717529297:
-                # N. of samples 4 ([2. 2.])
-                return -1
-            else:  # if sample['CO2'] > 482.4166717529297
-                # N. of samples 28 ([ 0. 28.])
+            else:  # if sample['Temperature'] > 21.62916660308838
+                # N. of samples 221 ([ 49. 172.])
                 return 1
-    else:  # if sample['CO2'] > 614.625
-        if sample['date'] <= 1.4235050627301376e+18:
-            if sample['CO2'] <= 776.625:
-                # N. of samples 358 ([157. 201.])
-                return -1
-            else:  # if sample['CO2'] > 776.625
-                # N. of samples 1491 ([ 123. 1368.])
-                return 1
-        else:  # if sample['date'] > 1.4235050627301376e+18
-            if sample['Temperature'] <= 20.7787504196167:
-                # N. of samples 166 ([166.   0.])
-                return 0
-            else:  # if sample['Temperature'] > 20.7787504196167
-                # N. of samples 108 ([84. 24.])
-                return -1
+    else:  # if sample['date'] > 1.423245990302843e+18
+        if sample['CO2'] <= 1100.75:
+            # N. of samples 929 ([908.  21.])
+            return 0
+        else:  # if sample['CO2'] > 1100.75
+            # N. of samples 110 ([24. 86.])
+            return 1
 
 @labeling_function()
 def lf07(sample):
-    if sample['Light'] <= 365.125:
-        if sample['Light'] <= 209.25:
-            # N. of samples 5540 ([5540.    0.])
-            # N. of samples 523 ([522.   1.])
+    if sample['HumidityRatio'] <= 0.005165699403733015:
+        if sample['HumidityRatio'] <= 0.002999819116666913:
+            # N. of samples 316 ([308.   8.])
             return 0
-        else:  # if sample['Light'] > 209.25
-            if sample['HumidityRatio'] <= 0.004340938990935683:
-                # N. of samples 265 ([261.   4.])
+        else:  # if sample['HumidityRatio'] > 0.002999819116666913
+            if sample['Humidity'] <= 21.833749771118164:
+                # N. of samples 249 ([128. 121.])
                 return 0
-            else:  # if sample['HumidityRatio'] > 0.004340938990935683
-                # N. of samples 5 ([1. 4.])
-                return 1
-    else:  # if sample['Light'] > 365.125
-        if sample['CO2'] <= 456.3333282470703:
-            if sample['CO2'] <= 439.875:
-                # N. of samples 2 ([1. 1.])
-                return 0
-            else:  # if sample['CO2'] > 439.875
-                # N. of samples 9 ([9. 0.])
-                return 0
-        else:  # if sample['CO2'] > 456.3333282470703
-            # N. of samples 384 ([ 64. 320.])
-            # N. of samples 1415 ([  16. 1399.])
-            return 1
+            else:  # if sample['Humidity'] > 21.833749771118164
+                if sample['Light'] <= 307.0:
+                    # N. of samples 799 ([799.   0.])
+                    return 0
+                else:  # if sample['Light'] > 307.0
+                    # N. of samples 156 ([ 14. 142.])
+                    return 1
+    else:  # if sample['HumidityRatio'] > 0.005165699403733015
+        # N. of samples 109 ([34. 75.])
+        return 1
 
 @labeling_function()
 def lf08(sample):
-    if sample['HumidityRatio'] <= 0.005089321872219443:
-        if sample['CO2'] <= 626.5833435058594:
-            if sample['CO2'] <= 494.0416717529297:
-                # N. of samples 5528 ([5502.   26.])
-                return 0
-            else:  # if sample['CO2'] > 494.0416717529297
-                # N. of samples 522 ([407. 115.])
-                return -1
-        else:  # if sample['CO2'] > 626.5833435058594
-            if sample['Humidity'] <= 33.08125114440918:
-                # N. of samples 1389 ([ 239. 1150.])
-                return 1
-            else:  # if sample['Humidity'] > 33.08125114440918
-                # N. of samples 78 ([78.  0.])
-                return 0
-    else:  # if sample['HumidityRatio'] > 0.005089321872219443
-        if sample['Light'] <= 188.25:
-            # N. of samples 1 ([0. 1.])
-            # N. of samples 188 ([188.   0.])
+    if sample['HumidityRatio'] <= 0.005165699403733015:
+        if sample['Humidity'] <= 19.458749771118164:
+            # N. of samples 311 ([298.  13.])
             return 0
-        else:  # if sample['Light'] > 188.25
-            # N. of samples 437 ([  0. 437.])
-            return 1
+        else:  # if sample['Humidity'] > 19.458749771118164
+            if sample['Temperature'] <= 21.26750087738037:
+                if sample['Temperature'] <= 20.524999618530273:
+                    # N. of samples 694 ([682.  12.])
+                    return 0
+                else:  # if sample['Temperature'] > 20.524999618530273
+                    # N. of samples 226 ([176.  50.])
+                    return 0
+            else:  # if sample['Temperature'] > 21.26750087738037
+                # N. of samples 289 ([ 93. 196.])
+                return 1
+    else:  # if sample['HumidityRatio'] > 0.005165699403733015
+        # N. of samples 109 ([34. 75.])
+        return 1
 
 @labeling_function()
 def lf09(sample):
-    if sample['Light'] <= 365.125:
-        if sample['HumidityRatio'] <= 0.0062260557897388935:
-            # N. of samples 5478 ([5476. 2.])
-            # N. of samples 853 ([848.   5.])
-            return 0
-        else:  # if sample['HumidityRatio'] > 0.0062260557897388935
-            # N. of samples 2 ([0. 2.])
-            return 1
-    else:  # if sample['Light'] > 365.125
-        if sample['date'] <= 1.4231455224278548e+18:
-            # N. of samples 129 ([  5. 124.])
-            # N. of samples 255 ([ 59. 196.])
-            return -1
-        else:  # if sample['date'] > 1.4231455224278548e+18
-            if sample['CO2'] <= 456.3333282470703:
-                # N. of samples 11 ([10.  1.])
+    if sample['Humidity'] <= 37.64500045776367:
+        if sample['HumidityRatio'] <= 0.004358127247542143:
+            if sample['Temperature'] <= 21.26750087738037:
+                # N. of samples 973 ([932.  41.])
                 return 0
-            else:  # if sample['CO2'] > 456.3333282470703
-                # N. of samples 1415 ([  16. 1399.])
+            else:  # if sample['Temperature'] > 21.26750087738037
+                # N. of samples 274 ([131. 143.])
                 return 1
+        else:  # if sample['HumidityRatio'] > 0.004358127247542143
+            if sample['Temperature'] <= 20.68333339691162:
+                # N. of samples 172 ([164.   8.])
+                return 0
+            else:  # if sample['Temperature'] > 20.68333339691162
+                # N. of samples 174 ([ 56. 118.])
+                return 1
+    else:  # if sample['Humidity'] > 37.64500045776367
+        # N. of samples 36 ([ 0. 36.])
+        return 1
 
 @labeling_function()
 def lf10(sample):
-    if sample['Temperature'] <= 21.252500534057617:
-        if sample['Light'] <= 336.625:
-            # N. of samples 3171 ([3171.    0.])
-            # N. of samples 2300 ([2299.  1.])
+    if sample['HumidityRatio'] <= 0.005165699403733015:
+        if sample['HumidityRatio'] <= 0.002999819116666913:
+            # N. of samples 316 ([308.   8.])
             return 0
-        else:  # if sample['Light'] > 336.625
-            if sample['CO2'] <= 456.3333282470703:
-                # N. of samples 11 ([10.  1.])
-                return -1
-            else:  # if sample['CO2'] > 456.3333282470703
-                # N. of samples 388 ([  9. 379.])
-                return 1
-    else:  # if sample['Temperature'] > 21.252500534057617
-        if sample['HumidityRatio'] <= 0.003046866739168763:
-            if sample['Humidity'] <= 19.29208278656006:
-                # N. of samples 355 ([354.   1.])
+        else:  # if sample['HumidityRatio'] > 0.002999819116666913
+            if sample['date'] <= 1.423245990302843e+18:
+                # N. of samples 505 ([274. 231.])
                 return 0
-            else:  # if sample['Humidity'] > 19.29208278656006
-                # N. of samples 1 ([0. 1.])
-                return 1
-        else:  # if sample['HumidityRatio'] > 0.003046866739168763
-            if sample['Light'] <= 170.41666412353516:
-                # N. of samples 500 ([499.   1.])
-                return 0
-            else:  # if sample['Light'] > 170.41666412353516
-                # N. of samples 1417 ([  72. 1345.])
-                return 1
-            
-labeling_functions = [lf01, lf02, lf03, lf04, lf05, lf06, lf07, lf08, lf09, lf10]
+            else:  # if sample['date'] > 1.423245990302843e+18
+                if sample['Light'] <= 375.5:
+                    # N. of samples 666 ([666.   0.])
+                    return 0
+                else:  # if sample['Light'] > 375.5
+                    # N. of samples 33 ([ 1. 32.])
+                    return 1
+    else:  # if sample['HumidityRatio'] > 0.005165699403733015
+        # N. of samples 109 ([34. 75.])
+        return 1
