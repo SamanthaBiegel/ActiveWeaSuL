@@ -132,12 +132,19 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                                                         self.label_model.E_S)
 
             # Optionally, train discriminative model on probabilistic labels
-            if self.final_model is not None and i % self.discr_model_frequency == 0:
+            if (self.final_model is not None and
+                    i % self.discr_model_frequency == 0):
                 final_model_probs_train = prob_labels_train.clone().detach()
-                final_model_probs_train[self.ground_truth_labels == 1, :] = torch.FloatTensor([0, 1])
-                final_model_probs_train[self.ground_truth_labels == 0, :] = torch.FloatTensor([1, 0])
-                train_dataset.Y = final_model_probs_train.clamp(0,1)
-                dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
+                final_model_probs_train[self.ground_truth_labels == 1, :] = (
+                    torch.FloatTensor([0, 1])
+                )
+                final_model_probs_train[self.ground_truth_labels == 0, :] = (
+                    torch.FloatTensor([1, 0])
+                )
+                train_dataset.Y = final_model_probs_train.clamp(0, 1)
+                dl_train = DataLoader(
+                    train_dataset, shuffle=True, batch_size=self.batch_size
+                )
 
                 # self.final_model.reset()
                 preds_train = self.final_model.fit(dl_train).predict()

@@ -46,14 +46,13 @@ class DiscriminativeModel(nn.Module):
 
         if self.soft_labels:
             # loss_f = self.cross_entropy_soft_labels
-            #! Testing the sigmoid + bce
-            loss_f = lambda input, target: F.binary_cross_entropy(
-                torch.sigmoid(input), target
-            )
+            loss_f = F.binary_cross_entropy_with_logits
         else:
             loss_f = F.cross_entropy
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=self.lr, weight_decay=0
+        )
 
         for epoch in range(self.n_epochs):
             for batch_features, batch_labels in train_dataloader:
@@ -95,7 +94,9 @@ class DiscriminativeModel(nn.Module):
         for batch_features, batch_targets in dataloader:
             batch_features = batch_features.to(self.device)
             batch_logits = self.forward(batch_features)
-            preds.extend(F.softmax(batch_logits, dim=1))
+            preds.extend(
+                F.softmax(batch_logits, dim=1)
+            )
 
         preds = torch.stack(preds)
 

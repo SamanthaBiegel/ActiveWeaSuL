@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 
 from activeweasul.discriminative_model import DiscriminativeModel
 from activeweasul.performance import PerformanceMixin
@@ -10,7 +11,8 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
     Methods for training and predicting come from DiscriminativeModel base class.
     """
 
-    def __init__(self, input_dim, output_dim, lr, n_epochs, soft_labels=True, hide_progress_bar=False):
+    def __init__(self, input_dim, output_dim, lr, n_epochs,
+                 soft_labels=True, hide_progress_bar=False):
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -23,6 +25,6 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
     def forward(self, x):
         outputs = self.linear(x)
         return outputs
-    
+
     def reset(self):
         self.linear = nn.Linear(self.input_dim, self.output_dim).to(self.device)
