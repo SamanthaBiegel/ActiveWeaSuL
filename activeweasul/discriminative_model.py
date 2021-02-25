@@ -17,8 +17,6 @@ class DiscriminativeModel(nn.Module):
         self.average_train_losses = []
         self.average_val_losses = []
 
-        self.early_stopping = True
-
         self.min_val_loss = 1e15
 
     def cross_entropy_soft_labels(self, predictions, targets):
@@ -38,6 +36,11 @@ class DiscriminativeModel(nn.Module):
 
         self.train_dataloader = train_dataloader
 
+        self.last_updated_min_val_loss = 0
+        if self.warm_start is False:
+            # self.reset()
+            self.min_val_loss = 1e15
+
         self.train()
         
         if self.soft_labels:
@@ -49,8 +52,6 @@ class DiscriminativeModel(nn.Module):
             loss_f = F.cross_entropy
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=0)
-
-        self.last_updated_min_val_loss = 0
 
         for epoch in range(self.n_epochs):
 
@@ -106,6 +107,7 @@ class DiscriminativeModel(nn.Module):
                     if self.last_updated_min_val_loss >= self.patience:
                         self.load_state_dict(torch.load(self.checkpoint))
                         return self
+
         return self
 
     @torch.no_grad()

@@ -259,10 +259,13 @@ class PlotMixin:
         return df1
 
     def color_cov(self, y_true):
-        full_lm = np.append(self.label_matrix, y_true[:, None], axis=1)
-        cliques = self.label_model.cliques.copy()
-        cliques.append([full_lm.shape[1]-1])
-        psi_y, _ = self.label_model.get_psi(label_matrix=full_lm, cliques=cliques, nr_wl=full_lm.shape[1])
+        # full_lm = np.append(self.label_matrix, y_true[:, None], axis=1)
+        # cliques = self.label_model.cliques.copy()
+        # cliques.append([full_lm.shape[1]-1])
+        # psi_y, _ = self.label_model.get_psi(label_matrix=full_lm, cliques=cliques, nr_wl=full_lm.shape[1])
+        psi, _ = self.label_model.get_psi()
+        # psi = psi[:,[0,1,6,7,8,9]]
+        psi_y = np.append(psi, (y_true[:, None] == [0,1])*1, axis=1)
         print("Green = expected conditional independence")
         return pd.DataFrame(np.linalg.pinv(np.cov(psi_y.T))).style.apply(self._color_cov, axis=None)
 

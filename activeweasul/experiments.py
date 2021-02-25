@@ -142,8 +142,8 @@ def active_weasul_experiment(nr_trials, al_it, label_matrix, y_train, cliques,
             bucket_list = al.unique_inverse[al.queried[:j+1]]
             al_entropies[i].append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(len(np.unique(al.unique_inverse)))]))
 
-        # plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["MCC"])
-        # plt.show()
+        plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["F1"])
+        plt.show()
         # plot_probs(df, al.probs["Generative_train"][al_it-1], soft_labels=False, add_labeled_points=al.queried[:al_it-1]).show()
 
     return al_metrics, al_queried, al_probs, al_entropies
@@ -171,12 +171,12 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
         metric_dict[j]["Discriminative_test"] = {}
         queried = []
 
+        set_seed(seeds[j])
+
         model.reset()
         model.early_stopping = False
 
         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
-
-        set_seed(seeds[j])
 
         for i in range(al_it + 1):
 
@@ -202,7 +202,7 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
                 metric_dict[j]["Discriminative_train"][i] = PerformanceMixin().analyze(y=y_train, preds=train_preds)
                 metric_dict[j]["Discriminative_test"][i] = PerformanceMixin().analyze(y=y_test, preds=test_preds)
 
-    return metric_dict, model
+    return metric_dict
 
 def synthetic_al_experiment(nr_trials, al_it, features, y_train, y_test, batch_size, seeds, train_dataset, predict_dataloader, test_dataloader, test_features):
 

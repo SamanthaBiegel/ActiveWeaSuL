@@ -241,22 +241,22 @@ plt.plot(dm.average_val_losses)
 # plot_train_loss(dm.average_losses)
 
 # +
-it = 30
+it = 1
 # Choose strategy from ["maxkl", "margin", "nashaat"]
-query_strategy = "maxkl"
+query_strategy = "discriminative"
 
-seed = 243
+seed = 48
 
-al = ActiveWeaSuLPipeline(it=0,
+al = ActiveWeaSuLPipeline(it=it,
                           final_model = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/"),
                           n_epochs=200,
                           query_strategy=query_strategy,
                           discr_model_frequency=1,
-                          penalty_strength=1e3,
+                          penalty_strength=1,
                           batch_size=256,
                           randomness=0,
                           seed=seed,
-                          starting_seed=243)
+                          starting_seed=233)
 
 Y_probs_al = al.run_active_weasul(label_matrix=label_matrix,
                                   y_train=y_train,
@@ -272,10 +272,10 @@ Y_probs_al = al.run_active_weasul(label_matrix=label_matrix,
 # plot_probs(df, al.probs["Generative_train"][plot_it], soft_labels=False, add_labeled_points=al.queried[:plot_it])
 # -
 
-starting_seed = 243
-penalty_strength = 1e3
+starting_seed = 36
+penalty_strength = 1
 nr_trials = 10
-al_it = 50
+al_it = 200
 
 # ### Figure 1
 
@@ -290,7 +290,7 @@ exp_kwargs = dict(nr_trials=nr_trials,
                   starting_seed=starting_seed,
                   penalty_strength=penalty_strength,
                   batch_size=batch_size,
-                  final_model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/"),
+                  final_model=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True),
                   discr_model_frequency=1,
                   train_dataset = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train)),
                   test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test)),
@@ -301,11 +301,27 @@ np.random.seed(50)
 exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
 metrics_maxkl, queried_maxkl, probs_maxkl, entropies_maxkl = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
 
+exp_kwargs["final_model"] = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=True)
+np.random.seed(50)
+exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
+metrics_maxkl_4, queried_maxkl_4, probs_maxkl_4, entropies_maxkl_4 = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
+exp_kwargs["final_model"]=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=True)
+
+metrics_maxkl_4
+
+exp_kwargs["final_model"] = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=False)
+np.random.seed(50)
+exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
+metrics_maxkl_3, queried_maxkl_3, probs_maxkl_3, entropies_maxkl_3 = active_weasul_experiment(**exp_kwargs, query_strategy="maxkl")
+exp_kwargs["final_model"]=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=True)
+
 # #### Nashaat et al.
 
 np.random.seed(25)
 exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
+exp_kwargs["final_model"]=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=False)
 metrics_nashaat, queried_nashaat, probs_nashaat, _ = active_weasul_experiment(**exp_kwargs, query_strategy="nashaat", randomness=0)
+exp_kwargs["final_model"]=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=True)
 
 # #### Active learning
 
@@ -317,11 +333,10 @@ predict_dataset = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train
 test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
 
 final_model_kwargs["n_epochs"] = 2
-batch_size=20
 
 al_exp_kwargs = dict(
-    nr_trials=10,
-    al_it=100,
+    nr_trials=nr_trials,
+    al_it=al_it,
     batch_size=batch_size,
     seeds = np.random.randint(0,1000,nr_trials),
     model = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", soft_labels=False),
@@ -334,82 +349,93 @@ al_exp_kwargs = dict(
     test_features=feature_tensor_test
 )
 
-final_model_kwargs["n_epochs"] = 300
+final_model_kwargs["n_epochs"] = 100
 # -
 
-metrics_activelearning, model = active_learning_experiment(**al_exp_kwargs)
+metrics_activelearning = active_learning_experiment(**al_exp_kwargs)
 
-
+plot_metrics(process_exp_dict(metrics_activelearning, "Active learning"), ["F1"])
 
 # #### Process results
 
 metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "Active WeaSuL"),
+                        process_exp_dict(metrics_maxkl_3, "Active WeaSuL 2"),
                         process_exp_dict(metrics_nashaat, "Nashaat et al."),
                         process_exp_dict(metrics_activelearning, "Active learning by itself")])
 metric_dfs = metric_dfs.reset_index(level=0).rename(columns={"level_0": "Run"})
 metric_dfs["Dash"] = "n"
+mean_f1 = joined_df[(joined_df["Model"] == "Discriminative") & joined_df["Approach"].isin(["Active learning by itself"])].drop(["Run"], axis=1).groupby(["Approach", "Number of labeled points"]).mean().reset_index(level=1)
+
+
+mean_f1[50:70]
+
+mean_f1[mean_f1["Value"] > 0.6]
+
 # +
 joined_df = add_baseline(metric_dfs, al_it)
 
 # optimal_generative_test = lm.analyze(y_test, lm.predict_true(y_train, y_test, label_matrix_test))
 # optimal_discriminative_test = dm.analyze(y_test, test_preds)
 # joined_df = add_optimal(joined_df, al_it, optimal_generative_test, optimal_discriminative_test)
-# -
 
+
+# +
+# joined_df.to_csv("../results/figure_4B.csv", index=False)
+# -
 
 joined_df = joined_df[joined_df["Metric"] == "F1"]
 joined_df = joined_df[joined_df["Set"] == "test"]
 
 
-joined_df = joined_df[joined_df["Number of labeled points"] < 51]
-
 font_size=25
 legend_size=25
 tick_size=20
-n_boot=100
+n_boot=10000
 linewidth=4
 
 # +
-colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"]
+# joined_df.to_csv("../results/figure_4B.csv", index=False)
+
+# +
+colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a", "#ffaaef"]
 
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
-fig, axes = plt.subplots(1,2, figsize=(15,8), sharey=True)
+fig, axes = plt.subplots(1,1, figsize=(15,8), sharey=True)
 
 plt.tight_layout()
 
-sns.lineplot(data=joined_df[joined_df["Model"] == "Generative"], x="Number of labeled points", y="Value",
-            hue="Approach", ci=68, n_boot=n_boot, estimator="mean", legend=False, linewidth=linewidth,
-            hue_order=["Active WeaSuL", "Nashaat et al.", "Weak supervision by itself"], ax=axes[0])
+# sns.lineplot(data=joined_df[joined_df["Model"] == "Generative"], x="Number of labeled points", y="Value",
+#             hue="Approach", ci=68, n_boot=n_boot, estimator="mean", legend=False, linewidth=linewidth,
+#             hue_order=["Active WeaSuL", "Nashaat et al.", "Weak supervision by itself"], ax=axes[0])
 
-axes[0].set_title("Generative model (50 iterations)", size=font_size)
+# axes[0].set_title("Generative model (50 iterations)", size=font_size)
 
 sns.lineplot(data=joined_df[joined_df["Model"] == "Discriminative"], x="Number of labeled points", y="Value",
             hue="Approach", ci=68, n_boot=n_boot, estimator="mean", linewidth=linewidth,
-            hue_order=["Active WeaSuL", "Nashaat et al.", "Weak supervision by itself", "Active learning by itself"], ax=axes[1])
-axes[1].get_legend().remove()
-axes[1].set_title("Discriminative model (50 iterations)", fontsize=font_size)
+            hue_order=["Active WeaSuL", "Nashaat et al.", "Weak supervision by itself", "Active learning by itself"])
+axes.set_title("Discriminative model", fontsize=font_size)
 
-handles, labels = axes[1].get_legend_handles_labels()
+handles, labels = axes.get_legend_handles_labels()
 [ha.set_linewidth(linewidth) for ha in handles]
-leg = axes[0].legend(handles=handles[0:], labels=labels[0:6], loc="upper right", title="Method",
+leg = axes.legend(handles=handles[0:], labels=labels[0:6], loc="lower right", title="Method",
                      fontsize=legend_size, title_fontsize=legend_size)
 leg._legend_box.align = "left"
 # leg_lines = leg.get_lines()
 # leg_lines[0].set_linestyle("--")
 
-axes[0].tick_params(axis='both', which='major', labelsize=tick_size)
-axes[1].tick_params(axis='both', which='major', labelsize=tick_size)
+axes.tick_params(axis='both', which='major', labelsize=tick_size)
+# axes[1].tick_params(axis='both', which='major', labelsize=tick_size)
 
-axes[0].set_xlabel("Number of active learning iterations", fontsize=font_size)
-axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
-axes[0].set_ylabel("F1", fontsize=font_size)
+axes.set_xlabel("Number of active learning iterations", fontsize=font_size)
+# axes[1].set_xlabel("Number of active learning iterations", fontsize=font_size)
+axes.set_ylabel("F1", fontsize=font_size)
 
 # plt.ylim(-0.2,0.7)
 
 plt.tight_layout()
 
-# plt.savefig("../plots/VRD_performance_baselines_3.png")
+plt.savefig("../plots/VRD_performance_baselines_13.png")
 plt.show()
 # -
 
@@ -417,9 +443,21 @@ plt.show()
 
 # #### Other sampling strategies
 
+exp_kwargs["al_it"] = 50
+
 np.random.seed(40)
 exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
 metrics_margin, queried_margin, probs_margin, entropies_margin = active_weasul_experiment(**exp_kwargs, query_strategy="margin")
+
+exp_kwargs["final_model"] = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=False)
+np.random.seed(70)
+exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
+metrics_margin_2, queried_margin_2, probs_margin_2, entropies_margin_2 = active_weasul_experiment(**exp_kwargs, query_strategy="margin")
+exp_kwargs["final_model"]=VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/", early_stopping=True, warm_start=True)
+
+np.random.seed(60)
+exp_kwargs["seeds"]= np.random.randint(0,1000,10)
+metrics_discr, queried_discr, probs_discr, entropies_discr = active_weasul_experiment(**exp_kwargs, query_strategy="discriminative")
 
 np.random.seed(70)
 exp_kwargs["seeds"]= np.random.randint(0,1000,nr_trials)
@@ -432,8 +470,9 @@ metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "MaxKL"),
                         process_exp_dict(metrics_random, "Random")])
 
 # +
-metric_dfs = metric_dfs[metric_dfs.Set != "train"]
+metric_dfs = metric_dfs[metric_dfs.Set == "test"]
 metric_dfs = metric_dfs[metric_dfs["Metric"].isin(["F1"])]
+metric_dfs = metric_dfs[metric_dfs["Number of labeled points"] < 51]
 
 lines = list(metric_dfs.Approach.unique())
 
@@ -445,7 +484,7 @@ fig, axes = plt.subplots(1,2, figsize=(15,8), sharey=True)
 
 sns.lineplot(data=metric_dfs[metric_dfs["Model"] == "Generative"], x="Number of labeled points", y="Value",
             hue="Approach", ci=68, n_boot=n_boot, estimator="mean", linewidth=linewidth,
-            hue_order=["MaxKL", "Margin", "Random"], ax=axes[0])
+            hue_order=["MaxKL",  "Margin", "Random"], ax=axes[0])
 
 handles, labels = axes[0].get_legend_handles_labels()
 [ha.set_linewidth(linewidth) for ha in handles]
@@ -469,17 +508,9 @@ axes[0].set_ylabel("F1", fontsize=font_size)
 
 plt.tight_layout()
 
-# plt.savefig("../plots/VRD_sampling_strategies_4.png")
+plt.savefig("../plots/VRD_sampling_strategies_11.png")
 plt.show()
 # -
-
-margin_df = process_exp_dict(metrics_activelearning, "margin").reset_index(level=0)
-margin_df = margin_df[margin_df["Metric"] == "F1"]
-margin_df = margin_df[margin_df["Set"] == "test"]
-
-len(margin_df)
-
-sns.relplot(data=margin_df[505:], x="Number of labeled points", y="Value", col="Model", kind="line", hue="level_0", palette=sns.color_palette("tab10")[:5])
 
 # ### Figure 2C
 
@@ -489,24 +520,31 @@ sns.relplot(data=margin_df[505:], x="Number of labeled points", y="Value", col="
 maxkl_entropies_df = pd.DataFrame.from_dict(entropies_maxkl).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
 maxkl_entropies_df["Approach"] = "MaxKL"
 
-margin_entropies_df = pd.DataFrame.from_dict(entropies_margin).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
-margin_entropies_df["Approach"] = "Margin"
+margin_gen_entropies_df = pd.DataFrame.from_dict(entropies_margin).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
+margin_gen_entropies_df["Approach"] = "Margin"
+
+margin_discr_entropies_df = pd.DataFrame.from_dict(entropies_discr).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
+margin_discr_entropies_df["Approach"] = "Margin-discriminative"
 
 random_entropies_df = pd.DataFrame.from_dict(entropies_random).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
 random_entropies_df["Approach"] = "Random"
 # -
 
-entropies_df = pd.concat([maxkl_entropies_df, margin_entropies_df, random_entropies_df])
+entropies_df = pd.concat([maxkl_entropies_df, margin_gen_entropies_df, random_entropies_df])
 entropies_df["Number of labeled points"] = entropies_df["Number of labeled points"].apply(lambda x: x+1)
+entropies_df = entropies_df[entropies_df["Number of labeled points"] < 51]
 
 # +
-colors = ["#ec7357", "#2b4162", "#368f8b"]
+# colors = ["#ec7357", "#2b4162", "#3,68f8b", "#e9c46a"]
+lines = list(entropies_df.Approach.unique())
+
+colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"][:len(lines)]
 
 sns.set(style="whitegrid", palette=sns.color_palette(colors))
 
 plt.subplots(1,1,figsize=(8,8))
 ax = sns.lineplot(data=entropies_df, x="Number of labeled points", y="Entropy", hue="Approach", ci=68, n_boot=n_boot,
-                  legend=False,linewidth=linewidth, hue_order=["Random", "MaxKL", "Margin"])
+                  legend=False,linewidth=linewidth, hue_order=["MaxKL", "Margin","Random"])
 ax.tick_params(axis='both', which='major', labelsize=tick_size)
 
 ax.set_xlabel("Number of active learning iterations", fontsize=font_size)
@@ -515,7 +553,7 @@ ax.set_title("Diversity of sampled buckets", fontsize=font_size)
 # plt.ylim(-0.05,1.8)
 
 plt.tight_layout()
-# plt.savefig("../plots/VRD_entropies_2.png")
+plt.savefig("../plots/VRD_entropies_6.png")
 # plt.show()
 # -
 

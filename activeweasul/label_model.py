@@ -73,8 +73,6 @@ class LabelModel(PerformanceMixin):
 
         loss = torch.norm((self.cov_O_inverse + self.z @ self.z.T)[torch.BoolTensor(self.mask)]) ** 2
 
-        self.losses.append(loss.clone().detach().numpy())
-
         if self.active_learning:
             tmp_cov = self.calculate_cov_OS()
             tmp_mu = self.calculate_mu(tmp_cov)
@@ -254,7 +252,10 @@ class LabelModel(PerformanceMixin):
             loss = self.loss_func()
             loss.backward()
             optimizer.step()
-            # self.losses.append(loss.clone().detach().numpy())
+            self.losses.append(loss.clone().detach().numpy())
+
+            # if loss < 1e-5:
+            #     break
 
         # Determine the sign of z
         # Assuming cov_OS corresponds to Y=1, then cov(wl1=1,Y=1) should be positive

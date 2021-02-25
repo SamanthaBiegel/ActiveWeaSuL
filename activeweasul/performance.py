@@ -13,8 +13,7 @@ class PerformanceMixin:
 
         predicted_labels = torch.argmax(preds, dim=1).cpu().detach().numpy()
 
-        y_set = list(range(preds.shape[1]))
-        TN, FN, FP, TP = (((predicted_labels == i) & (y == j)).sum() for i in y_set for j in y_set)
+        TN, FN, FP, TP = (((predicted_labels == i) & (y == j)).sum() for i in [0,1] for j in [0,1])
 
         return {"MCC": self.MCC(TP, TN, FP, FN),
                 "Precision": self.precision(TP, FP),

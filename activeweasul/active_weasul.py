@@ -91,17 +91,20 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             test_dataset = train_dataset
 
         self.label_matrix = label_matrix.copy()
-        self.y_train = y_train
-        self.y_test = y_test
+        self.y_train = y_train.copy()
+        self.y_test = y_test.copy()
 
         self.ground_truth_labels = np.full_like(y_train, -1)
 
         dl_test = DataLoader(test_dataset, shuffle=False, batch_size=self.batch_size)
 
-        # Split into train and validation sets for early stopping
-        indices_shuffle = np.random.permutation(len(self.label_matrix))
-        split_nr = int(np.ceil(0.9*len(self.label_matrix)))
-        self.train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
+        if self.final_model.early_stopping:
+            # Split into train and validation sets for early stopping
+            indices_shuffle = np.random.permutation(len(self.label_matrix))
+            split_nr = int(np.ceil(0.9*len(self.label_matrix)))
+            self.train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
+        else:
+            self.train_idx = range(len(self.y_train))
 
         # Identify buckets
         self.unique_combs, self.unique_idx, self.unique_inverse = np.unique(label_matrix,
@@ -119,17 +122,26 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             prob_labels_test = self.label_model.predict(label_matrix_test,
                                                         self.label_model.mu,
                                                         self.label_model.E_S)
+            # print(self.label_model.losses[-1])
 
             # Optionally, train discriminative model on probabilistic labels
             if self.final_model is not None and i % self.discr_model_frequency == 0:
                 final_model_probs_train = prob_labels_train.clone().detach()
-                # final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
-                # final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
+                final_model_probs_train[self.ground_truth_labels == 1, :] = torch.DoubleTensor([0, 1])
+                final_model_probs_train[self.ground_truth_labels == 0, :] = torch.DoubleTensor([1, 0])
                 train_dataset.Y = final_model_probs_train
-                dl_train = DataLoader(CustomTensorDataset(*train_dataset[self.train_idx]), shuffle=True, batch_size=self.batch_size)
-                dl_val = DataLoader(CustomTensorDataset(*train_dataset[val_idx]), shuffle=True, batch_size=self.batch_size)
 
-                preds_train = self.final_model.fit(dl_train, dl_val).predict()
+                if self.final_model.warm_start is False and i > 0:
+                    self.final_model.reset()
+                if self.final_model.early_stopping:
+                    dl_train = DataLoader(CustomTensorDataset(*train_dataset[self.train_idx]), shuffle=True, batch_size=self.batch_size)
+                    dl_val = DataLoader(CustomTensorDataset(*train_dataset[val_idx]), shuffle=True, batch_size=self.batch_size)
+                    preds_train = self.final_model.fit(dl_train, dl_val).predict()
+                else:
+                    dl_train = DataLoader(train_dataset, shuffle=True, batch_size=self.batch_size)
+                    self.final_model.reset()
+                    preds_train = self.final_model.fit(dl_train).predict()
+            
                 preds_test = self.final_model.predict(dl_test)
             else:
                 preds_train = None

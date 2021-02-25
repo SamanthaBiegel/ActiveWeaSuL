@@ -84,6 +84,8 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
                  soft_labels=True,
                  word_embedding_size=100,
                  n_epochs=1,
+                 early_stopping=True,
+                 warm_start=False,
                  patience=5,
                  lr=1e-3,
                  n_classes=2):
@@ -94,6 +96,8 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         self.concat_module = FlatConcat().to(self.device)
         self.soft_labels = soft_labels
         self.n_epochs = n_epochs
+        self.early_stopping = early_stopping
+        self.warm_start = warm_start
         self.patience = patience
         self.lr = lr
         self.word_embedding_size = word_embedding_size
