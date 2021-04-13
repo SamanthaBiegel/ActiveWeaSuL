@@ -10,7 +10,16 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
     Methods for training and predicting come from DiscriminativeModel base class.
     """
 
-    def __init__(self, input_dim, output_dim, lr, n_epochs, early_stopping=False, warm_start=False, patience=20, soft_labels=True):
+    def __init__(self,
+                 input_dim,
+                 output_dim,
+                 lr,
+                 n_epochs,
+                 early_stopping=False,
+                 warm_start=False,
+                 checkpoint="../checkpoints/LG_checkpoint.pt",
+                 patience=20,
+                 soft_labels=True):
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -18,10 +27,9 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
         self.n_epochs = n_epochs
         self.early_stopping = early_stopping
         self.warm_start = warm_start
+        self.checkpoint = checkpoint
         self.patience = patience
         self.soft_labels = soft_labels
-
-        self.checkpoint = "../checkpoints/LG_checkpoint.pt"
 
         self.reset()
 

@@ -31,8 +31,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm_notebook as tqdm
 
-sys.path.append(os.path.abspath("../activelearning"))
-from synthetic_data import SyntheticDataGenerator, SyntheticDataset
+sys.path.append(os.path.abspath("../activeweasul"))
 from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
@@ -86,13 +85,13 @@ y_test.mean()
 # +
 class_balance = np.array([0.93,0.07])
 
-cliques = [[0],[1,2],[3],[4]]
+cliques = [[0],[1],[2],[3],[4],[5],[6],[7],[8]]
 # -
 
 # Note: we use the dev set as train set for now
 
 # +
-lm = LabelModel(n_epochs=200,
+lm = LabelModel(n_epochs=500,
                 lr=1e-1)
 
 # Fit and predict on train set
@@ -112,26 +111,28 @@ plot_train_loss(lm.losses)
 # ## Active learning pipeline
 
 # +
-it = 30
+it = 50
 # Choose strategy from ["maxkl", "margin", "nashaat"]
 query_strategy = "maxkl"
 
 al = ActiveWeaSuLPipeline(it=it,
                             n_epochs=200,
-                            penalty_strength=1e3,
+                            penalty_strength=1e8,
                             query_strategy=query_strategy)
 
 Y_probs_al = al.run_active_weasul(label_matrix=L_train_dev,
                                   y_train=y_train_dev,
                                     cliques=cliques,
-                                    class_balance=class_balance)
+                                    class_balance=class_balance,
+                                  label_matrix_test=L_test,
+                                  y_test=y_test)
 # -
 
 # ## Analyze results
 
 metric_df = process_metric_dict(al.metrics, strategy_string="maxkl")
 
-plot_metrics(metric_df, filter_metrics=["MCC", "F1", "Precision", "Recall"])
+plot_metrics(metric_df, filter_metrics=["F1"])
 
 metric_df
 

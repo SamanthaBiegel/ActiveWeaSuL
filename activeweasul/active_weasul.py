@@ -98,7 +98,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         dl_test = DataLoader(test_dataset, shuffle=False, batch_size=self.batch_size)
 
-        if self.final_model.early_stopping:
+        if self.final_model is not None and self.final_model.early_stopping:
             # Split into train and validation sets for early stopping
             indices_shuffle = np.random.permutation(len(self.label_matrix))
             split_nr = int(np.ceil(0.9*len(self.label_matrix)))

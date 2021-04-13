@@ -65,7 +65,7 @@ class ActiveLearningQuery():
         Returns:
             list: List of indices of buckets to choose from
         """
-        # TODO: rewrite to update only updated distribution from sampled bucket
+        # TODO: rewrite to update only distribution from sampled bucket
         # Instead of computing everything again every iteration
 
         # Label model distributions

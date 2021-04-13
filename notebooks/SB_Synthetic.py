@@ -32,7 +32,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
-sys.path.append(os.path.abspath("../activelearning"))
+sys.path.append(os.path.abspath("../activeweasul"))
 from synthetic_data import SyntheticDataGenerator
 from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict
 from logisticregression import LogisticRegression
@@ -44,8 +44,28 @@ from plot import plot_probs, plot_train_loss
 
 # ## Load data
 
-df = pd.read_csv("../data/synthetic_dataset_3.csv")
-L = np.array(df[["wl1", "wl2", "wl3"]])
+# +
+N = 10000
+centroids = np.array([[0.1, 1.3], [-0.8, -0.5]])
+
+p_z = 0.5
+
+set_seed(932)
+data = SyntheticDataGenerator(N, p_z, centroids)
+df_train = data.sample_dataset().create_df()
+y_train = df_train.y.values
+
+# +
+df_train.loc[:, "wl1"] = (df_train.x2<0.4)*1
+df_train.loc[:, "wl2"] = (df_train.x1<-0.3)*1
+df_train.loc[:, "wl3"] = (df_train.x1<-1)*1
+
+L = df_train[["wl1", "wl2", "wl3"]].values
+
+# +
+# df = pd.read_csv("../data/synthetic_dataset_3.csv")
+# L = np.array(df[["wl1", "wl2", "wl3"]])
+# -
 
 # ## Initial label model fit
 
@@ -67,8 +87,16 @@ Y_probs = lm.fit(label_matrix=L,
 Y_probs_test = lm.predict(L, lm.mu, 0.5)
 
 # Analyze test set performance
-lm.analyze(df.y.values)
+lm.analyze(df_train.y.values)
 # -
+
+lm.z
+
+lm.psi
+
+lm.mask
+
+lm.mu
 
 final_model_kwargs = dict(input_dim=2,
                           output_dim=2,

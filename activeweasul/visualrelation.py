@@ -86,6 +86,7 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
                  n_epochs=1,
                  early_stopping=True,
                  warm_start=False,
+                 checkpoint="../checkpoints/VR_checkpoint.pt",
                  patience=5,
                  lr=1e-3,
                  n_classes=2):
@@ -103,7 +104,7 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         self.word_embedding_size = word_embedding_size
         self.n_classes = n_classes
 
-        self.checkpoint = "../checkpoints/VR_checkpoint.pt"
+        self.checkpoint = checkpoint
 
         self.reset()
 

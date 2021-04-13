@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.9.1
+#       jupytext_version: 1.6.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -14,7 +14,7 @@
 # ---
 
 # +
-DAP = True
+DAP = False
     
 if DAP:
 # #     ! pip install -r ../requirements.txt
@@ -28,9 +28,9 @@ else:
     import torchvision.models as models
     pretrained_model = models.resnet18(pretrained=True)
     path_prefix = "../"
-# -
 
-torch.cuda.is_available()
+# +
+# torch.cuda.is_available()
 
 # +
 # %load_ext autoreload
@@ -56,7 +56,7 @@ import torch.nn as nn
 import sys
 import os
 
-sys.path.append(os.path.abspath("../activelearning"))
+sys.path.append(os.path.abspath("../activeweasul"))
 from synthetic_data import SyntheticDataGenerator
 from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 from discriminative_model import DiscriminativeModel
@@ -115,12 +115,12 @@ def lf_area(x):
         return SITON
     return OTHER
 
-# lfs = [lf_siton_subject_object, lf_not_person, lf_siton_object, lf_area, lf_dist, lf_ydist, lf_xdist]
-lfs = [lf_area, lf_dist, lf_siton_subject_object]
+lfs = [lf_area, lf_siton_subject_object, lf_not_person, lf_siton_object, lf_dist]
+# lfs = [lf_area, lf_dist, lf_siton_subject_object]
 
 # cliques = [[0],[1],[2],[3],[4],[5],[6]]
-# cliques=[[0],[1,2,3],[4]]
-cliques=[[0],[1],[2]]
+cliques=[[0],[1,2],[3],[4]]
+# cliques=[[0],[1],[2]]
 # -
 
 L_train = apply_lfs(df_train, lfs)
@@ -152,8 +152,8 @@ L = apply_lfs(df_vis, lfs)
 df_vis_final = df_vis.copy()
 L_final = L.copy()
 
-# np.random.seed(254)
-np.random.seed(98)
+np.random.seed(254)
+# np.random.seed(98)
 indices_shuffle = np.random.permutation(df_vis_final.shape[0])
 
 split_nr = int(np.ceil(0.9*df_vis_final.shape[0]))
@@ -222,25 +222,33 @@ dataset_test = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
 # subset_points = random.sample(range(len(df_train)), 30)
 # df_train_subset=df_train.iloc[subset_points]
 # df_train_subset.index = range(len(df_train_subset))
-batch_size=64
+batch_size=20
 
-dataset_train.Y = true_probs#.clamp(0,1)
+dataset_train.Y = true_probs.clamp(0,1)
 
-dl_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size)
+indices_shuffle = np.random.permutation(len(L_train))
+split_nr = int(np.ceil(0.95*len(L_train)))
+train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
+
+dl_train = DataLoader(CustomTensorDataset(*dataset_train[train_idx]), shuffle=True, batch_size=batch_size)
+dl_val = DataLoader(CustomTensorDataset(*dataset_train[val_idx]), shuffle=True, batch_size=batch_size)
 dl_test = DataLoader(dataset_test, shuffle=False, batch_size=batch_size)
 
-final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix, soft_labels=True)
+final_model = VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=300, data_path_prefix="../data/", soft_labels=True)
 
 final_model.reset()
-final_model.fit(dl_train)
+final_model.fit(dl_train, dl_val)
 preds_test = final_model.predict(dl_test)
 preds_train = final_model.predict()
-
-# +
-# plot_train_loss(final_model.average_losses)
 # -
+plt.plot(final_model.average_train_losses)
+plt.show()
 
-# final_model.analyze(df_train.y.values, preds_train)
+plt.plot(final_model.average_val_losses)
+plt.show()
+
+final_model.analyze(df_train.y.values[train_idx], preds_train)
+
 final_model.analyze(df_test.y.values, preds_test)
 
 dataset_train = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train))
@@ -254,10 +262,10 @@ exp_kwargs = dict(nr_trials=10,
                   cliques=cliques,
                   class_balance=class_balance,
                   starting_seed=243, 
-                  penalty_strength=1e3, 
+                  penalty_strength=1, 
                   batch_size=32,
-                  discr_model_frequency=5,
-                  final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=3, data_path_prefix=path_prefix),
+                  discr_model_frequency=1,
+                  final_model=VisualRelationClassifier(pretrained_model, lr=1e-3, n_epochs=300, data_path_prefix="../data/"),
                   train_dataset=dataset_predict,
                   test_dataset=dataset_test,
                   label_matrix_test=L_test,

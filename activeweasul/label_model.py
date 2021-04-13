@@ -50,21 +50,8 @@ class LabelModel(PerformanceMixin):
     def loss_prior_knowledge_probs(self, probs):
         """Add penalty to loss for sampled data points"""
 
-        # Label to probabilistic label (eg 1 to (0 1))
-        # probs_al = torch.Tensor(((self.y_set == self.ground_truth_labels[..., None]) * 1).reshape(self.N, -1))
-
         # Select points for which ground truth label is available
         mask = (self.ground_truth_labels != -1)
-        # nr_iterations = mask.sum()
-        # discount_factor = torch.tensor(0.97).repeat(nr_iterations) ** torch.arange(nr_iterations-1, -1, -1)
-
-        # loss = nn.CrossEntropyLoss(reduction="sum")
-        # return self.penalty_strength * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask]))
-
-        # loss = nn.CrossEntropyLoss(reduction="none")
-        # return penalty_strength * torch.sum(1/torch.Tensor(self.bucket_counts[self.bucket_inverse][mask]) * loss(probs[mask], torch.LongTensor(self.ground_truth_labels[mask])))
-
-        # return penalty_strength * torch.sum(discount_factor * ((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask] ** 2))
 
         return self.penalty_strength * torch.norm((torch.Tensor(self.ground_truth_labels) - probs[:,1])[mask]) ** 2
 
@@ -78,9 +65,6 @@ class LabelModel(PerformanceMixin):
             tmp_mu = self.calculate_mu(tmp_cov)
             tmp_probs = self.predict(self.label_matrix, tmp_mu, self.E_S)
             loss += self.loss_prior_knowledge_probs(tmp_probs)
-            # if self.last_posteriors is not None:
-            #     # print(torch.max((torch.norm(tmp_probs[self.bucket_idx, 1] - torch.Tensor(self.last_posteriors)) - 0.3), 0).values)
-            #     loss += 1e3 * torch.max((torch.norm(tmp_probs[self.bucket_idx, 1] - torch.Tensor(self.last_posteriors)) - 0.4), 0).values
 
         return loss
 
@@ -206,7 +190,6 @@ class LabelModel(PerformanceMixin):
         cov_O = np.cov(self.psi.T, bias=True)
         self.cov_O_inverse = torch.Tensor(np.linalg.pinv(cov_O))
         self.cov_O = torch.Tensor(cov_O)
-        # self.cov_O_inverse = torch.pinverse(self.cov_O)
 
         self.E_S = np.array(self.class_balance[-1])
         self.cov_Y = np.diag(self.class_balance) - self.class_balance[:, None] @ self.class_balance[None, :]
@@ -220,7 +203,6 @@ class LabelModel(PerformanceMixin):
             cliques,
             class_balance,
             ground_truth_labels: Optional[np.array] = None):
-            # last_posteriors: Optional[np.array] = None):
         """Fit label model
 
         Args:
@@ -237,7 +219,6 @@ class LabelModel(PerformanceMixin):
 
         if self.active_learning:
             self.ground_truth_labels = ground_truth_labels
-            # self.last_posteriors = last_posteriors
             _, self.bucket_idx, self.bucket_inverse, self.bucket_counts = np.unique(label_matrix, axis=0, return_index=True, return_inverse=True, return_counts=True)
 
         if not self.active_learning:

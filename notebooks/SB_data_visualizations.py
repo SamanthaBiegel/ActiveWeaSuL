@@ -184,7 +184,6 @@ line_width=2
 # +
 plt.figure(figsize=(5,5))
 plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.y, s=point_size, edgecolor="black", cmap=cmap)
-# plt.plot(x_dec, y_dec, color="black", linewidth=line_width)
 plt.xlim(-2.7,2.2)
 plt.ylim(-2,2.9)
 # plt.xlabel("x1", fontsize=font_size)
@@ -193,6 +192,19 @@ plt.xticks([], [])
 plt.yticks([], [])
 
 plt.savefig("../plots/truelabels.png")
+
+# +
+plt.figure(figsize=(5,5))
+plt.scatter(x=df_example.x1, y=df_example.x2, c=df_example.y, s=point_size, edgecolor="black", cmap=cmap)
+plt.plot(x_dec, y_dec, color="black", linewidth=line_width)
+plt.xlim(-2.7,2.2)
+plt.ylim(-2,2.9)
+# plt.xlabel("x1", fontsize=font_size)
+# plt.ylabel("x2", fontsize=font_size)
+plt.xticks([], [])
+plt.yticks([], [])
+
+plt.savefig("../plots/truelabels-2.png")
 
 # +
 plt.scatter(x=df_example.x1, y=df_example.x2, c="#BBBBBB", s=point_size, edgecolor="black", cmap=cmap)

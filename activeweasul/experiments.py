@@ -52,25 +52,6 @@ def add_baseline(metric_dfs, al_it):
     return pd.concat([metric_dfs, baseline_df])
 
 
-def add_optimal(metric_dfs, al_it, optimal_generative_test, optimal_discriminative_test):
-
-    optimal_lm = pd.DataFrame(optimal_generative_test, index=range(al_it+1)).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Metric", 0: "Value"})
-    optimal_lm["Run"] = 0
-    optimal_lm["Model"] = "Generative"
-    optimal_lm["Approach"] = "Upper bound"
-    optimal_lm["Dash"] = "y"
-    optimal_lm["Set"] = "test"
-
-    optimal_dm = pd.DataFrame(optimal_discriminative_test, index=range(al_it+1)).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Metric", 0: "Value"})
-    optimal_dm["Run"] = 0
-    optimal_dm["Model"] = "Discriminative"
-    optimal_dm["Approach"] = "Upper bound"
-    optimal_dm["Dash"] = "y"
-    optimal_dm["Set"] = "test"
-
-    return pd.concat([metric_dfs, optimal_lm, optimal_dm])
-
-
 def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
 
     if not plot_train:
@@ -174,7 +155,6 @@ def active_learning_experiment(nr_trials, al_it, model, features, y_train, y_tes
         set_seed(seeds[j])
 
         model.reset()
-        model.early_stopping = False
 
         is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
 
@@ -237,29 +217,3 @@ def synthetic_al_experiment(nr_trials, al_it, features, y_train, y_test, batch_s
                 metric_dict[j]["Discriminative_test"][i] = PerformanceMixin().analyze(y=y_test, preds=torch.Tensor(test_preds))
 
     return metric_dict
-
-
-def bucket_entropy_experiment(nr_trials, al_it, label_matrix, y_train, cliques, class_balance, starting_seed, seeds, query_strategy, randomness):
-
-    entropies = {}
-    for i in tqdm(range(nr_trials), desc="Repetitions"):
-        seed = seeds[i]
-        it = al_it
-
-        al = ActiveWeaSuLPipeline(it=it,
-                                  query_strategy=query_strategy,
-                                  randomness=randomness,
-                                  starting_seed=starting_seed,
-                                  seed=seed)
-
-        _ = al.run_active_weasul(label_matrix=label_matrix, y_train=y_train, cliques=cliques, class_balance=class_balance)
-
-        entropy_sampled_buckets = []
-
-        for j in range(it):
-            bucket_list = al.unique_inverse[al.queried[:j+1]]
-            entropy_sampled_buckets.append(entropy([len(np.where(bucket_list == j)[0])/len(bucket_list) for j in range(6)]))
-
-        entropies[i] = entropy_sampled_buckets
-
-    return entropies
