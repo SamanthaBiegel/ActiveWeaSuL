@@ -9,7 +9,6 @@ class DiscriminativeModel(nn.Module):
 
     Provides training functionality to a classifier.
     """
-
     def __init__(self):
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,29 +24,27 @@ class DiscriminativeModel(nn.Module):
         y_dim = targets.shape[1]
         loss = torch.zeros(predictions.shape[0]).to(self.device)
         for y in range(y_dim):
-            loss_y = F.cross_entropy(predictions, predictions.new_full((predictions.shape[0],), y, dtype=torch.long),
-                                     reduction="none")
+            loss_y = F.cross_entropy(
+                predictions, predictions.new_full(
+                    (predictions.shape[0],), y, dtype=torch.long),
+                reduction="none")
             loss += targets[:, y] * loss_y
 
         return loss.mean()
 
     def fit(self, train_dataloader, val_dataloader=None):
         """Train classifier"""
-
         self.train_dataloader = train_dataloader
 
         self.last_updated_min_val_loss = 0
         if self.warm_start is False:
-            # self.reset()
             self.min_val_loss = 1e15
 
         self.train()
-        
+
         if self.soft_labels:
-            # loss_f = self.cross_entropy_soft_labels
             loss_f = lambda input, target: F.binary_cross_entropy_with_logits(
-                input, target
-            )
+                input, target)
         else:
             loss_f = F.cross_entropy
 
@@ -63,7 +60,7 @@ class DiscriminativeModel(nn.Module):
             # Train model
             for batch_features, batch_labels in train_dataloader:
                 optimizer.zero_grad()
-                
+
                 batch_features = batch_features.to(self.device)
                 batch_logits = self.forward(batch_features)
                 batch_labels = batch_labels.to(self.device)
@@ -107,13 +104,11 @@ class DiscriminativeModel(nn.Module):
                     if self.last_updated_min_val_loss >= self.patience:
                         self.load_state_dict(torch.load(self.checkpoint))
                         return self
-
         return self
 
     @torch.no_grad()
     def predict(self, dataloader=None, assign_train_preds=False):
         """Predict on dataset"""
-
         if dataloader is None:
             # Predict on train set if no dataloader provided
             dataloader = DataLoader(dataset=self.train_dataloader.dataset,
@@ -124,15 +119,12 @@ class DiscriminativeModel(nn.Module):
         self.eval()
 
         preds = []
-
         for batch_features, batch_targets in dataloader:
             batch_features = batch_features.to(self.device)
             batch_logits = self.forward(batch_features)
             preds.extend(F.softmax(batch_logits, dim=1))
-
         preds = torch.stack(preds)
 
         if assign_train_preds:
             self.preds = preds
-
         return preds
