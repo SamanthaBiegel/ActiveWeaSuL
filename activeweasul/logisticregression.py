@@ -11,7 +11,7 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
     """
 
     def __init__(
-        self, input_dim, output_dim, lr, n_epochs, early_stopping=False, warm_start=False,
+        self, input_dim, output_dim, lr, n_epochs, early_stopping=False,
             checkpoint="../checkpoints/LG_checkpoint.pt", patience=20, soft_labels=True):
         super().__init__()
         self.input_dim = input_dim
@@ -19,7 +19,6 @@ class LogisticRegression(PerformanceMixin, DiscriminativeModel):
         self.lr = lr
         self.n_epochs = n_epochs
         self.early_stopping = early_stopping
-        self.warm_start = warm_start
         self.checkpoint = checkpoint
         self.patience = patience
         self.soft_labels = soft_labels

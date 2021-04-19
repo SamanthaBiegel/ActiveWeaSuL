@@ -128,7 +128,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                     torch.DoubleTensor([1, 0]))
                 train_dataset.Y = final_model_probs_train
 
-                if self.final_model.warm_start is False and i > 0:
+                if i > 0:
                     self.final_model.reset()
                 if self.final_model.early_stopping:
                     dl_train = DataLoader(

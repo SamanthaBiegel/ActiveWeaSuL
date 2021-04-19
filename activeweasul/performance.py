@@ -50,4 +50,5 @@ class PerformanceMixin:
         return TP / (TP + FP)
 
     def F1(self, TP, FP, FN):
+        "F1 score"
         return TP / (TP + 0.5 * (FP + FN))

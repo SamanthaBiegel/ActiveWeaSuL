@@ -76,7 +76,7 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
 
     def __init__(
         self, pretrained_model, data_path_prefix, soft_labels=True, word_embedding_size=100,
-        n_epochs=1, early_stopping=True, warm_start=False,
+        n_epochs=1, early_stopping=True,
             checkpoint="../checkpoints/VR_checkpoint.pt", patience=5, lr=1e-3, n_classes=2):
 
         super().__init__()
@@ -89,7 +89,6 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         self.soft_labels = soft_labels
         self.n_epochs = n_epochs
         self.early_stopping = early_stopping
-        self.warm_start = warm_start
         self.patience = patience
         self.lr = lr
         self.word_embedding_size = word_embedding_size

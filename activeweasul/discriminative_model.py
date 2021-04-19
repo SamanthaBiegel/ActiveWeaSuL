@@ -18,27 +18,12 @@ class DiscriminativeModel(nn.Module):
 
         self.min_val_loss = 1e15
 
-    def cross_entropy_soft_labels(self, predictions, targets):
-        """Cross entropy loss for probabilistic labels"""
-
-        y_dim = targets.shape[1]
-        loss = torch.zeros(predictions.shape[0]).to(self.device)
-        for y in range(y_dim):
-            loss_y = F.cross_entropy(
-                predictions, predictions.new_full(
-                    (predictions.shape[0],), y, dtype=torch.long),
-                reduction="none")
-            loss += targets[:, y] * loss_y
-
-        return loss.mean()
-
     def fit(self, train_dataloader, val_dataloader=None):
         """Train classifier"""
         self.train_dataloader = train_dataloader
 
         self.last_updated_min_val_loss = 0
-        if self.warm_start is False:
-            self.min_val_loss = 1e15
+        self.min_val_loss = 1e15
 
         self.train()
 

@@ -143,9 +143,7 @@ def active_weasul_experiment(
                     for j in range(len(np.unique(al.unique_inverse)))
                 ]))
 
-        plot_metrics(process_metric_dict(al.metrics, query_strategy), filter_metrics=["F1"])
-        plt.show()
-    return al_metrics, al_queried, al_probs, al_entropies
+    return al_metrics, al_entropies
 
 
 def query_margin(preds, is_in_pool):
@@ -185,9 +183,9 @@ def active_learning_experiment(
                 is_in_pool[point] = False
                 queried.append(point)
                 metric_dict[j]["Discriminative_train"][i] = {
-                    "MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
                 metric_dict[j]["Discriminative_test"][i] = {
-                    "MCC": 0, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": 0}
+                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
             else:
                 Y = torch.LongTensor(y_train[queried])
 
@@ -230,9 +228,9 @@ def synthetic_al_experiment(
             if (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
                 queried.append(random.sample(range(len(y_train)), 1)[0])
                 metric_dict[j]["Discriminative_train"][i] = {
-                    "MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
                 metric_dict[j]["Discriminative_test"][i] = {
-                    "MCC": 0, "Precision": 0.5, "Recall": 0.5, "Accuracy": 0.5, "F1": 0.5}
+                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
             else:
                 Y = y_train[queried]
                 df_1 = features.iloc[queried]

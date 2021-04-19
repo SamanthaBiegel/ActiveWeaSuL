@@ -14,7 +14,7 @@ class LabelModel(PerformanceMixin):
     """
     def __init__(
         self, n_epochs: int = 200, lr: float = 1e-1, active_learning: bool = False,
-            penalty_strength: float = 1e3, hide_progress_bar: bool = False):
+            penalty_strength: float = 1, hide_progress_bar: bool = False):
         """Initialise model.
 
         Args:
