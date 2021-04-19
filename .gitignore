@@ -5,6 +5,7 @@
 **/data/VRD/*
 **/data/word_embeddings/*
 *.pkl
+!**data/spam/*
 **/checkpoint/
 *.ipynb_checkpoints/
 connect-s3.sh
