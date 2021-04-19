@@ -1,10 +1,6 @@
 # Adapted from https://github.com/snorkel-team/snorkel-tutorials/tree/master/visual_relation
 
 import json
-import os
-import random
-import subprocess
-
 import numpy as np
 import pandas as pd
 
@@ -60,7 +56,16 @@ def df_drop_duplicates(df):
     """Drop duplicates for object pairs with multiple predicate labels"""
 
     np.random.seed(456)
-    return df.sample(frac=1).sort_values("y").drop_duplicates(subset=df.columns.difference(["y"]), ignore_index=True, keep="last").sort_index()
+    return (
+        df
+        .sample(frac=1)
+        .sort_values("y")
+        .drop_duplicates(
+            subset=df.columns.difference(["y"]),
+            ignore_index=True,
+            keep="last"
+        ).sort_index()
+    )
 
 
 def balance_dataset(df):
@@ -68,10 +73,14 @@ def balance_dataset(df):
 
     np.random.seed(456)
     df = df.sample(frac=1).groupby("y")
-    return pd.DataFrame(df.apply(lambda x: x.sample(df.size().min()))).reset_index(drop=True)
+    return pd.DataFrame(
+        df.apply(lambda x: x.sample(df.size().min()))
+    ).reset_index(drop=True)
 
 
-def load_vr_data(classify=None, include_predicates=None, path_prefix="", drop_duplicates=False, balance=False, validation=True):
+def load_vr_data(
+    classify=None, include_predicates=None, path_prefix="", drop_duplicates=False,
+        balance=False, validation=True):
     """Load Pandas DataFrame of visual relations"""
 
     relationships_train = json.load(open(path_prefix + "annotations/annotations_train.json"))
@@ -122,7 +131,6 @@ def load_vr_data(classify=None, include_predicates=None, path_prefix="", drop_du
         train_df = balance_dataset(train_df)
 
     if validation:
-        # train_df["labels"] = -1 * np.ones(len(train_df))
         valid_df = vr_to_pandas(
             relationships_val,
             objects,

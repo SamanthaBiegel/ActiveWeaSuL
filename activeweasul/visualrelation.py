@@ -7,7 +7,6 @@ import torch
 from torch.utils.data import Dataset
 import torch.nn as nn
 from torchvision import transforms
-from typing import Tuple, Union
 
 from performance import PerformanceMixin
 from discriminative_model import DiscriminativeModel
@@ -17,14 +16,12 @@ class VisualRelationDataset(Dataset):
     """Visual Relation Dataset"""
 
     def __init__(
-        self,
-        image_dir: str,
-        df: pd.DataFrame,
-        Y: torch.Tensor,
-        image_size=224,
+        self, image_dir: str, df: pd.DataFrame, Y: torch.Tensor, image_size=224,
     ) -> None:
         self.image_dir = image_dir
-        self.X = df.loc[:, ["source_img", "object_bbox", "subject_bbox", "object_category", "subject_category"]]
+        self.X = df.loc[:, [
+            "source_img", "object_bbox", "subject_bbox", "object_category", "subject_category"
+        ]]
         self.Y = Y
 
         # Standard image transforms
@@ -60,7 +57,6 @@ class VisualRelationDataset(Dataset):
             "obj_category": obj_category,
             "sub_category": sub_category,
         }
-
         target = self.Y[index]
         return image, target
 
@@ -75,25 +71,20 @@ class VisualRelationDataset(Dataset):
 
 class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
     """Visual Relation Classifier.
-    
+
     Methods for training and predicting come from DiscriminativeModel base class."""
 
-    def __init__(self,
-                 pretrained_model,
-                 data_path_prefix,
-                 soft_labels=True,
-                 word_embedding_size=100,
-                 n_epochs=1,
-                 early_stopping=True,
-                 warm_start=False,
-                 checkpoint="../checkpoints/VR_checkpoint.pt",
-                 patience=5,
-                 lr=1e-3,
-                 n_classes=2):
+    def __init__(
+        self, pretrained_model, data_path_prefix, soft_labels=True, word_embedding_size=100,
+        n_epochs=1, early_stopping=True, warm_start=False,
+            checkpoint="../checkpoints/VR_checkpoint.pt", patience=5, lr=1e-3, n_classes=2):
 
         super().__init__()
         self.pretrained_model = pretrained_model
-        self.text_module = WordEmb(emb_path=data_path_prefix + "word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt").to(self.device)
+        self.text_module = WordEmb(
+            emb_path=data_path_prefix +
+            "word_embeddings/glove.6B." + str(word_embedding_size) + "d.txt"
+        ).to(self.device)
         self.concat_module = FlatConcat().to(self.device)
         self.soft_labels = soft_labels
         self.n_epochs = n_epochs
@@ -103,7 +94,6 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         self.lr = lr
         self.word_embedding_size = word_embedding_size
         self.n_classes = n_classes
-
         self.checkpoint = checkpoint
 
         self.reset()
@@ -114,13 +104,18 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
         for param in self.pretrained_model.parameters():
             param.requires_grad = False
 
-        feature_extractor = nn.Sequential(*list(self.pretrained_model.children())[:-1]).to(self.device)
+        feature_extractor = nn.Sequential(
+            *list(self.pretrained_model.children())[:-1]
+        ).to(self.device)
         sub_features = feature_extractor(features["sub_crop"].to(self.device))
         obj_features = feature_extractor(features["obj_crop"].to(self.device))
         union_features = feature_extractor(features["union_crop"].to(self.device))
-        word_embeddings = self.text_module(features["obj_category"], features["sub_category"]).to(self.device)
+        word_embeddings = self.text_module(
+            features["obj_category"], features["sub_category"]
+        ).to(self.device)
 
-        concatenated_features = self.concat_module(sub_features, obj_features, union_features, word_embeddings)
+        concatenated_features = self.concat_module(
+            sub_features, obj_features, union_features, word_embeddings)
 
         return concatenated_features
 
@@ -130,9 +125,9 @@ class VisualRelationClassifier(PerformanceMixin, DiscriminativeModel):
 
     def reset(self):
         in_features = self.pretrained_model.fc.in_features
-        self.linear = nn.Linear(in_features * 3 + 2 * self.word_embedding_size, self.n_classes).to(self.device)
-        # torch.nn.init.xavier_uniform_(self.linear.weight)
-        # self.linear.bias.data.fill_(0.01)
+        self.linear = nn.Linear(
+            in_features * 3 + 2 * self.word_embedding_size, self.n_classes
+        ).to(self.device)
 
 
 class WordEmb(nn.Module):
@@ -169,7 +164,7 @@ def crop_img_arr(img_arr, bbox):
     if len(img_arr.shape) == 2:
         img_arr = img_arr[:, :, None]
 
-    return img_arr[bbox[0] : bbox[1], bbox[2] : bbox[3], :]
+    return img_arr[bbox[0]:bbox[1], bbox[2]:bbox[3], :]
 
 
 def union(bbox1, bbox2):
