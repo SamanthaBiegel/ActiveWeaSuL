@@ -2,9 +2,10 @@ import numpy as np
 import os
 import random
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
+from datasets import CustomTensorDataset
 from label_model import LabelModel
 from plot import PlotMixin
 from query import ActiveLearningQuery
@@ -83,13 +84,13 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         Returns:
             numpy.array: Array with probabilistic labels for training dataset
         """
-        # TODO: make predicting on test set optional
         if any(v is None for v in (label_matrix_test, y_test, test_dataset)):
             label_matrix_test = label_matrix.copy()
             y_test = y_train.copy()
             test_dataset = train_dataset
 
         self.label_matrix = label_matrix.copy()
+        self.label_matrix_test = label_matrix_test.copy()
         self.y_train = y_train.copy()
         self.y_test = y_test.copy()
 
@@ -108,6 +109,8 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         # Identify buckets
         self.unique_combs, self.unique_idx, self.unique_inverse = np.unique(
             label_matrix, return_index=True, return_inverse=True, axis=0)
+        self.bucket_conf_dict = {range(len(self.unique_idx))[i]:
+                      "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
         for i in tqdm(range(self.it + 1), desc="Active Learning Iterations"):
 
@@ -117,7 +120,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 class_balance=class_balance, ground_truth_labels=self.ground_truth_labels
             ).predict()
             prob_labels_test = self.label_model.predict(
-                label_matrix_test, self.label_model.mu, self.label_model.E_S)
+                self.label_matrix_test, self.label_model.mu, self.label_model.E_S)
 
             # Optionally, train discriminative model on probabilistic labels
             if self.final_model is not None and i % self.discr_model_frequency == 0:
@@ -130,20 +133,16 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
                 if i > 0:
                     self.final_model.reset()
-                if self.final_model.early_stopping:
-                    dl_train = DataLoader(
+                dl_train = DataLoader(
                         CustomTensorDataset(*train_dataset[self.train_idx]),
                         shuffle=True, batch_size=self.batch_size)
+                if self.final_model.early_stopping:
                     dl_val = DataLoader(
                         CustomTensorDataset(*train_dataset[val_idx]),
                         shuffle=True, batch_size=self.batch_size)
-                    preds_train = self.final_model.fit(dl_train, dl_val).predict()
                 else:
-                    dl_train = DataLoader(
-                        train_dataset, shuffle=True, batch_size=self.batch_size)
-                    self.final_model.reset()
-                    preds_train = self.final_model.fit(dl_train).predict()
-
+                    dl_val = None
+                preds_train = self.final_model.fit(dl_train, dl_val).predict()
                 preds_test = self.final_model.predict(dl_test)
             else:
                 preds_train = None
@@ -176,7 +175,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         return prob_labels_train
 
     def log(self, count: int, lm_train, lm_test, fm_train, fm_test, selected_point=None):
-        """Keep track of performance metrics and label predictions"""
+        """Keep track of performance metrics, label predictions and parameter values"""
 
         if count == 0:
             self.metrics = {}
@@ -219,26 +218,3 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         return self
 
-
-class CustomTensorDataset(TensorDataset):
-    """Custom Tensor Dataset"""
-
-    def __init__(self, X: torch.Tensor, Y: torch.Tensor) -> None:
-        self.X = X
-        self.Y = Y
-
-    def __getitem__(self, index: int):
-        return self.X[index], self.Y[index]
-
-    def __len__(self):
-        return len(self.X)
-
-    def update(self, X, Y):
-        """Update dataset content
-
-        Args:
-            X (torch.Tensor): Tensor with features (columns)
-            Y (torch.Tensor): Tensor with labels
-        """
-        self.X = X
-        self.Y = Y

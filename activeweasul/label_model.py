@@ -372,23 +372,6 @@ class LabelModel(PerformanceMixin):
 
         return self.predict(label_matrix, self.get_true_mu(y_true)[:, 1][:, None], self.E_S)
 
-    def predict_true_counts(self, y_true):
-        """Obtain optimal training labels using ground truth labels"""
-
-        lambda_combs, lambda_inverse, lambda_counts = np.unique(
-            np.concatenate([self.label_matrix, y_true[:, None]], axis=1),
-            axis=0, return_counts=True, return_inverse=True)
-
-        P_Y_lambda = np.zeros((self.N, 2))
-
-        for i, j in zip([0, 1], [1, 0]):
-            P_Y_lambda[y_true == i, i] = (
-                (lambda_counts / self.N)[lambda_inverse] / self.P_lambda.squeeze()
-            )[y_true == i]
-            P_Y_lambda[y_true == i, j] = 1 - P_Y_lambda[y_true == i, i]
-
-        return torch.Tensor(P_Y_lambda)
-
     def get_true_mu(self, y_true):
         """Obtain optimal label model parameters from data and ground truth labels"""
 
