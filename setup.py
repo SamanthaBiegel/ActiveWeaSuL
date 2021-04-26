@@ -7,14 +7,8 @@ from setuptools import setup, find_packages
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.md') as history_file:
-    history = history_file.read()
-
-requirements = [ ]
-
-setup_requirements = [ ]
-
-test_requirements = [ ]
+requirements = []
+setup_requirements = []
 
 setup(
     author="Samantha Biegel, Rafah El-Khatib, Luiz Otavio Vilas Boas Oliveira, Max Baak, Nanne Aben",
@@ -34,14 +28,13 @@ setup(
     description="Improving weak suppervision by incorporating active learning",
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     include_package_data=True,
     keywords='activeweasul',
     name='activeweasul',
     packages=find_packages(include=['activeweasul', 'activeweasul.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
-    tests_require=test_requirements,
     url='https://github.com/SamanthaBiegel/activeweasul',
     version='0.1.0',
     zip_safe=False,
