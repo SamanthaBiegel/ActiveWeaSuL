@@ -36,7 +36,7 @@ from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
 from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
-from experiments import process_metric_dict, active_weasul_experiment, process_exp_dict, process_entropies, add_weak_supervision_baseline, synthetic_al_experiment, active_learning_experiment
+from experiment_utils import process_metric_dict, active_weasul_experiment, process_exp_dict, process_entropies, add_weak_supervision_baseline, synthetic_al_experiment, active_learning_experiment
 from visualrelation import VisualRelationDataset, VisualRelationClassifier
 from vr_utils import load_vr_data
 from lf_utils import apply_lfs, analyze_lfs

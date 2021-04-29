@@ -76,7 +76,7 @@ def add_weak_supervision_baseline(metric_dfs, al_it):
 def active_weasul_experiment(
     nr_trials, al_it, label_matrix, y_train, cliques, class_balance, query_strategy,
     starting_seed=76, seeds=None, discr_model_frequency=1, penalty_strength=1, batch_size=20,
-    final_model=None, train_dataset=None, test_dataset=None, label_matrix_test=None,
+    discriminative_model=None, train_dataset=None, test_dataset=None, label_matrix_test=None,
         y_test=None, randomness=0):
 
     al_metrics = {}
@@ -95,7 +95,7 @@ def active_weasul_experiment(
             penalty_strength=penalty_strength,
             query_strategy=query_strategy,
             randomness=randomness,
-            final_model=final_model,
+            discriminative_model=discriminative_model,
             batch_size=batch_size,
             discr_model_frequency=discr_model_frequency,
             starting_seed=starting_seed,

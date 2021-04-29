@@ -329,24 +329,6 @@ plt.xticks([], [])
 plt.yticks([], [])
 
 plt.savefig("../plots/optimal_labels.png")
-# -
-
-np.unique(Y_probs.detach().numpy(), axis=0)
-
-# +
-plt.scatter(x=df.x1, y=df.x2, c=Y_probs[:,1].detach().numpy(), s=point_size, edgecolor="black", cmap=cmap)
-plt.clim(0,1)
-
-plt.plot([-5, 5],[0.4, 0.4], linewidth=line_width, color="black")
-plt.plot([-0.3, -0.3], [-5, 5], linewidth=line_width, color="black")
-plt.plot([-1, -1], [-5, 5], linewidth=line_width, color="black")
-
-plt.xlim(-2.7,2.2)
-plt.ylim(-2,2.9)
-# plt.xlabel("x1", fontsize=font_size)
-# plt.ylabel("x2", fontsize=font_size)
-plt.xticks([], [])
-plt.yticks([], [])
 
 # +
 set_seed(76)
@@ -453,6 +435,8 @@ plt.yticks([], [])
 
 plt.savefig("../plots/finallabels_aa.png")
 # -
+
+
 
 
 
