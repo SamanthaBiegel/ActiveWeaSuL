@@ -5,7 +5,7 @@ import torch.nn as nn
 from tqdm import tqdm_notebook as tqdm
 from typing import Optional
 
-from performance import PerformanceMixin
+from activeweasul.performance import PerformanceMixin
 
 
 class LabelModel(PerformanceMixin):

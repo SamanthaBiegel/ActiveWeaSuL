@@ -5,10 +5,10 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
-from datasets import CustomTensorDataset
-from label_model import LabelModel
-from plot import PlotMixin
-from query import ActiveLearningQuery
+from activeweasul.datasets import CustomTensorDataset
+from activeweasul.label_model import LabelModel
+from activeweasul.plot import PlotMixin
+from activeweasul.query import ActiveLearningQuery
 
 
 def set_seed(seed: int = 42):

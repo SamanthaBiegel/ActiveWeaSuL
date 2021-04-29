@@ -8,8 +8,8 @@ from sklearn.linear_model import LogisticRegression
 import torch
 from tqdm import tqdm_notebook as tqdm
 
-from active_weasul import ActiveWeaSuLPipeline, set_seed
-from performance import PerformanceMixin
+from activeweasul.active_weasul import ActiveWeaSuLPipeline, set_seed
+from activeweasul.performance import PerformanceMixin
 
 
 def process_metric_dict(metric_dict, strategy_string):
