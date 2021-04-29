@@ -38,8 +38,7 @@ from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
 from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
-from plot import plot_probs, plot_train_loss
-from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment, add_baseline, synthetic_al_experiment
+from experiments import process_metric_dict, active_weasul_experiment, process_exp_dict, active_learning_experiment, add_weak_supervision_baseline, synthetic_al_experiment
 # -
 
 # ### Load data
@@ -442,6 +441,8 @@ ax.set_title("Diversity of sampled buckets", fontsize=font_size)
 plt.tight_layout()
 plt.savefig("../plots/entropies.png")
 # -
+
+
 
 
 

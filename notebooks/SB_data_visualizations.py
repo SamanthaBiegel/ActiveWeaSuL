@@ -43,7 +43,6 @@ from logisticregression import LogisticRegression
 from discriminative_model import DiscriminativeModel
 from label_model import LabelModel
 from active_weasul import ActiveWeaSuLPipeline, set_seed, CustomTensorDataset
-from plot import plot_probs, plot_train_loss
 from experiments import process_metric_dict, plot_metrics, active_weasul_experiment, process_exp_dict, active_learning_experiment
 
 # +
@@ -454,6 +453,8 @@ plt.yticks([], [])
 
 plt.savefig("../plots/finallabels_aa.png")
 # -
+
+
 
 
 

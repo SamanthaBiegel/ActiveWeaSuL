@@ -13,10 +13,6 @@
 #     name: python3
 # ---
 
-import torchvision.models as models
-pretrained_model = models.resnet18(pretrained=True)
-path_prefix = "../data/VRD/"
-
 # +
 # %load_ext autoreload
 # %autoreload 2
@@ -28,13 +24,13 @@ import os
 import pandas as pd
 import pickle
 import random
-from scipy.stats import entropy
 import seaborn as sns
 import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import torchvision.models as models
 from tqdm import tqdm
 
 sys.path.append(os.path.abspath("../activeweasul"))
@@ -48,7 +44,10 @@ from visualrelation import VisualRelationDataset, VisualRelationClassifier
 
 # -
 
-# ### Generate data
+pretrained_model = models.resnet18(pretrained=True)
+path_prefix = "../data/VRD/"
+
+# ### Load data
 
 # +
 balance=False
@@ -111,25 +110,10 @@ def lf_siton_object(x):
             return SITON
     return OTHER
 
-def lf_not_person(x):
-    if x.subject_category != "person":
-        return OTHER
-    return SITON
-
 YMIN = 0
 YMAX = 1
 XMIN = 2
 XMAX = 3
-
-def lf_ydist(x):
-    if x.subject_bbox[YMAX] < x.object_bbox[YMAX] and x.subject_bbox[YMIN] < x.object_bbox[YMIN]:
-        return SITON
-    return OTHER
-
-def lf_xdist(x):
-    if x.subject_bbox[XMAX] < x.object_bbox[XMIN] or x.subject_bbox[XMIN] > x.object_bbox[XMAX]: 
-        return OTHER
-    return SITON
 
 def lf_dist(x):
     if np.linalg.norm(np.array(x.subject_bbox) - np.array(x.object_bbox)) >= 100:
@@ -146,7 +130,6 @@ def lf_area(x):
 
 
 # +
-# lfs = [lf_siton_object, lf_not_person, lf_xdist, lf_area, lf_ydist]
 lfs = [lf_siton_object, lf_dist, lf_area]
 
 label_matrix = apply_lfs(df_train, lfs)
@@ -156,14 +139,12 @@ label_matrix_test = apply_lfs(df_test, lfs)
 analyze_lfs(label_matrix_test, df_test["y"], lfs)
 
 
-# +
-class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
+# ### Experiments
 
-cliques=[[0],[1,2]]
-# cliques=[[0,1],[2],[3],[4]]
-# -
-
-# ### Fit label model
+starting_seed = 36
+penalty_strength = 1
+nr_trials = 10
+al_it = 250
 
 # +
 final_model_kwargs = dict(lr=1e-3,
@@ -171,93 +152,17 @@ final_model_kwargs = dict(lr=1e-3,
 
 batch_size = 20
 
-# +
-# set_seed(243)
+class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
 
-# lm = LabelModel(n_epochs=200,
-#                 lr=1e-1)
-
-# # Fit and predict on train set
-# Y_probs = lm.fit(label_matrix=label_matrix,
-#                  cliques=cliques,
-#                  class_balance=class_balance).predict()
-
-# # Predict on test set
-# Y_probs_test = lm.predict(label_matrix_test, lm.mu, class_balance[1])
-
-# # Analyze test set performance
-# lm.analyze(y_test, Y_probs_test)
+cliques=[[0],[1,2]]
 # -
 
-# ### Fit discriminative model
-
-# +
-# batch_size = 20
-
-# set_seed(243)
-
-# indices_shuffle = np.random.permutation(len(label_matrix))
-# split_nr = int(np.ceil(0.9*len(label_matrix)))
-# train_idx, val_idx = indices_shuffle[:split_nr], indices_shuffle[split_nr:]
-
-# train_dataset = CustomTensorDataset(feature_tensor_train, lm.predict_true(y_train).detach())
-# test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
-
-# dl_train = DataLoader(CustomTensorDataset(*train_dataset[train_idx]), shuffle=True, batch_size=batch_size)
-# dl_val = DataLoader(CustomTensorDataset(*train_dataset[val_idx]), shuffle=True, batch_size=batch_size)
-
-# # dl_train = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
-
-# test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
-
-# dm = VisualRelationClassifier(pretrained_model, n_epochs=40, lr=1e-3, data_path_prefix="../data/")
-
-# dm.reset()
-# train_preds = dm.fit(dl_train, dl_val).predict()
-# test_preds = dm.predict(test_dataloader)
-# print(dm.analyze(y_test, test_preds))
-
-# +
-# plot_train_loss(dm.average_losses)
-
-# +
-# it = 1
-# # Choose strategy from ["maxkl", "margin", "nashaat"]
-# query_strategy = "discriminative"
-
-# seed = 48
-
-# al = ActiveWeaSuLPipeline(it=it,
-#                           final_model = VisualRelationClassifier(pretrained_model, **final_model_kwargs, data_path_prefix="../data/"),
-#                           n_epochs=200,
-#                           query_strategy=query_strategy,
-#                           discr_model_frequency=1,
-#                           penalty_strength=1,
-#                           batch_size=256,
-#                           randomness=0,
-#                           seed=seed,
-#                           starting_seed=233)
-
-# Y_probs_al = al.run_active_weasul(label_matrix=label_matrix,
-#                                   y_train=y_train,
-#                                   label_matrix_test=label_matrix_test,
-#                                   y_test=y_test,
-#                                   cliques=cliques,
-#                                   class_balance=class_balance,
-#                                   train_dataset=CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train)),
-#                                   test_dataset=CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test)))
-
-# +
-# plot_it=5
-# plot_probs(df, al.probs["Generative_train"][plot_it], soft_labels=False, add_labeled_points=al.queried[:plot_it])
-# -
-
-starting_seed = 36
-penalty_strength = 1
-nr_trials = 10
-al_it = 250
-
-# ### Figure 1
+# Plotting settings
+font_size=25
+legend_size=25
+tick_size=20
+n_boot=10000
+linewidth=4
 
 # #### Active WeaSuL
 
@@ -324,55 +229,8 @@ metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "Active WeaSuL"),
                         process_exp_dict(metrics_nashaat, "Nashaat et al."),
                         process_exp_dict(metrics_activelearning, "Active learning by itself")]).reset_index(level=0).rename(columns={"level_0": "Run"})
 joined_df = add_baseline(metric_dfs, al_it)
-
-
-# +
-# joined_df.to_csv("../results/figure_4B.csv", index=False)
-# -
-
 joined_df = joined_df[joined_df["Metric"] == "F1"]
 joined_df = joined_df[joined_df["Set"] == "test"]
-
-agg_df = joined_df.groupby(["Model", "Approach", "Number of labeled points"]).mean().reset_index().round(2)
-
-agg_df[(agg_df["Approach"] == "Nashaat et al.") & (agg_df["Model"] == "Discriminative") & (agg_df["Value"] > 0.57)]
-
-font_size=25
-legend_size=25
-tick_size=20
-n_boot=10000
-linewidth=4
-
-# +
-# joined_df.to_csv("../results/figure_4B.csv", index=False)
-
-# +
-colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"]
-
-sns.set(style="whitegrid", palette=sns.color_palette(colors))
-
-fig, axes = plt.subplots(1,1, figsize=(15,8), sharey=True)
-
-sns.lineplot(data=joined_df[joined_df["Model"] == "Generative"], x="Number of labeled points", y="Value",
-            hue="Approach", ci=68, n_boot=n_boot, estimator="mean", linewidth=linewidth,
-            hue_order=["Active WeaSuL", "Nashaat et al.", "Weak supervision by itself", "Active learning by itself"])
-axes.set_title("Generative model", fontsize=font_size)
-
-handles, labels = axes.get_legend_handles_labels()
-[ha.set_linewidth(linewidth) for ha in handles]
-leg = axes.legend(handles=handles, labels=labels[0:6], loc="upper right", title="Method",
-                     fontsize=legend_size, title_fontsize=legend_size)
-leg._legend_box.align = "left"
-
-axes.tick_params(axis='both', which='major', labelsize=tick_size)
-
-axes.set_xlabel("Number of active learning iterations", fontsize=font_size)
-axes.set_ylabel("F1", fontsize=font_size)
-
-plt.tight_layout()
-
-# plt.savefig("../plots/VRD_performance_baselines_14.png")
-# plt.show()
 
 # +
 colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"]
@@ -399,11 +257,10 @@ axes.set_ylabel("F1", fontsize=font_size)
 
 plt.tight_layout()
 
-plt.savefig("../plots/VRD_performance_baselines_14.png")
-# plt.show()
+plt.show()
 # -
 
-# ## Figure 2AB
+# ## Figure 5A
 
 # #### Other sampling strategies
 
@@ -426,8 +283,6 @@ metrics_random, queried_random, probs_random, entropies_random = active_weasul_e
 metric_dfs = pd.concat([process_exp_dict(metrics_maxkl, "MaxKL"),
                         process_exp_dict(metrics_margin, "Margin"),
                         process_exp_dict(metrics_random, "Random")])
-
-n_boot=10000
 
 # +
 metric_dfs = metric_dfs[metric_dfs.Set == "test"]
@@ -466,11 +321,10 @@ axes[0].set_ylabel("F1", fontsize=font_size)
 
 plt.tight_layout()
 
-plt.savefig("../plots/VRD_sampling_strategies_final_2.png")
-# plt.show()
+plt.show()
 # -
 
-# ### Figure 2C
+# ### Figure 5B
 
 # #### Process entropies
 
@@ -506,8 +360,8 @@ ax.set_ylabel("Diversity (entropy)", fontsize=font_size)
 ax.set_title("Diversity of sampled buckets", fontsize=font_size)
 
 plt.tight_layout()
-plt.savefig("../plots/VRD_entropies_final.png")
-# plt.show()
+
+plt.show()
 # -
 
 
