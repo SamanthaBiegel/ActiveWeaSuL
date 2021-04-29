@@ -1,10 +1,10 @@
-*.ipynb
 *__pycache__
 **/data/visual_genome/VG_100K/*
 **/data/visual_genome/subset_VG/*
 **/data/VRD/*
 **/data/word_embeddings/*
 *.pkl
+!**data/spam/*
 **/checkpoint/
 *.ipynb_checkpoints/
 connect-s3.sh
