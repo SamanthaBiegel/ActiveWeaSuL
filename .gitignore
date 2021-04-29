@@ -1,4 +1,3 @@
-*.ipynb
 *__pycache__
 **/data/visual_genome/VG_100K/*
 **/data/visual_genome/subset_VG/*
