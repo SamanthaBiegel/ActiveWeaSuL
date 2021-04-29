@@ -6,19 +6,19 @@ from scipy.stats import entropy
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 import torch
-from tqdm import tqdm
+from tqdm import tqdm_notebook as tqdm
 
 from active_weasul import ActiveWeaSuLPipeline, set_seed
 from performance import PerformanceMixin
 
 
-def process_metric_dict(metric_dict, strategy_string, remove_test=False):
+def process_metric_dict(metric_dict, strategy_string):
 
     metric_df = (
         pd.DataFrame(metric_dict)
         .stack()
         .apply(pd.Series)
-        .stack()
+        .stack(dropna=False)
         .reset_index()
         .rename(columns={
             "level_0": "Number of labeled points",
@@ -29,8 +29,6 @@ def process_metric_dict(metric_dict, strategy_string, remove_test=False):
     metric_df[["Model", "Set"]] = metric_df["Model"].str.split("_", expand=True)
     metric_df["Approach"] = strategy_string
 
-    if remove_test:
-        metric_df = metric_df[metric_df["Set"] != "test"]
     return metric_df
 
 
@@ -43,7 +41,18 @@ def process_exp_dict(exp_dict, strategy_string):
     return exp_df
 
 
-def add_baseline(metric_dfs, al_it):
+def process_entropies(entropy_dict, approach_string):
+
+    entropies_df = pd.DataFrame.from_dict(entropy_dict).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
+    entropies_df["Approach"] = approach_string
+
+    entropies_df["Number of labeled points"] = entropies_df["Number of labeled points"].apply(lambda x: x+1)
+    entropies_df = entropies_df[entropies_df["Number of labeled points"] < 51]
+
+    return entropies_df
+
+
+def add_weak_supervision_baseline(metric_dfs, al_it):
 
     baseline_df = (
         pd.concat([
@@ -60,35 +69,8 @@ def add_baseline(metric_dfs, al_it):
     baseline_df["Number of labeled points"] = idx[:al_it + 1].repeat(len(baseline_df) / (al_it + 1))
     baseline_df["Approach"] = "Weak supervision by itself"
     baseline_df["Run"] = 0
-    baseline_df["Dash"] = "n"
 
     return pd.concat([metric_dfs, baseline_df])
-
-
-def plot_metrics(metric_df, filter_metrics=["Accuracy"], plot_train=False):
-
-    if not plot_train:
-        metric_df = metric_df[metric_df.Set != "train"]
-
-    lines = list(metric_df.Approach.unique())
-
-    colors = ["#2b4162", "#368f8b", "#ec7357", "#e9c46a"][:len(lines)]
-
-    metric_df = metric_df[metric_df["Metric"].isin(filter_metrics)]
-
-    sns.set(style="whitegrid")
-    ax = sns.relplot(
-        data=metric_df, x="Number of labeled points", y="Value", col="Model", row="Set",
-        kind="line", hue="Approach", estimator="mean", ci=68, n_boot=100, legend=False,
-        palette=sns.color_palette(colors))
-
-    show_handles = [ax.axes[0][0].lines[i] for i in range(len(lines))]
-    show_labels = lines
-    ax.axes[len(ax.axes) - 1][len(ax.axes[0]) - 1].legend(
-        handles=show_handles, labels=show_labels, loc="lower right")
-
-    ax.set_ylabels("")
-    ax.set_titles("{col_name}")
 
 
 def active_weasul_experiment(
@@ -236,7 +218,7 @@ def synthetic_al_experiment(
                 df_1 = features.iloc[queried]
                 train_preds = (
                     model
-                    .fit(df_1.loc[:, ["x1", "x2"]].values, Y)
+                    .fit(df_1.loc[:,].values, Y)
                     .predict_proba(features.values)
                 )
                 queried.append(np.argmin(np.abs(train_preds[:, 1] - train_preds[:, 0])).item())

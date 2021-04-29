@@ -32,7 +32,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             ["maxkl", "margin", "nashaat"]
         randomness (float, optional): Probability of choosing a random point instead
             of following strategy
-        final_model: Optional discriminative model object
+        discriminative_model: Optional discriminative model object
         batch_size (int, optional): Batch size if training discriminate model
         discr_model_frequency (int, optional): Interval for training the discriminative model
         starting_seed (int, optional): Seed for first part of pipeline (initial label model)
@@ -41,7 +41,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
     def __init__(
         self, it: int = 30, n_epochs: int = 200, lr: float = 1e-1, penalty_strength: float = 1e3,
-        query_strategy: str = "maxkl", randomness: float = 0, final_model=None, batch_size: int = 20,
+        query_strategy: str = "maxkl", randomness: float = 0, discriminative_model=None, batch_size: int = 20,
             discr_model_frequency: int = 1, starting_seed: int = 76, seed: int = 65):
 
         super().__init__(query_strategy=query_strategy)
@@ -52,13 +52,13 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         self.penalty_strength = penalty_strength
         self.query_strategy = query_strategy
         self.randomness = randomness
-        self.final_model = final_model
+        self.discriminative_model = discriminative_model
         self.batch_size = batch_size
         self.discr_model_frequency = discr_model_frequency
         set_seed(starting_seed)
-        if final_model is not None:
-            self.final_model.reset()
-            self.final_model.min_val_loss = 1e15
+        if discriminative_model is not None:
+            self.discriminative_model.reset()
+            self.discriminative_model.min_val_loss = 1e15
         self.seed = seed
 
     def run_active_weasul(
@@ -98,7 +98,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         dl_test = DataLoader(test_dataset, shuffle=False, batch_size=self.batch_size)
 
-        if self.final_model is not None and self.final_model.early_stopping:
+        if self.discriminative_model is not None and self.discriminative_model.early_stopping:
             # Split into train and validation sets for early stopping
             indices_shuffle = np.random.permutation(len(self.label_matrix))
             split_nr = int(np.ceil(0.9 * len(self.label_matrix)))
@@ -112,7 +112,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         self.bucket_conf_dict = {range(len(self.unique_idx))[i]:
                       "-".join([str(e) for e in row]) for i, row in enumerate(self.label_matrix[self.unique_idx, :])}
 
-        for i in tqdm(range(self.it + 1), desc="Active Learning Iterations"):
+        for i in range(self.it + 1):
 
             # Fit label model and predict to obtain probabilistic labels
             prob_labels_train = self.label_model.fit(
@@ -123,27 +123,29 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 self.label_matrix_test, self.label_model.mu, self.label_model.E_S)
 
             # Optionally, train discriminative model on probabilistic labels
-            if self.final_model is not None and i % self.discr_model_frequency == 0:
-                final_model_probs_train = prob_labels_train.clone().detach()
-                final_model_probs_train[self.ground_truth_labels == 1, :] = (
+            if self.discriminative_model is not None and i % self.discr_model_frequency == 0:
+                discriminative_model_probs_train = prob_labels_train.clone().detach()
+                # Replace probabilistic labels with ground truth for labelled points
+                discriminative_model_probs_train[self.ground_truth_labels == 1, :] = (
                     torch.DoubleTensor([0, 1]))
-                final_model_probs_train[self.ground_truth_labels == 0, :] = (
+                discriminative_model_probs_train[self.ground_truth_labels == 0, :] = (
                     torch.DoubleTensor([1, 0]))
-                train_dataset.Y = final_model_probs_train
+                train_dataset.Y = discriminative_model_probs_train
 
                 if i > 0:
-                    self.final_model.reset()
+                    # Reset discriminative model parameters to train with updated labels
+                    self.discriminative_model.reset()
                 dl_train = DataLoader(
                         CustomTensorDataset(*train_dataset[self.train_idx]),
                         shuffle=True, batch_size=self.batch_size)
-                if self.final_model.early_stopping:
+                if self.discriminative_model.early_stopping:
                     dl_val = DataLoader(
                         CustomTensorDataset(*train_dataset[val_idx]),
                         shuffle=True, batch_size=self.batch_size)
                 else:
                     dl_val = None
-                preds_train = self.final_model.fit(dl_train, dl_val).predict()
-                preds_test = self.final_model.predict(dl_test)
+                preds_train = self.discriminative_model.fit(dl_train, dl_val).predict()
+                preds_test = self.discriminative_model.predict(dl_test)
             else:
                 preds_train = None
                 preds_test = None
@@ -201,10 +203,10 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             self.probs["Generative_train"][count][self.unique_idx])
         self.mu_dict[count] = self.label_model.mu.clone().detach().numpy().squeeze()
 
-        if self.final_model is not None and count % self.discr_model_frequency == 0:
-            self.metrics["Discriminative_train"][count] = self.final_model.analyze(
+        if self.discriminative_model is not None and count % self.discr_model_frequency == 0:
+            self.metrics["Discriminative_train"][count] = self.discriminative_model.analyze(
                 self.y_train[self.train_idx], fm_train)
-            self.metrics["Discriminative_test"][count] = self.final_model.analyze(
+            self.metrics["Discriminative_test"][count] = self.discriminative_model.analyze(
                 self.y_test, fm_test)
             self.probs["Discriminative_train"][count] = (
                 fm_train[:, 1].clone().cpu().detach().numpy())
