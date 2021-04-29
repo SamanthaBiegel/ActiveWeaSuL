@@ -79,7 +79,7 @@ plt.show()
 
 # ## Creating labelling functions
 
-# We apply 3 labelling functions to the dataset. Each labeling function assigns labels based on the value of one of the features. For example, the first labelling function assigns class 1 if $x_2$ is smaller than 0.4. We put them together in a label matrix that has a column for each labelling function.
+# We apply 3 labelling functions to the dataset. Each labelling function assigns labels based on the value of one of the features. For example, the first labelling function assigns class 1 if $x_2$ is smaller than 0.4. We put them together in a label matrix that has a column for each labelling function.
 
 # +
 df_train.loc[:, "wl1"] = (df_train.x2<0.4)*1
@@ -300,9 +300,6 @@ df_train, df_test = load_vr_data(classify=classify, include_predicates=semantic_
 
 y_train = df_train.y.values
 y_test = df_test.y.values
-
-print("Train Relationships: ", len(df_train))
-print("Test Relationships: ", len(df_test))
 # -
 
 # We first extract features from the images and object categories, then save resulting embeddings for fast fine-tuning.
@@ -368,12 +365,10 @@ label_matrix_test = apply_lfs(df_test, lfs)
 
 al_it = 250
 
-discriminative_model_kwargs = dict(lr=1e-3,
-                          n_epochs=100)
-
-batch_size = 20
-
 class_balance = np.array([1-df_train.y.mean(), df_train.y.mean()])
+
+discriminative_model_kwargs = dict(lr=1e-3,n_epochs=100)
+batch_size = 20
 
 # +
 # Collect all experiment parameters
@@ -419,18 +414,17 @@ train_dataset = CustomTensorDataset(feature_tensor_train[0,:], torch.Tensor(y_tr
 predict_dataset = CustomTensorDataset(feature_tensor_train, torch.Tensor(y_train))
 test_dataset = CustomTensorDataset(feature_tensor_test, torch.Tensor(y_test))
 
+# Not using early stopping for active learning, so reduce the number of epochs
 discriminative_model_kwargs["n_epochs"] = 2
 
 # Active learning parameters
-al_exp_kwargs = dict(
-    seeds = np.random.randint(0,1000,nr_trials),
-    model = VisualRelationClassifier(pretrained_model, **discriminative_model_kwargs, early_stopping=False, data_path_prefix="../data/", soft_labels=False),
-    features = feature_tensor_train,
-    train_dataset = train_dataset,
-    predict_dataloader = DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
-    test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
-    test_features=feature_tensor_test
-)
+al_exp_kwargs = dict(seeds = np.random.randint(0,1000,nr_trials),
+                     model = VisualRelationClassifier(pretrained_model, **discriminative_model_kwargs, early_stopping=False, data_path_prefix="../data/", soft_labels=False),
+                     features = feature_tensor_train,
+                     train_dataset = train_dataset,
+                     predict_dataloader = DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
+                     test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
+                     test_features=feature_tensor_test)
 
 discriminative_model_kwargs["n_epochs"] = 100
 # -
@@ -527,9 +521,13 @@ metric_dfs = metric_dfs[metric_dfs["Number of labeled points"] < 51]
 
 # ### Process entropies
 
+# +
+# Transform results into dataframes and merge
+
 entropies_df = pd.concat([process_entropies(entropies_maxkl, "MaxKL"), 
                           process_entropies(entropies_margin, "Margin"), 
                           process_entropies(entropies_random, "Random")])
+# -
 
 # ## Figure 6A
 
@@ -589,7 +587,7 @@ plt.show()
 
 # # Figure 5: Spam Detection
 
-# The weak supervision setup for the dataset in this section builds on https://github.com/snorkel-team/snorkel-tutorials/tree/master/spam. We use the first 7 labelling functions and directly import the resulting label matrices.
+# The weak supervision setup for the dataset in this section builds on https://github.com/snorkel-team/snorkel-tutorials/tree/master/spam. We use the first 7 labelling functions and directly import the resulting label matrices. Following related work, we treat the labelling functions as conditionally independent sources.
 
 path_prefix = "../data/spam/"
 
@@ -620,18 +618,21 @@ df_test = pd.DataFrame.sparse.from_spmatrix(df_test).reset_index()
 # ## Running experiments
 
 # +
+# Update some settings for this dataset
+
+al_it = 100
+
 starting_seed = 34
 penalty_strength = 1e6
-al_it = 100
 
 p_z = 0.58
 class_balance = np.array([1 - p_z, p_z])
 cliques = [[0],[1],[2],[3],[4],[5],[6]]
 
 discriminative_model_kwargs = dict(input_dim=df_train.shape[1],
-                          output_dim=2,
-                          lr=1e-2,
-                          n_epochs=100)
+                                   output_dim=2,
+                                   lr=1e-2,
+                                   n_epochs=100)
 
 # +
 # Collect all experiment parameters
@@ -645,15 +646,15 @@ exp_kwargs = dict(nr_trials=nr_trials,
 
 # Active WeaSuL
 aw_exp_kwargs = dict(label_matrix=label_matrix_train,
-                  cliques=cliques,
-                  class_balance=class_balance,
-                  starting_seed=starting_seed,
-                  penalty_strength=penalty_strength,
-                  discriminative_model=LogisticRegression(**discriminative_model_kwargs),
-                  discr_model_frequency=1,
-                  train_dataset = CustomTensorDataset(X=torch.Tensor(df_train.values), Y=torch.Tensor(y_train)),
-                  test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.values), Y=torch.Tensor(y_test)),
-                  label_matrix_test=label_matrix_test)
+                     cliques=cliques,
+                     class_balance=class_balance,
+                     starting_seed=starting_seed,
+                     penalty_strength=penalty_strength,
+                     discriminative_model=LogisticRegression(**discriminative_model_kwargs),
+                     discr_model_frequency=1,
+                     train_dataset = CustomTensorDataset(X=torch.Tensor(df_train.values), Y=torch.Tensor(y_train)),
+                     test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.values), Y=torch.Tensor(y_test)),
+                     label_matrix_test=label_matrix_test)
 # -
 
 # ### Active WeaSuL
@@ -678,14 +679,12 @@ predict_dataset = CustomTensorDataset(X=torch.Tensor(df_train.values), Y=torch.T
 test_dataset = CustomTensorDataset(X=torch.Tensor(df_test.values), Y=torch.Tensor(y_test))
 
 # Active learning parameters
-al_exp_kwargs = dict(
-    seeds = np.random.randint(0,1000,nr_trials),
-    features = df_train,
-    train_dataset = train_dataset,
-    predict_dataloader = DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
-    test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
-    test_features=df_test
-)
+al_exp_kwargs = dict(seeds = np.random.randint(0,1000,nr_trials),
+                     features = df_train,
+                     train_dataset = train_dataset,
+                     predict_dataloader = DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False),
+                     test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False),
+                     test_features=df_test)
 # -
 
 metrics_activelearning = synthetic_al_experiment(**exp_kwargs, **al_exp_kwargs)
