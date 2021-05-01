@@ -25,7 +25,7 @@ class ActiveLearningQuery():
             self.query = self.maxkl_strategy
 
     def margin(self, probs):
-        """P(Y=1|...) - P(Y=0|...)"""
+        """Compute difference between conditional probabilities of two classes"""
 
         abs_diff = np.abs(probs[:, 1] - probs[:, 0])
         return abs_diff

@@ -66,15 +66,15 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
         class_balance: np.ndarray, label_matrix_test: np.ndarray = None,
         y_test: np.ndarray = None, train_dataset: torch.utils.data.Dataset = None,
             test_dataset: torch.utils.data.Dataset = None):
-        """Iteratively label points, refit label model and return adjusted probabilistic labels
+        """Iteratively label points, refit label model and return adjusted probabilistic labels.
 
         Args:
             label_matrix (numpy.array): Array with labeling function outputs on train set
             y_train (numpy.array): Ground truth labels of training dataset
             cliques (list): List of lists of maximal cliques (column indices of label matrix)
             class_balance (numpy.array): Array with true class distribution
-            label_matrix_test (numpy.array): Array with labeling function outputs on test set
-            y_test (numpy.array): Ground truth labels of test set
+            label_matrix_test (numpy.array, optional): Array with labeling function outputs on test set
+            y_test (numpy.array, optional): Ground truth labels of test set
             train_dataset (torch.utils.data.Dataset, optional): Train dataset if training
                 discriminative model on image data. Should be
                 custom dataset with attribute Y containing target labels.

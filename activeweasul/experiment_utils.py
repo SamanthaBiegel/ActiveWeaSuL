@@ -12,7 +12,100 @@ from activeweasul.active_weasul import ActiveWeaSuLPipeline, set_seed
 from activeweasul.performance import PerformanceMixin
 
 
+def active_weasul_experiment(
+    nr_trials, al_it, label_matrix, y_train, cliques, class_balance, query_strategy,
+    starting_seed=76, seeds=None, discr_model_frequency=1, penalty_strength=1, batch_size=20,
+    discriminative_model=None, train_dataset=None, test_dataset=None, label_matrix_test=None,
+        y_test=None, randomness=0):
+    """Run Active WeaSuL with given settings for a number of times.
+
+    Args:
+        nr_trials (int): Number of experiment runs
+        al_it (int): Number of active learning iterations
+        label_matrix (numpy.array): Array with labeling function outputs on train set
+        y_train (numpy.array): Ground truth labels of training dataset
+        cliques (list): List of lists of maximal cliques (column indices of label matrix)
+        class_balance (numpy.array): Array with true class distribution
+        query_strategy (str, optional): Active learning query strategy, one of
+            ["maxkl", "margin", "nashaat"]
+        starting_seed (int, optional): Seed for first part of pipeline (initial label model)
+        seeds (numpy.array, optional): Array with seeds for remainder of pipeline
+        discr_model_frequency (int, optional): Interval for training the discriminative model. Defaults to 1
+        penalty_strength (float, optional): Strength of the active learning penalty. Defaults to 1
+        batch_size (int, optional): Batch size if training discriminate model
+        discriminative_model: Optional discriminative model object
+        train_dataset (torch.utils.data.Dataset, optional): Train dataset if training
+                discriminative model on image data. Should be
+                custom dataset with attribute Y containing target labels
+        test_dataset (torch.utils.data.Dataset, optional): Test dataset if training
+                discriminative model on image data
+        label_matrix_test (numpy.array): Array with labeling function outputs on test set
+        y_test (numpy.array): Ground truth labels of test set
+        randomness (float, optional): Probability of choosing a random point instead
+            of following strategy
+
+    Returns:
+        dict: Dictionary of trials, active learning iterations and metrics
+        dict: Dictionary of trials, active learning iterations and entropies
+    """
+
+    al_metrics = {}
+    al_entropies = {}
+
+    if seeds is None:
+        seeds = np.random.randint(0, 1000, nr_trials)
+
+    for i in tqdm(range(nr_trials), desc="Trials"):
+        seed = seeds[i]
+
+        # Initialize Active WeaSuL pipeline
+        al = ActiveWeaSuLPipeline(
+            it=al_it,
+            penalty_strength=penalty_strength,
+            query_strategy=query_strategy,
+            randomness=randomness,
+            discriminative_model=discriminative_model,
+            batch_size=batch_size,
+            discr_model_frequency=discr_model_frequency,
+            starting_seed=starting_seed,
+            seed=seed)
+
+        # Run Active WeaSuL pipeline
+        _ = al.run_active_weasul(
+            label_matrix=label_matrix,
+            y_train=y_train,
+            cliques=cliques,
+            class_balance=class_balance,
+            train_dataset=train_dataset,
+            test_dataset=test_dataset,
+            label_matrix_test=label_matrix_test,
+            y_test=y_test)
+
+        al_metrics[i] = al.metrics
+        
+        # Compute entropies for active learning iterations
+        al_entropies[i] = []
+        for j in range(al_it):
+            bucket_list = al.unique_inverse[al.queried[:j + 1]]
+            al_entropies[i].append(
+                entropy([
+                    len(np.where(bucket_list == j)[0]) / len(bucket_list)
+                    for j in range(len(np.unique(al.unique_inverse)))
+                ]))
+
+    return al_metrics, al_entropies
+
+
 def process_metric_dict(metric_dict, strategy_string):
+    """Process dictionary of Active WeaSuL metrics
+
+    Args:
+        metric_dict (dict): Dictionary of active learning metrics and metrics
+        strategy_string (string): Approach corresponding to results in dictionary input
+
+    Returns:
+        pandas.DataFrame: Processed dataframe with metrics per trial
+    """
 
     metric_df = (
         pd.DataFrame(metric_dict)
@@ -33,6 +126,15 @@ def process_metric_dict(metric_dict, strategy_string):
 
 
 def process_exp_dict(exp_dict, strategy_string):
+    """Process dictionary of trial metrics from Active WeaSuL experiments
+
+    Args:
+        exp_dict (dict): Dictionary of trials, active learning iterations and metrics
+        strategy_string (string): Approach corresponding to results in dictionary input
+
+    Returns:
+        pandas.DataFrame: Processed dataframe with metrics per trial
+    """
 
     exp_df = pd.concat({
         i: process_metric_dict(exp_dict[i], strategy_string).drop(index=1)
@@ -42,6 +144,15 @@ def process_exp_dict(exp_dict, strategy_string):
 
 
 def process_entropies(entropy_dict, approach_string):
+    """Process dictionary with entropy data from Active WeaSuL to dataframe
+
+    Args:
+        entropy_dict (dict): Dictionary of trials, active learning iterations and entropies
+        approach_string (string): Approach corresponding to results in dictionary input
+
+    Returns:
+        pandas.DataFrame: Processed dataframe with entropies
+    """
 
     entropies_df = pd.DataFrame.from_dict(entropy_dict).stack().reset_index().rename(columns={"level_0": "Number of labeled points", "level_1": "Run", 0: "Entropy"})
     entropies_df["Approach"] = approach_string
@@ -53,6 +164,17 @@ def process_entropies(entropy_dict, approach_string):
 
 
 def add_weak_supervision_baseline(metric_dfs, al_it):
+    """Add weak supervision baseline metrics based on Active WeaSuL results,
+    based on metrics at iteration 0.
+
+    Args:
+        metric_dfs (pandas.DataFrame): Processed dataframe with metrics. Should have
+            at least Active WeaSuL results
+        al_it (int): Number of active learning iterations
+
+    Returns:
+        pandas.DataFrame: Given metric dataframe with added weak supervision baseline
+    """
 
     baseline_df = (
         pd.concat([
@@ -71,61 +193,6 @@ def add_weak_supervision_baseline(metric_dfs, al_it):
     baseline_df["Run"] = 0
 
     return pd.concat([metric_dfs, baseline_df])
-
-
-def active_weasul_experiment(
-    nr_trials, al_it, label_matrix, y_train, cliques, class_balance, query_strategy,
-    starting_seed=76, seeds=None, discr_model_frequency=1, penalty_strength=1, batch_size=20,
-    discriminative_model=None, train_dataset=None, test_dataset=None, label_matrix_test=None,
-        y_test=None, randomness=0):
-
-    al_metrics = {}
-    al_probs = {}
-    al_queried = {}
-    al_entropies = {}
-
-    if seeds is None:
-        seeds = np.random.randint(0, 1000, nr_trials)
-
-    for i in tqdm(range(nr_trials), desc="Trials"):
-        seed = seeds[i]
-
-        al = ActiveWeaSuLPipeline(
-            it=al_it,
-            penalty_strength=penalty_strength,
-            query_strategy=query_strategy,
-            randomness=randomness,
-            discriminative_model=discriminative_model,
-            batch_size=batch_size,
-            discr_model_frequency=discr_model_frequency,
-            starting_seed=starting_seed,
-            seed=seed)
-
-        _ = al.run_active_weasul(
-            label_matrix=label_matrix,
-            y_train=y_train,
-            cliques=cliques,
-            class_balance=class_balance,
-            train_dataset=train_dataset,
-            test_dataset=test_dataset,
-            label_matrix_test=label_matrix_test,
-            y_test=y_test)
-
-        al_metrics[i] = al.metrics
-        al_probs[i] = al.probs
-        al_queried[i] = al.queried
-
-        al_entropies[i] = []
-
-        for j in range(al_it):
-            bucket_list = al.unique_inverse[al.queried[:j + 1]]
-            al_entropies[i].append(
-                entropy([
-                    len(np.where(bucket_list == j)[0]) / len(bucket_list)
-                    for j in range(len(np.unique(al.unique_inverse)))
-                ]))
-
-    return al_metrics, al_entropies
 
 
 def query_margin(preds, is_in_pool):

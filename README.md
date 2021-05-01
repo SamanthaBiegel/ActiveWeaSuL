@@ -1,6 +1,8 @@
 # Active WeaSuL: Improving Weak Supervision with Active Learning
 
-This repository contains the code and experiments that correspond to our paper https://weasul.github.io/papers/10.pdf
+This repository contains the code and experiments that correspond to our paper https://weasul.github.io/papers/10.pdf.
+
+The main experimental results from the paper can be found in `notebooks/experiments.ipynb`. This notebook produces all figures from the results section.
 
 
 ## Setup

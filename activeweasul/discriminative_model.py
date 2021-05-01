@@ -19,7 +19,16 @@ class DiscriminativeModel(nn.Module):
         self.min_val_loss = 1e15
 
     def fit(self, train_dataloader, val_dataloader=None):
-        """Train classifier"""
+        """Train discriminative model
+
+        Args:
+            train_dataloader (torch.utils.data.DataLoader): Dataloader for training data set
+            val_dataloader (torch.utils.data.DataLoader, optional): Dataloader for validation data set.
+                Should be passed if using early stopping.
+
+        Returns:
+            [type]: [description]
+        """
         self.train_dataloader = train_dataloader
 
         self.last_updated_min_val_loss = 0
