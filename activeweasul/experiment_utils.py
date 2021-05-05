@@ -4,9 +4,11 @@ import random
 from scipy.stats import entropy
 from sklearn.linear_model import LogisticRegression
 import torch
+from torch.utils.data import DataLoader
 from tqdm import tqdm_notebook as tqdm
 
 from active_weasul import ActiveWeaSuLPipeline, set_seed
+from datasets import CustomTensorDataset
 from performance import PerformanceMixin
 
 
@@ -204,11 +206,26 @@ def query_margin(preds, is_in_pool):
 
 
 def active_learning_experiment(
-    nr_trials, al_it, model, features, y_train, y_test, batch_size, seeds, train_dataset,
-        predict_dataloader, test_dataloader, test_features):
+    nr_trials, al_it, train_features, y_train, y_test, seeds,
+        test_features, batch_size=20, input_model=None, solver="lbfgs"):
+    """Run active learning for a number of times
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    Args:
+        nr_trials (int): Number of experiment runs
+        al_it (int): Number of active learning iterations
+        train_features (torch.Tensor): Training dataset features
+        y_train (numpy.array): Ground truth labels of training dataset
+        y_test (numpy.array): Ground truth labels of test dataset
+        batch_size (int, optional): Batch size if training discriminate model
+        seeds (numpy.array, optional): Array with seeds for different runs
+        test_features (torch.Tensor): Test dataset features
+        input_model: Optional discriminative model object. If not given, scikit-learn
+            LogisticRegression model is used
+        solver (str, optional): Solver to use if using scikit-learn model
 
+    Returns:
+        dict: Dictionary of trials, active learning iterations and metrics
+    """
     metric_dict = {}
 
     for j in tqdm(range(nr_trials), desc="Trials"):
@@ -219,12 +236,23 @@ def active_learning_experiment(
 
         set_seed(seeds[j])
 
-        model.reset()
+        if input_model is not None:
+            model = input_model
+            model.reset()
 
-        is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool).to(device)
+            train_dataset = CustomTensorDataset(X=None, Y=None)
+            predict_dataset = CustomTensorDataset(X=train_features, Y=y_train)
+            test_dataset = CustomTensorDataset(X=test_features, Y=y_test)
+            predict_dataloader = DataLoader(dataset=predict_dataset, batch_size=batch_size, shuffle=False)
+            test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+        else:
+            model = LogisticRegression(solver=solver)
+
+        is_in_pool = torch.full_like(torch.Tensor(y_train), True, dtype=torch.bool)
 
         for i in range(al_it + 1):
 
+            # Random sampling until we have at least one sample for each class
             if len(np.unique(y_train[queried])) < 2:
                 point = random.sample(range(len(y_train)), 1)[0]
                 is_in_pool[point] = False
@@ -233,63 +261,32 @@ def active_learning_experiment(
                     "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
                 metric_dict[j]["Discriminative_test"][i] = {
                     "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
+            # Sample based on classification boundary margin
             else:
                 Y = torch.LongTensor(y_train[queried])
 
-                feature_subset = torch.Tensor(features[queried, :])
+                if input_model is not None:
+                    train_dataset.update(torch.Tensor(train_features[queried]), Y)
+                    train_loader = torch.utils.data.DataLoader(
+                        dataset=train_dataset, batch_size=batch_size, shuffle=True)
+                    
+                    train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
+                    point, is_in_pool = query_margin(train_preds, is_in_pool)
+                    test_preds = model.predict(test_dataloader)
+                else:
+                    Y = y_train[queried]
+                    train_preds = torch.Tensor(
+                        model
+                        .fit(train_features[queried], Y)
+                        .predict_proba(train_features)
+                    )
+                    point, is_in_pool = query_margin(train_preds, is_in_pool)
+                    test_preds = torch.Tensor(model.predict_proba(test_features))
 
-                train_dataset.update(feature_subset, Y)
-                train_loader = torch.utils.data.DataLoader(
-                    dataset=train_dataset, batch_size=batch_size, shuffle=True)
-                train_preds = model.fit(train_loader).predict(dataloader=predict_dataloader)
-                point, is_in_pool = query_margin(train_preds, is_in_pool)
                 queried.append(point)
-
-                test_preds = model.predict(test_dataloader)
 
                 metric_dict[j]["Discriminative_train"][i] = (
                     PerformanceMixin().analyze(y=y_train, preds=train_preds))
                 metric_dict[j]["Discriminative_test"][i] = (
                     PerformanceMixin().analyze(y=y_test, preds=test_preds))
-    return metric_dict
-
-
-def synthetic_al_experiment(
-    nr_trials, al_it, features, y_train, y_test, batch_size, seeds, train_dataset,
-        predict_dataloader, test_dataloader, test_features):
-
-    metric_dict = {}
-
-    for j in tqdm(range(nr_trials), desc="Trials"):
-        metric_dict[j] = {}
-        metric_dict[j]["Discriminative_train"] = {}
-        metric_dict[j]["Discriminative_test"] = {}
-        queried = []
-
-        model = LogisticRegression()
-
-        set_seed(seeds[j])
-
-        for i in range(len(queried), al_it + 1):
-
-            if (len(queried) < 2) or (len(np.unique(y_train[queried])) < 2):
-                queried.append(random.sample(range(len(y_train)), 1)[0])
-                metric_dict[j]["Discriminative_train"][i] = {
-                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
-                metric_dict[j]["Discriminative_test"][i] = {
-                    "MCC": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan, "F1": np.nan}
-            else:
-                Y = y_train[queried]
-                df_1 = features.iloc[queried]
-                train_preds = (
-                    model
-                    .fit(df_1.loc[:,].values, Y)
-                    .predict_proba(features.values)
-                )
-                queried.append(np.argmin(np.abs(train_preds[:, 1] - train_preds[:, 0])).item())
-                test_preds = model.predict_proba(test_features)
-                metric_dict[j]["Discriminative_train"][i] = (
-                    PerformanceMixin().analyze(y=y_train, preds=torch.Tensor(train_preds)))
-                metric_dict[j]["Discriminative_test"][i] = (
-                    PerformanceMixin().analyze(y=y_test, preds=torch.Tensor(test_preds)))
     return metric_dict
