@@ -1,7 +1,7 @@
 import torch.nn as nn
 
-from activeweasul.discriminative_model import DiscriminativeModel
-from activeweasul.performance import PerformanceMixin
+from discriminative_model import DiscriminativeModel
+from performance import PerformanceMixin
 
 
 class LogisticRegression(PerformanceMixin, DiscriminativeModel):

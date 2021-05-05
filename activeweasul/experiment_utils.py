@@ -1,15 +1,13 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
 from scipy.stats import entropy
-import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 import torch
 from tqdm import tqdm_notebook as tqdm
 
-from activeweasul.active_weasul import ActiveWeaSuLPipeline, set_seed
-from activeweasul.performance import PerformanceMixin
+from active_weasul import ActiveWeaSuLPipeline, set_seed
+from performance import PerformanceMixin
 
 
 def active_weasul_experiment(

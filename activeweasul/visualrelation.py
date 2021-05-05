@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 import torch.nn as nn
 from torchvision import transforms
 
-from activeweasul.performance import PerformanceMixin
-from activeweasul.discriminative_model import DiscriminativeModel
+from performance import PerformanceMixin
+from discriminative_model import DiscriminativeModel
 
 
 class VisualRelationDataset(Dataset):
