@@ -55,7 +55,7 @@ def active_weasul_experiment(
     if seeds is None:
         seeds = np.random.randint(0, 1000, nr_trials)
 
-    for i in tqdm(range(nr_trials), desc="Trials"):
+    for i in range(nr_trials):
         seed = seeds[i]
 
         # Initialize Active WeaSuL pipeline
@@ -228,7 +228,7 @@ def active_learning_experiment(
     """
     metric_dict = {}
 
-    for j in tqdm(range(nr_trials), desc="Trials"):
+    for j in range(nr_trials):
         metric_dict[j] = {}
         metric_dict[j]["Discriminative_train"] = {}
         metric_dict[j]["Discriminative_test"] = {}
