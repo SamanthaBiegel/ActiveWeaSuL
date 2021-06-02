@@ -82,7 +82,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
                 discriminative model on image data
 
         Returns:
-            numpy.array: Array with probabilistic labels for training dataset
+            torch.Tensor: Tensor with probabilistic labels for training dataset
         """
         if any(v is None for v in (label_matrix_test, y_test, test_dataset)):
             label_matrix_test = label_matrix.copy()
@@ -176,8 +176,17 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
         return prob_labels_train
 
-    def log(self, count: int, lm_train, lm_test, fm_train, fm_test, selected_point=None):
-        """Keep track of performance metrics, label predictions and parameter values"""
+    def log(self, count: int, lm_train, lm_test, fm_train, fm_test, selected_point):
+        """Keep track of performance metrics, label predictions and parameter values
+
+        Args:
+            count (int): Active learning iteration number
+            lm_train (torch.Tensor): Tensor with probabilistic labels for training dataset
+            lm_test (torch.Tensor): Tensor with probabilistic labels for test dataset
+            fm_train (torch.Tensor): Tensor with discriminative model predictions for training dataset
+            fm_test (torch.Tensor): Tensor with discriminative model predictions for test dataset
+            selected_point (int): Index of data point selected in current iteration
+        """
 
         if count == 0:
             self.metrics = {}
@@ -217,6 +226,3 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
             self.queried.append(selected_point)
             if self.query_strategy in ["maxkl", "margin"] and self.randomness == 0:
                 self.bucket_AL_values[count] = self.bucket_values
-
-        return self
-

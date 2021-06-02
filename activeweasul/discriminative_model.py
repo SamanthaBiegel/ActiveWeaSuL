@@ -27,7 +27,7 @@ class DiscriminativeModel(nn.Module):
                 Should be passed if using early stopping.
 
         Returns:
-            [type]: [description]
+            DiscriminativeModel with trained parameters
         """
         self.train_dataloader = train_dataloader
 

@@ -5,7 +5,6 @@ from scipy.stats import entropy
 from sklearn.linear_model import LogisticRegression
 import torch
 from torch.utils.data import DataLoader
-from tqdm import tqdm_notebook as tqdm
 
 from active_weasul import ActiveWeaSuLPipeline, set_seed
 from datasets import CustomTensorDataset
@@ -164,8 +163,7 @@ def process_entropies(entropy_dict, approach_string):
 
 
 def add_weak_supervision_baseline(metric_dfs, al_it):
-    """Add weak supervision baseline metrics based on Active WeaSuL results,
-    based on metrics at iteration 0.
+    """Add weak supervision baseline metrics based on Active WeaSuL results at iteration 0
 
     Args:
         metric_dfs (pandas.DataFrame): Processed dataframe with metrics. Should have
