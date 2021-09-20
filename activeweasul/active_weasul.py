@@ -124,7 +124,7 @@ class ActiveWeaSuLPipeline(PlotMixin, ActiveLearningQuery):
 
             # Optionally, train discriminative model on probabilistic labels
             if self.discriminative_model is not None and i % self.discr_model_frequency == 0:
-                discriminative_model_probs_train = prob_labels_train.clone().detach()
+                discriminative_model_probs_train = prob_labels_train.clone().detach().double()
                 # Replace probabilistic labels with ground truth for labelled points
                 discriminative_model_probs_train[self.ground_truth_labels == 1, :] = (
                     torch.DoubleTensor([0, 1]))
